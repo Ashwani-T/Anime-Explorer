@@ -37,7 +37,10 @@ import com.example.animeexplorer.components.ArcLoader
 
 
 @Composable
-fun AnimeScreen(modifier: Modifier = Modifier) {
+fun AnimeScreen(
+    modifier: Modifier = Modifier,
+    onAnimeClick: (Int) -> Unit = {}
+) {
     val viewModel: AnimeScreenViewModel = hiltViewModel()
     val uiState by viewModel.uiState.collectAsState()
 
@@ -47,7 +50,8 @@ fun AnimeScreen(modifier: Modifier = Modifier) {
             viewModel::loadAnimeList,
             modifier = modifier,
             state = state,
-            isLoadingMore = state.isLoadingMore
+            isLoadingMore = state.isLoadingMore,
+            onAnimeClick = onAnimeClick
         )
 
         is AnimeUiState.Error -> ErrorScreen(state.message)
@@ -75,7 +79,7 @@ fun LoadingScreen() {
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background),
         contentAlignment = Alignment.Center
-    ){
+    ) {
         ArcLoader()
     }
 }
@@ -85,7 +89,8 @@ fun AnimeListScreen(
     loaderFunction: () -> Unit,
     modifier: Modifier = Modifier,
     state: AnimeUiState.Success,
-    isLoadingMore: Boolean
+    isLoadingMore: Boolean,
+    onAnimeClick: (Int) -> Unit = {}
 ) {
     val listState = rememberLazyListState()
 
@@ -93,7 +98,7 @@ fun AnimeListScreen(
         modifier = modifier, state = listState
     ) {
         items(state.animeUiModel) { anime ->
-            AnimeList(anime)
+            AnimeList(anime, onClick = { onAnimeClick(anime.id) })
 
             HorizontalDivider(
                 thickness = 1.dp,
@@ -121,8 +126,7 @@ fun AnimeListScreen(
             val totalItems = listState.layoutInfo.totalItemsCount
 
 
-
-            if (index == totalItems - 1){
+            if (index == totalItems - 1) {
                 loaderFunction()
             }
 

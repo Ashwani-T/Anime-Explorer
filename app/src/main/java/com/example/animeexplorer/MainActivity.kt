@@ -8,10 +8,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
-import com.example.animeexplorer.screens.AnimeListScreen
+import androidx.navigation.NavType
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+import com.example.animeexplorer.screens.AnimeDetailScreen
 import com.example.animeexplorer.screens.AnimeScreen
-import com.example.animeexplorer.screens.AnimeUiModel
-import com.example.animeexplorer.screens.AnimeUiState
 import com.example.animeexplorer.ui.theme.AppTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -22,9 +25,34 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             AppTheme {
+                val navController = rememberNavController()
+
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    AppTheme {
-                        AnimeScreen(modifier = Modifier.padding(innerPadding))
+                    NavHost(
+                        navController = navController,
+                        startDestination = "animeList",
+                        modifier = Modifier.padding(innerPadding)
+                    ) {
+                        composable("animeList") {
+                            AnimeScreen(
+                                onAnimeClick = { malId ->
+                                    navController.navigate("animeDetail/$malId")
+                                }
+                            )
+                        }
+
+                        composable(
+                            "animeDetail/{malId}",
+                            arguments = listOf(
+                                navArgument("malId") { type = NavType.IntType }
+                            )
+                        ) {
+                            AnimeDetailScreen(
+                                onNavigateBack = {
+                                    navController.popBackStack()
+                                }
+                            )
+                        }
                     }
                 }
             }
