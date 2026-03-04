@@ -27,14 +27,14 @@ class MainActivity : ComponentActivity() {
             AppTheme {
                 val navController = rememberNavController()
 
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+                Scaffold() { innerPadding ->
                     NavHost(
                         navController = navController,
                         startDestination = "animeList",
-                        modifier = Modifier.padding(innerPadding)
                     ) {
                         composable("animeList") {
                             AnimeScreen(
+                                modifier = Modifier.padding(innerPadding),
                                 onAnimeClick = { malId ->
                                     navController.navigate("animeDetail/$malId")
                                 }

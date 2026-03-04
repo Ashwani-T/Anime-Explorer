@@ -17,9 +17,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -29,6 +31,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -36,6 +39,7 @@ import coil.compose.AsyncImage
 import com.example.animeexplorer.components.ArcLoader
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AnimeScreen(
     modifier: Modifier = Modifier,
@@ -44,17 +48,21 @@ fun AnimeScreen(
     val viewModel: AnimeScreenViewModel = hiltViewModel()
     val uiState by viewModel.uiState.collectAsState()
 
-    when (val state = uiState) {
-        is AnimeUiState.Loading -> LoadingScreen()
-        is AnimeUiState.Success -> AnimeListScreen(
-            viewModel::loadAnimeList,
-            modifier = modifier,
-            state = state,
-            isLoadingMore = state.isLoadingMore,
-            onAnimeClick = onAnimeClick
+    Column() {
+        TopAppBar(
+            title = { Text(text = "Anime Explorer", textAlign = TextAlign.Center, modifier = modifier.fillMaxWidth()) },
         )
+        when (val state = uiState) {
+            is AnimeUiState.Loading -> LoadingScreen()
+            is AnimeUiState.Success -> AnimeListScreen(
+                viewModel::loadAnimeList,
+                state = state,
+                isLoadingMore = state.isLoadingMore,
+                onAnimeClick = onAnimeClick
+            )
 
-        is AnimeUiState.Error -> ErrorScreen(state.message)
+            is AnimeUiState.Error -> ErrorScreen(state.message)
+        }
     }
 }
 
