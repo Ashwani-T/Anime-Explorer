@@ -3,6 +3,8 @@ package com.example.animeexplorer.data
 import android.util.Log
 import com.example.animeexplorer.domain.AnimeRepository
 import jakarta.inject.Inject
+import java.io.IOException
+import java.net.UnknownHostException
 
 
 class AnimeRepositoryImpl @Inject constructor(
@@ -12,7 +14,11 @@ class AnimeRepositoryImpl @Inject constructor(
         return try {
             val response = apiService.getAnimeList(page)
             Result.success(response)
-        }catch (e: Exception) {
+        }catch (e: IOException) {
+            Log.w("API_MESSAGE", "No internet connection:")
+            Result.failure(Exception("No internet connection. Please check your network settings and try again."))
+        }
+        catch (e: Exception) {
 
             Log.w("API_MESSAGE", e.message ?: "Unknown error")
             Log.e("API_ERROR", e.stackTraceToString())

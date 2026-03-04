@@ -34,7 +34,13 @@ class AnimeScreenViewModel @Inject constructor(
         viewModelScope.launch {
             isLoading = true
 
-            val currentList = (_uiState.value as? AnimeUiState.Success)?.animeUiModel ?: emptyList()
+                //val currentList = (_uiState.value as? AnimeUiState.Success)?.animeUiModel ?: emptyList()
+
+            val currentList = when(_uiState.value){
+                is AnimeUiState.Success -> (_uiState.value as AnimeUiState.Success).animeUiModel
+                is AnimeUiState.Error -> (_uiState.value as AnimeUiState.Error).animeUiModel
+                is AnimeUiState.Loading -> emptyList()
+            }
 
             _uiState.value = AnimeUiState.Success(
                 animeUiModel = currentList,
@@ -54,11 +60,14 @@ class AnimeScreenViewModel @Inject constructor(
                     hasNextPage = animeResponse.pagination.hasNextPage
                 },
                 onFailure = { exception ->
-                    _uiState.value = AnimeUiState.Error(exception.message ?: "Unknown error")
+                    _uiState.value = AnimeUiState.Error(animeUiModel = currentList, message = exception.message ?: "Unknown error")
                 }
             )
 
             isLoading = false
         }
+    }
+    fun onRetry() {
+        loadAnimeList()
     }
 }

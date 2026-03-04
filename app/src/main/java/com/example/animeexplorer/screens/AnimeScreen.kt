@@ -29,6 +29,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
@@ -61,13 +62,15 @@ fun AnimeScreen(
                 onAnimeClick = onAnimeClick
             )
 
-            is AnimeUiState.Error -> ErrorScreen(state.message)
+            is AnimeUiState.Error -> ErrorScreen(animeList = state.animeUiModel, onRetry = viewModel::onRetry, message = state.message)
         }
     }
 }
 
 @Composable
 fun ErrorScreen(
+    animeList: List<AnimeUiModel> = emptyList(),
+    onRetry: () -> Unit = {},
     message: String
 ) {
     Column(
@@ -75,7 +78,29 @@ fun ErrorScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text(text = message)
+        Text(
+            text = message,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+        )
+
+        Text(
+            text = "Retry",
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier
+                .padding(bottom = 16.dp)
+                .clickable { onRetry() }
+        )
+        AnimeListScreen(
+            loaderFunction = {},
+            state = AnimeUiState.Success(animeUiModel = animeList, isLoadingMore = false),
+            isLoadingMore = false,
+            onAnimeClick = {},
+            modifier = Modifier.weight(0.9f)
+        )
+
+
+
+
     }
 }
 
@@ -103,7 +128,7 @@ fun AnimeListScreen(
     val listState = rememberLazyListState()
 
     LazyColumn(
-        modifier = modifier, state = listState
+        modifier = modifier.fillMaxSize(), state = listState
     ) {
         items(state.animeUiModel) { anime ->
             AnimeList(anime, onClick = { onAnimeClick(anime.id) })
