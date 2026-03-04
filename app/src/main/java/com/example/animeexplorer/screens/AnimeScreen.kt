@@ -20,6 +20,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -49,20 +50,36 @@ fun AnimeScreen(
     val viewModel: AnimeScreenViewModel = hiltViewModel()
     val uiState by viewModel.uiState.collectAsState()
 
-    Column() {
-        TopAppBar(
-            title = { Text(text = "Anime Explorer", textAlign = TextAlign.Center, modifier = modifier.fillMaxWidth()) },
-        )
-        when (val state = uiState) {
-            is AnimeUiState.Loading -> LoadingScreen()
-            is AnimeUiState.Success -> AnimeListScreen(
-                viewModel::loadAnimeList,
-                state = state,
-                isLoadingMore = state.isLoadingMore,
-                onAnimeClick = onAnimeClick
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = "Anime Explorer",
+                        textAlign = TextAlign.Center,
+                        modifier = modifier.fillMaxWidth()
+                    )
+                },
             )
+        }
+    ) {innerPadding ->
+        Column(
+            modifier = modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+        ) {
+            when (val state = uiState) {
+                is AnimeUiState.Loading -> LoadingScreen()
+                is AnimeUiState.Success -> AnimeListScreen(
+                    viewModel::loadAnimeList,
+                    state = state,
+                    isLoadingMore = state.isLoadingMore,
+                    onAnimeClick = onAnimeClick,
+                    modifier = Modifier.fillMaxSize()
+                )
 
-            is AnimeUiState.Error -> ErrorScreen(animeList = state.animeUiModel, onRetry = viewModel::onRetry, message = state.message)
+                is AnimeUiState.Error -> ErrorScreen(animeList = state.animeUiModel, onRetry = viewModel::onRetry, message = state.message)
+            }
         }
     }
 }

@@ -28,24 +28,21 @@ class MainActivity : ComponentActivity() {
             AppTheme {
                 val navController = rememberNavController()
 
-                Scaffold() { innerPadding ->
-                    NavHost(
-                        navController = navController,
-                        startDestination = AppDestination.AnimeList
-                    ) {
-                        composable<AppDestination.AnimeList> {
-                            AnimeScreen(
-                                modifier = Modifier.padding(innerPadding),
-                                onAnimeClick = { malId ->
-                                    navController.navigate(AppDestination.AnimeDetail(malId))
-                                }
-                            )
-                        }
-                        composable<AppDestination.AnimeDetail> {
-                            AnimeDetailScreen(
-                                onNavigateBack = { navController.popBackStack() }
-                            )
-                        }
+                NavHost(
+                    navController = navController,
+                    startDestination = AppDestination.AnimeList
+                ) {
+                    composable<AppDestination.AnimeList> {
+                        AnimeScreen(
+                            onAnimeClick = { malId ->
+                                navController.navigate(AppDestination.AnimeDetail(malId))
+                            }
+                        )
+                    }
+                    composable<AppDestination.AnimeDetail> {
+                        AnimeDetailScreen(
+                            onNavigateBack = { navController.popBackStack() }
+                        )
                     }
                 }
             }

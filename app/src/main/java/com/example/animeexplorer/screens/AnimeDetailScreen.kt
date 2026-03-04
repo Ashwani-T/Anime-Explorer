@@ -146,7 +146,8 @@ fun AnimeDetailContent(
             }
 
             Column(
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
                     text = "Status",
@@ -161,7 +162,8 @@ fun AnimeDetailContent(
             }
 
             Column(
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
+                horizontalAlignment = Alignment.End
             ) {
                 Text(
                     text = "Episodes",

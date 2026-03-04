@@ -34,8 +34,6 @@ class AnimeScreenViewModel @Inject constructor(
         viewModelScope.launch {
             isLoading = true
 
-                //val currentList = (_uiState.value as? AnimeUiState.Success)?.animeUiModel ?: emptyList()
-
             val currentList = when(_uiState.value){
                 is AnimeUiState.Success -> (_uiState.value as AnimeUiState.Success).animeUiModel
                 is AnimeUiState.Error -> (_uiState.value as AnimeUiState.Error).animeUiModel
