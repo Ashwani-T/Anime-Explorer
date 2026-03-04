@@ -3,8 +3,11 @@ package com.example.animeexplorer.data
 import android.util.Log
 import com.example.animeexplorer.domain.AnimeRepository
 import jakarta.inject.Inject
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import java.io.IOException
 import java.net.UnknownHostException
+import kotlin.coroutines.coroutineContext
 
 
 class AnimeRepositoryImpl @Inject constructor(
@@ -19,6 +22,7 @@ class AnimeRepositoryImpl @Inject constructor(
             Result.failure(Exception("No internet connection. Please check your network settings and try again."))
         }
         catch (e: Exception) {
+            currentCoroutineContext().ensureActive()
 
             Log.w("API_MESSAGE", e.message ?: "Unknown error")
             Log.e("API_ERROR", e.stackTraceToString())

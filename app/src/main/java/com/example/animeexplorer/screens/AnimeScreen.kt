@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.example.animeexplorer.components.ArcLoader
+import com.example.animeexplorer.domain.AnimeUiModel
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -147,7 +148,7 @@ fun AnimeListScreen(
     LazyColumn(
         modifier = modifier.fillMaxSize(), state = listState
     ) {
-        items(state.animeUiModel) { anime ->
+        items(state.animeUiModel){anime->
             AnimeList(anime, onClick = { onAnimeClick(anime.id) })
 
             HorizontalDivider(

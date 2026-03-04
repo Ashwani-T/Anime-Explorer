@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.example.animeexplorer.AppDestination
+import com.example.animeexplorer.data.toDetailUiModel
 import com.example.animeexplorer.domain.AnimeRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject

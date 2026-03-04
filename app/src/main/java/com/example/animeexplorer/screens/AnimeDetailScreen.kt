@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.example.animeexplorer.components.ArcLoader
+import com.example.animeexplorer.domain.AnimeDetailUiModel
 
 
 @OptIn(ExperimentalMaterial3Api::class)

@@ -2,6 +2,7 @@ package com.example.animeexplorer.screens
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.animeexplorer.data.toUiModel
 import com.example.animeexplorer.domain.AnimeRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
@@ -31,7 +32,7 @@ class AnimeScreenViewModel @Inject constructor(
             return
         }
 
-        viewModelScope.launch {
+        viewModelScope.launch() {
             isLoading = true
 
             val currentList = when(_uiState.value){
