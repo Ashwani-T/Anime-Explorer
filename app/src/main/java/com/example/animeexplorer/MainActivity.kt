@@ -13,6 +13,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import androidx.navigation.toRoute
 import com.example.animeexplorer.screens.AnimeDetailScreen
 import com.example.animeexplorer.screens.AnimeScreen
 import com.example.animeexplorer.ui.theme.AppTheme
@@ -30,27 +31,19 @@ class MainActivity : ComponentActivity() {
                 Scaffold() { innerPadding ->
                     NavHost(
                         navController = navController,
-                        startDestination = "animeList",
+                        startDestination = AppDestination.AnimeList
                     ) {
-                        composable("animeList") {
+                        composable<AppDestination.AnimeList> {
                             AnimeScreen(
                                 modifier = Modifier.padding(innerPadding),
                                 onAnimeClick = { malId ->
-                                    navController.navigate("animeDetail/$malId")
+                                    navController.navigate(AppDestination.AnimeDetail(malId))
                                 }
                             )
                         }
-
-                        composable(
-                            "animeDetail/{malId}",
-                            arguments = listOf(
-                                navArgument("malId") { type = NavType.IntType }
-                            )
-                        ) {
+                        composable<AppDestination.AnimeDetail> {
                             AnimeDetailScreen(
-                                onNavigateBack = {
-                                    navController.popBackStack()
-                                }
+                                onNavigateBack = { navController.popBackStack() }
                             )
                         }
                     }
@@ -59,4 +52,5 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
+
 
