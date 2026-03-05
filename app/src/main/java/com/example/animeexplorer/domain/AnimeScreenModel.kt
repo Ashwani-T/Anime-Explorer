@@ -1,5 +1,16 @@
 package com.example.animeexplorer.domain
 
+data class AnimeResponseModel(
+    val data: List<AnimeUiModel>,
+    val pagination: PageInfo
+)
+
+
+data class PageInfo(
+    val currentPage: Int,
+    val hasNextPage: Boolean
+)
+
 data class AnimeUiModel(
     val id: Int,
     val title: String,

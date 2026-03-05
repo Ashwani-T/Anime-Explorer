@@ -18,5 +18,6 @@ sealed class AnimeUiState {
     ) : AnimeUiState()
     data class Error(
         val animeUiModel: List<AnimeUiModel> = emptyList(),
+        val isLoading: Boolean = false,
         val message: String) : AnimeUiState()
 }

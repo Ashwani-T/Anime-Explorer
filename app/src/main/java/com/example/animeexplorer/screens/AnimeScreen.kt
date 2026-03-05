@@ -17,6 +17,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -26,7 +27,9 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -40,6 +43,10 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.example.animeexplorer.components.ArcLoader
 import com.example.animeexplorer.domain.AnimeUiModel
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -63,70 +70,47 @@ fun AnimeScreen(
                 },
             )
         }
-    ) {innerPadding ->
+    ) { innerPadding ->
         Column(
             modifier = modifier
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
+            LaunchedEffect(Unit) {
+                viewModel.runAnimeListJob()
+            }
+
             when (val state = uiState) {
                 is AnimeUiState.Loading -> LoadingScreen()
                 is AnimeUiState.Success -> AnimeListScreen(
-                    viewModel::loadAnimeList,
+                    modifier = Modifier.fillMaxSize(),
+                    loaderFunction = viewModel::runAnimeListJob,
+                    cancelFunction = viewModel::stopAnimeListJob,
                     state = state,
-                    isLoadingMore = state.isLoadingMore,
+                    onRetry = { viewModel.runAnimeListJob() },
                     onAnimeClick = onAnimeClick,
-                    modifier = Modifier.fillMaxSize()
+                    animeList = state.animeUiModel
                 )
 
-                is AnimeUiState.Error -> ErrorScreen(animeList = state.animeUiModel, onRetry = viewModel::onRetry, message = state.message)
+                is AnimeUiState.Error -> AnimeListScreen(
+                    modifier = Modifier.fillMaxSize(),
+                    loaderFunction = viewModel::runAnimeListJob,
+                    cancelFunction = viewModel::stopAnimeListJob,
+                    onRetry = { viewModel.runAnimeListJob() },
+                    state = state,
+                    animeList = state.animeUiModel
+                )
             }
         }
     }
 }
 
 @Composable
-fun ErrorScreen(
-    animeList: List<AnimeUiModel> = emptyList(),
-    onRetry: () -> Unit = {},
-    message: String
+fun LoadingScreen(
+    modifier: Modifier = Modifier
 ) {
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text(
-            text = message,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-        )
-
-        Text(
-            text = "Retry",
-            color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier
-                .padding(bottom = 16.dp)
-                .clickable { onRetry() }
-        )
-        AnimeListScreen(
-            loaderFunction = {},
-            state = AnimeUiState.Success(animeUiModel = animeList, isLoadingMore = false),
-            isLoadingMore = false,
-            onAnimeClick = {},
-            modifier = Modifier.weight(0.9f)
-        )
-
-
-
-
-    }
-}
-
-@Composable
-fun LoadingScreen() {
-
     Box(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background),
         contentAlignment = Alignment.Center
@@ -134,54 +118,121 @@ fun LoadingScreen() {
         ArcLoader()
     }
 }
+//
+//@Composable
+//fun AnimeListScreen(
+//    loaderFunction: () -> Unit,
+//    cancelFunction: () -> Unit,
+//    modifier: Modifier = Modifier,
+//    animeList: List<AnimeUiModel>,
+//    onRetry: () -> Unit = {},
+//    state: AnimeUiState,
+//    onAnimeClick: (Int) -> Unit = {}
+//) {
+//    val listState = rememberLazyListState()
+//
+//    LazyColumn(
+//        modifier = modifier.fillMaxSize(), state = listState
+//    ) {
+//        items(animeList) { anime ->
+//            AnimeList(anime, onClick = { onAnimeClick(anime.id) })
+//
+//            HorizontalDivider(
+//                thickness = 1.dp,
+//                color = MaterialTheme.colorScheme.outline,
+//                modifier = Modifier.padding(vertical = 8.dp)
+//            )
+//        }
+//    }
+//
+//    LaunchedEffect(state) {
+//        if(state is AnimeUiState.Error && state.isLoading) {
+//            LoadingScreen(
+//                modifier = Modifier.
+//            )
+//        }
+//    }
+//
+//    LaunchedEffect(listState) {
+//        snapshotFlow {
+//            listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
+//        }.collect { index ->
+//            val totalItems = listState.layoutInfo.totalItemsCount
+//            if (index >= totalItems - 1) {
+//                loaderFunction()
+//            } else {
+//                cancelFunction()
+//            }
+//
+//        }
+//    }
+//}
 
 @Composable
 fun AnimeListScreen(
-    loaderFunction: () -> Unit,
+    loaderFunction: () -> Unit,   // fetch next page
+    cancelFunction: () -> Unit,   // cancel in-flight pagination job
     modifier: Modifier = Modifier,
-    state: AnimeUiState.Success,
-    isLoadingMore: Boolean,
+    animeList: List<AnimeUiModel>,
+    onRetry: () -> Unit = {},
+    state: AnimeUiState,
     onAnimeClick: (Int) -> Unit = {}
 ) {
     val listState = rememberLazyListState()
 
-    LazyColumn(
-        modifier = modifier.fillMaxSize(), state = listState
-    ) {
-        items(state.animeUiModel){anime->
-            AnimeList(anime, onClick = { onAnimeClick(anime.id) })
+    // --- UI ---
+    Box(modifier.fillMaxSize()) {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            state = listState
+        ) {
+            items(
+                items = animeList,
+                key = { it.id } // stable key helps avoid scroll jumps
+            ) { anime ->
+                AnimeList(anime, onClick = { onAnimeClick(anime.id) })
 
-            HorizontalDivider(
-                thickness = 1.dp,
-                color = MaterialTheme.colorScheme.outline,
-                modifier = Modifier.padding(vertical = 8.dp)
-            )
-        }
-        if (isLoadingMore) {
-            item {
-                Box(
-                    modifier = Modifier
+                HorizontalDivider(
+                    thickness = 1.dp,
+                    color = MaterialTheme.colorScheme.outline,
+                    modifier = Modifier.padding(vertical = 8.dp)
+                )
+            }
+            item(key = "bottom_spacer") {
+                Spacer(Modifier.height(48.dp))
+            }
+
+            if (state is AnimeUiState.Success && state.isLoadingMore) {
+                item(key = "loading_footer") {
+                    LoadingScreen(modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    LoadingScreen()
+                        .padding(16.dp))
                 }
             }
-        }
 
+        }
+    }
+
+    val shouldLoadMore by remember {
+        derivedStateOf {
+            val layoutInfo = listState.layoutInfo
+            val totalItems = layoutInfo.totalItemsCount
+            val lastVisible = layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
+
+            totalItems > 0 && lastVisible >= totalItems - 4
+        }
     }
 
     LaunchedEffect(listState) {
-        snapshotFlow { listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index }.collect { index ->
-            val totalItems = listState.layoutInfo.totalItemsCount
-
-
-            if (index == totalItems - 1) {
-                loaderFunction()
+        snapshotFlow { shouldLoadMore }
+            .distinctUntilChanged()
+            .collect { atBottom ->
+                if (atBottom) {
+                    loaderFunction()
+                } else {
+                    cancelFunction()
+                }
             }
-
-        }
     }
 }
 

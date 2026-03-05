@@ -11,7 +11,7 @@ interface AnimeApiService {
     suspend fun getAnimeList(
         @Query("page") page: Int = 1,
         @Query("limit") limit: Int = 10
-    ): AnimeResponse
+    ): AnimeResponseDto
 
     @GET("anime/{id}")
     suspend fun getAnimeDetail(

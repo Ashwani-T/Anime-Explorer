@@ -2,6 +2,7 @@ package com.example.animeexplorer.data
 
 import com.example.animeexplorer.domain.AnimeDetailUiModel
 import com.example.animeexplorer.domain.AnimeUiModel
+import com.example.animeexplorer.domain.PageInfo
 
 fun AnimeDto.toUiModel(): AnimeUiModel {
     return AnimeUiModel(
@@ -14,6 +15,12 @@ fun AnimeDto.toUiModel(): AnimeUiModel {
     )
 }
 
+fun Pagination.toPageInfo(): PageInfo {
+    return PageInfo(
+        currentPage = currentPage,
+        hasNextPage = hasNextPage
+    )
+}
 
 
 fun AnimeDetailDto.toDetailUiModel(): AnimeDetailUiModel {

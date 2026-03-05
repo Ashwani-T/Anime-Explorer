@@ -2,9 +2,13 @@ package com.example.animeexplorer.data
 
 import android.util.Log
 import com.example.animeexplorer.domain.AnimeRepository
+import com.example.animeexplorer.domain.AnimeResponseModel
+import com.example.animeexplorer.domain.AnimeUiModel
+import com.example.animeexplorer.domain.PageInfo
 import jakarta.inject.Inject
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.isActive
 import java.io.IOException
 import java.net.UnknownHostException
 import kotlin.coroutines.coroutineContext
@@ -13,23 +17,30 @@ import kotlin.coroutines.coroutineContext
 class AnimeRepositoryImpl @Inject constructor(
     private val apiService: AnimeApiService
 ): AnimeRepository {
-    override suspend fun getAnimeList(page: Int): Result<AnimeResponse> {
-        return try {
-            val response = apiService.getAnimeList(page)
-            Result.success(response)
-        }catch (e: IOException) {
-            Log.w("API_MESSAGE", "No internet connection:")
-            Result.failure(Exception("No internet connection. Please check your network settings and try again."))
+    override suspend fun getAnimeList(page: Int): AnimeResponseModel {
+        var animeList: List<AnimeUiModel> = emptyList()
+        var pageInfo: PageInfo = PageInfo(
+            hasNextPage = false,
+            currentPage = page,
+        )
+
+        runCatching {
+            Log.d("ApiServiceException", "getAnimeList: Api call was made")
+            apiService.getAnimeList(page)
+        }.onFailure { exception ->
+            Log.d("ApiServiceException", "Failed to fetch anime list: ${exception.message}")
+        }.onSuccess {response ->
+            animeList = response.data.map { anime ->
+                anime.toUiModel()
+            }
+            pageInfo = response.pagination.toPageInfo()
         }
-        catch (e: Exception) {
-            currentCoroutineContext().ensureActive()
 
-            Log.w("API_MESSAGE", e.message ?: "Unknown error")
-            Log.e("API_ERROR", e.stackTraceToString())
+        return AnimeResponseModel(
+            data = animeList,
+            pagination = pageInfo
+        )
 
-
-            Result.failure(e)
-        }
     }
 
     override suspend fun getAnimeDetail(malId: Int): Result<AnimeDetailResponse> {
