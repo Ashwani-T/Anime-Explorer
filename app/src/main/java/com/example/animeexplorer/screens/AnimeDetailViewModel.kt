@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.example.animeexplorer.AppDestination
+import com.example.animeexplorer.HomeDestination
 import com.example.animeexplorer.data.toDetailUiModel
 import com.example.animeexplorer.domain.AnimeRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -19,7 +20,7 @@ class AnimeDetailViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-    private val malId: Int = savedStateHandle.toRoute<AppDestination.AnimeDetail>().malId
+    private val malId: Int = savedStateHandle.toRoute<HomeDestination.AnimeDetail>().malId
 
     private val _uiState = MutableStateFlow<AnimeDetailUiState>(AnimeDetailUiState.Loading)
     val uiState: StateFlow<AnimeDetailUiState> = _uiState

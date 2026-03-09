@@ -4,18 +4,12 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.ui.Modifier
-import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
-import androidx.navigation.toRoute
+import androidx.navigation.navigation
 import com.example.animeexplorer.screens.AnimeDetailScreen
-import com.example.animeexplorer.screens.AnimeScreen
+import com.example.animeexplorer.screens.HomeScreen
 import com.example.animeexplorer.ui.theme.AppTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -30,19 +24,21 @@ class MainActivity : ComponentActivity() {
 
                 NavHost(
                     navController = navController,
-                    startDestination = AppDestination.AnimeList
+                    startDestination = AppDestination.Home
                 ) {
-                    composable<AppDestination.AnimeList> {
-                        AnimeScreen(
-                            onAnimeClick = { malId ->
-                                navController.navigate(AppDestination.AnimeDetail(malId))
-                            }
-                        )
-                    }
-                    composable<AppDestination.AnimeDetail> {
-                        AnimeDetailScreen(
-                            onNavigateBack = { navController.popBackStack() }
-                        )
+                    navigation<AppDestination.Home>(startDestination = HomeDestination.AnimeList) {
+                        composable<HomeDestination.AnimeList> {
+                            HomeScreen(
+                                onAnimeClick = { malId ->
+                                    navController.navigate(HomeDestination.AnimeDetail(malId))
+                                }
+                            )
+                        }
+                        composable<HomeDestination.AnimeDetail> {
+                            AnimeDetailScreen(
+                                onNavigateBack = { navController.popBackStack() }
+                            )
+                        }
                     }
                 }
             }
