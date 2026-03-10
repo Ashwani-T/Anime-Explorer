@@ -11,15 +11,17 @@ import jakarta.inject.Inject
 class AnimeRepositoryImpl @Inject constructor(
     private val apiService: AnimeApiService
 ): AnimeRepository {
-    override suspend fun getAnimeList(page: Int): AnimeResponseModel {
+    override suspend fun getAnimeList(query: String, page: Int): AnimeResponseModel {
+
+
         var animeList: List<AnimeUiModel> = emptyList()
         var pageInfo: PageInfo = PageInfo(
-            hasNextPage = false,
+            hasNextPage = true,
             currentPage = page,
         )
 
         runCatching {
-            apiService.getAnimeList(page)
+            apiService.getAnimeList(query = query.takeIf{ query.isNotBlank() }, page = page)
         }.onFailure { exception ->
             Log.d("AnimeRepoException", "${exception.message}")
         }.onSuccess {response ->
@@ -45,25 +47,5 @@ class AnimeRepositoryImpl @Inject constructor(
             Log.e("API_ERROR", e.stackTraceToString())
             Result.failure(e)
         }
-    }
-
-    override suspend fun searchAnime(query: String, page: Int): AnimeResponseModel? {
-        val searchedAnime: AnimeResponseDto? = runCatching {
-            apiService.searchAnime(query, page)
-        }.onFailure {
-            Log.d("AnimeRepoException", "${it.message}")
-        }.getOrNull()
-
-        if (searchedAnime != null) {
-            val animeList = searchedAnime.data.map { anime ->
-                anime.toUiModel()
-            }
-            val pageInfo = searchedAnime.pagination.toPageInfo()
-            return AnimeResponseModel(
-                data = animeList,
-                pagination = pageInfo
-            )
-        }
-        return searchedAnime
     }
 }
