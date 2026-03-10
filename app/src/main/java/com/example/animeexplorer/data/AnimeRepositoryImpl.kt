@@ -6,12 +6,6 @@ import com.example.animeexplorer.domain.AnimeResponseModel
 import com.example.animeexplorer.domain.AnimeUiModel
 import com.example.animeexplorer.domain.PageInfo
 import jakarta.inject.Inject
-import kotlinx.coroutines.currentCoroutineContext
-import kotlinx.coroutines.ensureActive
-import kotlinx.coroutines.isActive
-import java.io.IOException
-import java.net.UnknownHostException
-import kotlin.coroutines.coroutineContext
 
 
 class AnimeRepositoryImpl @Inject constructor(
@@ -25,10 +19,9 @@ class AnimeRepositoryImpl @Inject constructor(
         )
 
         runCatching {
-            Log.d("ApiServiceException", "getAnimeList: Api call was made")
             apiService.getAnimeList(page)
         }.onFailure { exception ->
-            Log.d("ApiServiceException", "Failed to fetch anime list: ${exception.message}")
+            Log.d("AnimeRepoException", "${exception.message}")
         }.onSuccess {response ->
             animeList = response.data.map { anime ->
                 anime.toUiModel()
@@ -52,5 +45,25 @@ class AnimeRepositoryImpl @Inject constructor(
             Log.e("API_ERROR", e.stackTraceToString())
             Result.failure(e)
         }
+    }
+
+    override suspend fun searchAnime(query: String, page: Int): AnimeResponseModel? {
+        val searchedAnime: AnimeResponseDto? = runCatching {
+            apiService.searchAnime(query, page)
+        }.onFailure {
+            Log.d("AnimeRepoException", "${it.message}")
+        }.getOrNull()
+
+        if (searchedAnime != null) {
+            val animeList = searchedAnime.data.map { anime ->
+                anime.toUiModel()
+            }
+            val pageInfo = searchedAnime.pagination.toPageInfo()
+            return AnimeResponseModel(
+                data = animeList,
+                pagination = pageInfo
+            )
+        }
+        return searchedAnime
     }
 }

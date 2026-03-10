@@ -9,6 +9,7 @@ import jakarta.inject.Inject
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -17,14 +18,20 @@ class HomeScreenViewModel @Inject constructor(
     private val repository: AnimeRepository
 ) : ViewModel() {
 
+
+    // Home Ui State for supplying random anime results to Home Screen
     private val _uiState = MutableStateFlow<HomeUiState>(HomeUiState.Loading)
     val uiState: StateFlow<HomeUiState> = _uiState
 
+    // Search Ui State for the search bar only
+    private val _searchUiState = MutableStateFlow(AnimeSearchUiState())
+    val searchUiState: StateFlow<AnimeSearchUiState> = _searchUiState.asStateFlow()
+    private val searchQuery = MutableStateFlow("")
+
+    // Pagination variable
     private var currentPage = 1
     private var hasNextPage = true
-
     private var paginationJob: Job? = null
-
 
     private fun loadNextPage() {
 

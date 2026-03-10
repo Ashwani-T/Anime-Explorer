@@ -17,4 +17,11 @@ interface AnimeApiService {
     suspend fun getAnimeDetail(
         @Path("id") malId: Int
     ): AnimeDetailResponse
+
+    @GET
+    suspend fun searchAnime(
+        @Query("q") query: String,
+        @Query("page") page: Int = 1,
+        @Query("limit") limit: Int = 10
+    ): AnimeResponseDto
 }
