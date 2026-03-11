@@ -1,24 +1,24 @@
 package com.example.animeexplorer.screens
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -27,126 +27,153 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import coil.compose.AsyncImage
-import com.example.animeexplorer.components.AnimeList
+import com.example.animeexplorer.components.AnimeItem
 import com.example.animeexplorer.components.ArcLoader
 import com.example.animeexplorer.domain.AnimeUiModel
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.launch
 
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     modifier: Modifier = Modifier,
-    onAnimeClick: (Int) -> Unit = {}
+    onAnimeClick: (Int) -> Unit
 ) {
     val viewModel: HomeScreenViewModel = hiltViewModel()
-    val uiState by viewModel.uiState.collectAsState()
+
+    val state by viewModel.uiState.collectAsState()
+
+    HomeScreenContent(
+        state = state,
+        onQueryChange = viewModel::onQueryChange,
+        loadMore = viewModel::loadingNextPage,
+        onAnimeClick = onAnimeClick,
+        cancelLoading = viewModel::cancelLoading
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun HomeScreenContent(
+    state: HomeUiState,
+    onQueryChange: (String) -> Unit,
+    loadMore: () -> Unit,
+    onAnimeClick: (Int) -> Unit,
+    cancelLoading: () -> Unit
+) {
+    val listState = rememberLazyListState()
+    val scope = rememberCoroutineScope()
+    val showFab = remember {
+        derivedStateOf {
+            listState.firstVisibleItemIndex > 3
+        }
+    }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = {
-                    Text(
-                        text = "Anime Explorer",
-                        textAlign = TextAlign.Center,
-                        modifier = modifier.fillMaxWidth()
-                    )
-                },
+                title = { Text(text = "Anime Explorer", modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center) }
             )
+        },
+        floatingActionButton = {
+            if(showFab.value){
+                FloatingActionButton(
+                    onClick = {
+                        scope.launch {
+                            listState.animateScrollToItem(0)
+                        }
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.KeyboardArrowUp,
+                        contentDescription = "Scroll to Top"
+                    )
+                }
+            }
         }
     ) { innerPadding ->
         Column(
-            modifier = modifier
-                .fillMaxSize()
+            modifier = Modifier
                 .padding(innerPadding)
+                .fillMaxSize()
         ) {
-            LaunchedEffect(Unit) {
-                viewModel.runAnimeListJob()
-            }
+            AnimeSearchBar(
+                query = state.query,
+                onQueryChange = onQueryChange
+            )
 
-            when (val state = uiState) {
-                is HomeUiState.Loading -> LoadingScreen()
-                is HomeUiState.Success -> AnimeListScreen(
-                    modifier = Modifier.fillMaxSize(),
-                    loaderFunction = viewModel::runAnimeListJob,
-                    cancelFunction = viewModel::stopAnimeListJob,
-                    state = state,
-                    onRetry = { viewModel.runAnimeListJob() },
-                    onAnimeClick = onAnimeClick,
-                    animeList = state.homeUiModel
-                )
-
-                is HomeUiState.Error -> AnimeListScreen(
-                    modifier = Modifier.fillMaxSize(),
-                    loaderFunction = viewModel::runAnimeListJob,
-                    cancelFunction = viewModel::stopAnimeListJob,
-                    onRetry = { viewModel.runAnimeListJob() },
-                    state = state,
-                    animeList = state.homeUiModel
-                )
-            }
+            AnimeList(
+                animeList = state.animeList,
+                listState = listState,
+                isLoading = state.isLoading,
+                loadMore = loadMore,
+                onAnimeClick = onAnimeClick,
+                cancelLoading = cancelLoading
+            )
         }
     }
 }
 
+@Composable
+fun AnimeSearchBar(
+    query: String,
+    onQueryChange: (String) -> Unit
+) {
+    var text by rememberSaveable { mutableStateOf(query) }
+
+    val focusManager = LocalFocusManager.current
+    val keyboardController = LocalSoftwareKeyboardController.current
+
+    OutlinedTextField(
+        value = text,
+        onValueChange = {
+            text = it
+        },
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        placeholder = { Text("Search Anime") },
+        singleLine = true,
+        keyboardActions = KeyboardActions(
+            onSearch = {
+                focusManager.clearFocus()
+                keyboardController?.hide()
+                onQueryChange(text)
+            }
+        ),
+        keyboardOptions = KeyboardOptions(
+            imeAction = ImeAction.Search
+        ),
+        leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search") }
+    )
+}
+
 @OptIn(FlowPreview::class)
 @Composable
-fun AnimeListScreen(
-    loaderFunction: () -> Unit,   // fetch next page
-    cancelFunction: () -> Unit,   // cancel in-flight pagination job
-    modifier: Modifier = Modifier,
+fun AnimeList(
     animeList: List<AnimeUiModel>,
-    onRetry: () -> Unit = {},
-    state: HomeUiState,
-    onAnimeClick: (Int) -> Unit = {}
+    listState: LazyListState,
+    onAnimeClick: (Int) -> Unit,
+    isLoading: Boolean,
+    loadMore: () -> Unit,
+    cancelLoading: () -> Unit
 ) {
-    val listState = rememberLazyListState()
-
-    Box(modifier.fillMaxSize()) {
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            state = listState
-        ) {
-            items(
-                items = animeList,
-                key = { it.id }
-            ) { anime ->
-                AnimeList(anime, onClick = { onAnimeClick(anime.id) })
-
-                HorizontalDivider(
-                    thickness = 1.dp,
-                    color = MaterialTheme.colorScheme.outline,
-                    modifier = Modifier.padding(vertical = 8.dp)
-                )
-            }
-            item(key = "bottom_spacer") {
-                Spacer(Modifier.height(48.dp))
-            }
-
-            if (state is HomeUiState.Success && state.isLoadingMore) {
-                item(key = "loading_footer") {
-                    LoadingScreen(modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp))
-                }
-            }
-
-        }
-    }
-
     val shouldLoadMore by remember {
         derivedStateOf {
             val layoutInfo = listState.layoutInfo
@@ -163,26 +190,38 @@ fun AnimeListScreen(
             .debounce(200)
             .collect { atBottom ->
                 if (atBottom) {
-                    loaderFunction()
+                    loadMore()
                 } else {
-                    cancelFunction()
+                    cancelLoading()
                 }
             }
     }
-}
 
-
-
-@Composable
-fun LoadingScreen(
-    modifier: Modifier = Modifier
-) {
-    Box(
-        modifier = modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background),
-        contentAlignment = Alignment.Center
+    LazyColumn(
+        state = listState,
+        modifier = Modifier.fillMaxSize()
     ) {
-        ArcLoader()
+        items(
+            items = animeList,
+            key = {it.id }
+        ) { anime ->
+            AnimeItem(
+                anime,
+                onClick = { onAnimeClick(anime.id) }
+            )
+        }
+
+        if (isLoading) {
+            item {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(20.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    ArcLoader()
+                }
+            }
+        }
     }
 }

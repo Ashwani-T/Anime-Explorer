@@ -1,5 +1,7 @@
 package com.example.animeexplorer.domain
 
+
+
 data class AnimeResponseModel(
     val data: List<AnimeUiModel>,
     val pagination: PageInfo

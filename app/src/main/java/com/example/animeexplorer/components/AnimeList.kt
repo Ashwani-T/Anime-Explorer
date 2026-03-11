@@ -23,7 +23,7 @@ import coil.compose.AsyncImage
 import com.example.animeexplorer.domain.AnimeUiModel
 
 @Composable
-fun AnimeList(
+fun AnimeItem(
     anime: AnimeUiModel,
     modifier: Modifier = Modifier,
     onClick: (AnimeUiModel) -> Unit = {}

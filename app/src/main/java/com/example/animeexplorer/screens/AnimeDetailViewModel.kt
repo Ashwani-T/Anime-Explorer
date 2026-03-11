@@ -4,9 +4,8 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
-import com.example.animeexplorer.AppDestination
 import com.example.animeexplorer.HomeDestination
-import com.example.animeexplorer.data.toDetailUiModel
+import com.example.animeexplorer.data.toUiModel
 import com.example.animeexplorer.domain.AnimeRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
@@ -38,7 +37,7 @@ class AnimeDetailViewModel @Inject constructor(
             response.fold(
                 onSuccess = { detailResponse ->
                     _uiState.value = AnimeDetailUiState.Success(
-                        anime = detailResponse.data.toDetailUiModel()
+                        anime = detailResponse.toUiModel()
                     )
                 },
                 onFailure = { exception ->

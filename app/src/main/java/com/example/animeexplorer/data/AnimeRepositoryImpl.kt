@@ -1,15 +1,23 @@
 package com.example.animeexplorer.data
 
 import android.util.Log
+import com.example.animeexplorer.data.dao.AnimeDetailsDao
 import com.example.animeexplorer.domain.AnimeRepository
 import com.example.animeexplorer.domain.AnimeResponseModel
 import com.example.animeexplorer.domain.AnimeUiModel
 import com.example.animeexplorer.domain.PageInfo
 import jakarta.inject.Inject
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.launch
+import kotlin.coroutines.coroutineContext
 
 
 class AnimeRepositoryImpl @Inject constructor(
-    private val apiService: AnimeApiService
+    private val apiService: AnimeApiService,
+    private val animeDetailsDao: AnimeDetailsDao
 ): AnimeRepository {
     override suspend fun getAnimeList(query: String, page: Int): AnimeResponseModel {
 
@@ -38,14 +46,23 @@ class AnimeRepositoryImpl @Inject constructor(
 
     }
 
-    override suspend fun getAnimeDetail(malId: Int): Result<AnimeDetailResponse> {
-        return try {
+    override suspend fun getAnimeDetail(malId: Int): Result<AnimeDetail> {
+
+        return try{
+            val cachedAnimeDetail = animeDetailsDao.getAnimeDetails(malId)
+
+            cachedAnimeDetail?.let {
+                Log.d("AnimeRepoImpl", "getAnimeDetail: Returned the reponse from roomdb")
+                return Result.success(cachedAnimeDetail.toDomain())
+            }
+
             val response = apiService.getAnimeDetail(malId)
-            Result.success(response)
-        } catch (e: Exception) {
-            Log.w("API_MESSAGE", e.message ?: "Unknown error")
-            Log.e("API_ERROR", e.stackTraceToString())
-            Result.failure(e)
+            val responseDomain: AnimeDetail = response.data.toDomain()
+            animeDetailsDao.insertAnimeDetails(responseDomain.toEntity())
+            Result.success(responseDomain)
+
+        }catch (e: Exception){
+            Result.failure(exception = e)
         }
     }
 }

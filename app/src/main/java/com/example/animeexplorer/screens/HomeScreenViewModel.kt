@@ -6,81 +6,123 @@ import androidx.lifecycle.viewModelScope
 import com.example.animeexplorer.domain.AnimeRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import retrofit2.http.Query
 
 @HiltViewModel
 class HomeScreenViewModel @Inject constructor(
     private val repository: AnimeRepository
 ) : ViewModel() {
 
+    private val _uiState = MutableStateFlow(HomeUiState())
 
-    // Home Ui State for supplying random anime results to Home Screen
-    private val _uiState = MutableStateFlow<HomeUiState>(HomeUiState.Loading)
-    val uiState: StateFlow<HomeUiState> = _uiState
+    val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
-    // Search Ui State for the search bar only
-    private val _searchUiState = MutableStateFlow(AnimeSearchUiState())
-    val searchUiState: StateFlow<AnimeSearchUiState> = _searchUiState.asStateFlow()
-    private val searchQuery = MutableStateFlow("")
+    private val queryFlow = MutableStateFlow("")
 
-    // Pagination variable
-    private var currentPage = 1
-    private var hasNextPage = true
-    private var paginationJob: Job? = null
+    private var searchJob: Job? = null
 
-    private fun loadNextPage() {
+    private var currentPage: Int = 1
 
-        val currentList = when (val currentState = _uiState.value) {
-            is HomeUiState.Success -> currentState.homeUiModel
-            is HomeUiState.Error -> currentState.homeUiModel
-            is HomeUiState.Loading -> emptyList()
-        }
+    init {
+        observeQuery()
+        loadInitialPage()
+    }
+
+    private suspend fun loadAnimePage(
+        query: String,
+        page: Int,
+        append: Boolean
+    ){
+        _uiState.update {it.copy(isLoading = true)}
+
+        val result = repository.getAnimeList(query= query, page = page)
+        Log.d("ViewModel", "loadAnimePage: ${result.pagination}")
 
         _uiState.update { state ->
-            when (state) {
-                is HomeUiState.Success -> state.copy(isLoadingMore = true)
-                is HomeUiState.Error -> state.copy(homeUiModel = currentList, isLoading = true, message = "Loading....")
-                is HomeUiState.Loading -> state
-            }
+            val merged = (state.animeList + result.data)
+            val newList = merged.distinctBy { it.id }
+            state.copy(
+                animeList = newList,
+                isLoading = false,
+                endReached = !(result.pagination.hasNextPage)
+            )
         }
-        paginationJob = viewModelScope.launch {
+        currentPage = result.pagination.currentPage
+    }
 
-            // not using withContext because retrofit already runs on a background thread,
-            // and using withContext would unnecessarily switch back to the main thread before making the API call
-
-            val response = repository.getAnimeList(currentPage)
-
-            _uiState.value = HomeUiState.Success(homeUiModel = currentList + response.data)
-            if(response.data.isNotEmpty()) {
-                currentPage = response.pagination.currentPage + 1
-                hasNextPage = response.pagination.hasNextPage
-            }
-
-            Log.d("viewmodelscope", "loadNextPage: $response")
+    @OptIn(FlowPreview::class)
+    private fun observeQuery(){
+        viewModelScope.launch {
+            queryFlow
+                .debounce(400)
+                .distinctUntilChanged()
+                .filter { it.isNotBlank() }
+                .collectLatest { query ->
+                    currentPage = 1
+                    _uiState.update {
+                        it.copy(
+                            query = query,
+                            animeList = emptyList(),
+                            endReached = false
+                        )
+                    }
+                    loadAnimePage(
+                        query = query,
+                        page = currentPage,
+                        append = false
+                    )
+                }
         }
     }
 
-    fun runAnimeListJob() {
-        if (paginationJob?.isActive == true) return
-        Log.d("ViewModel", "runAnimeListJob ")
-        loadNextPage()
-    }
-
-    fun stopAnimeListJob() {
-        if (paginationJob?.isActive == true) {
-            paginationJob!!.cancel()
-            Log.d("viewmodel", "stopAnimeListJob")
+    fun loadInitialPage(){
+        searchJob = viewModelScope.launch {
+            loadAnimePage(
+                query = uiState.value.query,
+                page = currentPage,
+                append = false
+            )
         }
-
     }
 
-    fun onRetry() {
-        hasNextPage = true
-        runAnimeListJob()
+    fun onQueryChange(newQuery: String){
+        queryFlow.value = newQuery
     }
+
+    fun loadingNextPage(){
+        val state = _uiState.value
+        Log.d("ViewModel", "loadingNextPage: ${state.query} ")
+
+        if(state.isLoading || state.endReached) return
+
+        searchJob = viewModelScope.launch {
+            val nextPage = currentPage + 1
+
+            loadAnimePage(
+                query = state.query,
+                page = nextPage,
+                append = true
+            )
+        }
+    }
+
+    fun cancelLoading(){
+        if(searchJob?.isActive == true) {
+            searchJob!!.cancel()
+            Log.d("ViewModel", "cancelLoading ")
+        }
+    }
+
+
 }
