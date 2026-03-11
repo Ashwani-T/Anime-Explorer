@@ -180,7 +180,7 @@ fun AnimeList(
             val totalItems = layoutInfo.totalItemsCount
             val lastVisible = layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
 
-            totalItems > 0 && lastVisible >= totalItems - 4
+            totalItems > 0 && lastVisible >= totalItems - 2
         }
     }
 

@@ -91,3 +91,15 @@ fun AnimeDetail.toUiModel(): AnimeDetailUiModel = AnimeDetailUiModel(
     episodes = episodes,
     year = year
 )
+
+
+fun CachedAnimeItem.toUiModel(): AnimeUiModel{
+    return AnimeUiModel(
+        id = malId,
+        title = title,
+        description = description,
+        duration = "",
+        imageUrl = imageUrl,
+        type = type
+    )
+}

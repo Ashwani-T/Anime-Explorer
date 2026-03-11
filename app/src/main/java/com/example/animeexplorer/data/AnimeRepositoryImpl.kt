@@ -31,6 +31,9 @@ class AnimeRepositoryImpl @Inject constructor(
         runCatching {
             apiService.getAnimeList(query = query.takeIf{ query.isNotBlank() }, page = page)
         }.onFailure { exception ->
+            animeList = animeDetailsDao.getAnimeList().map {cachedAnime ->
+                cachedAnime.toUiModel()
+            }
             Log.d("AnimeRepoException", "${exception.message}")
         }.onSuccess {response ->
             animeList = response.data.map { anime ->

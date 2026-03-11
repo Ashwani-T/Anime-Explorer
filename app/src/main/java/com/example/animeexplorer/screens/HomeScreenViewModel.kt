@@ -104,7 +104,7 @@ class HomeScreenViewModel @Inject constructor(
         val state = _uiState.value
         Log.d("ViewModel", "loadingNextPage: ${state.query} ")
 
-        if(state.isLoading || state.endReached) return
+        if(state.endReached) return
 
         searchJob = viewModelScope.launch {
             val nextPage = currentPage + 1
