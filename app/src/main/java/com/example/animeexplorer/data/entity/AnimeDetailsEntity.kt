@@ -10,7 +10,6 @@ import kotlinx.serialization.SerialName
 data class AnimeDetailsEntity(
     @PrimaryKey
     val malId: Int,
-
     val title: String,
     val year: Int,
     val imageUrl: String,

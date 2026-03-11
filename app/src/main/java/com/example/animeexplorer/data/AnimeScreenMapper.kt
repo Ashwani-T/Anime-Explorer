@@ -5,6 +5,7 @@ import com.example.animeexplorer.domain.AnimeDetailUiModel
 import com.example.animeexplorer.domain.AnimeUiModel
 import com.example.animeexplorer.domain.PageInfo
 
+// Middle Object between db and api
 data class AnimeDetail(
     val id: Int,
     val title: String,

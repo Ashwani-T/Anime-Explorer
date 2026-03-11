@@ -67,7 +67,6 @@ class HomeScreenViewModel @Inject constructor(
             queryFlow
                 .debounce(400)
                 .distinctUntilChanged()
-                .filter { it.isNotBlank() }
                 .collectLatest { query ->
                     currentPage = 1
                     _uiState.update {

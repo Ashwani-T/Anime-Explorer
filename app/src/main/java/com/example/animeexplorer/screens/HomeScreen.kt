@@ -1,5 +1,6 @@
 package com.example.animeexplorer.screens
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,6 +13,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.CircularProgressIndicator
@@ -88,11 +90,17 @@ fun HomeScreenContent(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(text = "Anime Explorer", modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center) }
+                title = {
+                    Text(
+                        text = "Anime Explorer",
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.Center
+                    )
+                }
             )
         },
         floatingActionButton = {
-            if(showFab.value){
+            if (showFab.value) {
                 FloatingActionButton(
                     onClick = {
                         scope.launch {
@@ -144,6 +152,7 @@ fun AnimeSearchBar(
         value = text,
         onValueChange = {
             text = it
+            onQueryChange(text)
         },
         modifier = Modifier
             .fillMaxWidth()
@@ -160,7 +169,20 @@ fun AnimeSearchBar(
         keyboardOptions = KeyboardOptions(
             imeAction = ImeAction.Search
         ),
-        leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search") }
+        leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search") },
+        trailingIcon = {
+            Icon(
+                Icons.Default.Cancel,
+                contentDescription = "clear",
+                modifier = Modifier.clickable(
+
+                    onClick = {
+                        text = ""
+                        onQueryChange(text)
+                    }
+                )
+            )
+        }
     )
 }
 
@@ -203,7 +225,7 @@ fun AnimeList(
     ) {
         items(
             items = animeList,
-            key = {it.id }
+            key = { it.id }
         ) { anime ->
             AnimeItem(
                 anime,
