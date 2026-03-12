@@ -20,4 +20,7 @@ interface AnimeDetailsDao{
 
     @Query("SELECT malId, imageUrl, title, synopsis as description, type FROM anime_details")
     suspend fun getAnimeList(): List<CachedAnimeItem>
+
+    @Query("SELECT malId, imageUrl, title, synopsis as description, type FROM anime_details WHERE title LIKE '%'||:query ||'%'")
+    suspend fun getSearchedAnimeList(query: String): List<CachedAnimeItem>
 }
