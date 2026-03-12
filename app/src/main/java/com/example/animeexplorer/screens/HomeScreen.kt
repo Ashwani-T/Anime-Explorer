@@ -13,10 +13,9 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Cancel
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -51,93 +50,82 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 
-
+// HomeScreen.kt
 @Composable
 fun HomeScreen(
     modifier: Modifier = Modifier,
-    onAnimeClick: (Int) -> Unit
+    onAnimeClick: (Int) -> Unit,
+    onFabVisibilityChanged: (Boolean) -> Unit,           // NEW
+    registerScrollToTop: ((() -> Unit) -> Unit)          // NEW
 ) {
     val viewModel: HomeScreenViewModel = hiltViewModel()
-
     val state by viewModel.uiState.collectAsState()
 
+    // The listState lives here; FAB depends on it
+    val listState = rememberLazyListState()
+    val scope = rememberCoroutineScope()
+
+    // Derived FAB visibility from scroll position
+    val showFab by remember {
+        derivedStateOf { listState.firstVisibleItemIndex > 3 }
+    }
+
+    // Notify the app shell when visibility changes
+    LaunchedEffect(listState) {
+        snapshotFlow { showFab }
+            .distinctUntilChanged()
+            .collect { visible -> onFabVisibilityChanged(visible) }
+    }
+
+    // Give MainActivity a way to scroll to the top
+    LaunchedEffect(Unit) {
+        registerScrollToTop {
+            scope.launch { listState.animateScrollToItem(0) }
+        }
+    }
+
     HomeScreenContent(
+        modifier = modifier,
         state = state,
         onQueryChange = viewModel::onQueryChange,
-        loadMore = viewModel::loadingNextPage,
+        loadMore = viewModel::loadNextPage,
         onAnimeClick = onAnimeClick,
-        cancelLoading = viewModel::cancelLoading
+        cancelLoading = viewModel::cancelLoading,
+        listState = listState // pass it down
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreenContent(
+    modifier: Modifier = Modifier,
     state: HomeUiState,
     onQueryChange: (String) -> Unit,
     loadMore: () -> Unit,
     onAnimeClick: (Int) -> Unit,
-    cancelLoading: () -> Unit
+    cancelLoading: () -> Unit,
+    listState: LazyListState
 ) {
-    val listState = rememberLazyListState()
-    val scope = rememberCoroutineScope()
-    val showFab = remember {
-        derivedStateOf {
-            listState.firstVisibleItemIndex > 3
-        }
-    }
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+    ) {
+        AnimeSearchBar(
+            query = state.query,
+            onQueryChange = onQueryChange
+        )
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "Anime Explorer",
-                        modifier = Modifier.fillMaxWidth(),
-                        textAlign = TextAlign.Center
-                    )
-                }
-            )
-        },
-        floatingActionButton = {
-            if (showFab.value) {
-                FloatingActionButton(
-                    onClick = {
-                        scope.launch {
-                            listState.animateScrollToItem(0)
-                        }
-                    }
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.KeyboardArrowUp,
-                        contentDescription = "Scroll to Top"
-                    )
-                }
-            }
-        }
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .padding(innerPadding)
-                .fillMaxSize()
-        ) {
-            AnimeSearchBar(
-                query = state.query,
-                onQueryChange = onQueryChange
-            )
-
-            AnimeList(
-                animeList = state.animeList,
-                listState = listState,
-                isLoading = state.isLoading,
-                loadMore = loadMore,
-                onAnimeClick = onAnimeClick,
-                cancelLoading = cancelLoading
-            )
-        }
+        AnimeList(
+            animeList = state.animeList,
+            listState = listState,
+            isLoading = state.isLoading,
+            loadMore = loadMore,
+            onAnimeClick = onAnimeClick,
+            cancelLoading = cancelLoading
+        )
     }
 }
 
+// AnimeSearchBar and AnimeList remain the same as your version (no Scaffold).
 @Composable
 fun AnimeSearchBar(
     query: String,
@@ -152,7 +140,7 @@ fun AnimeSearchBar(
         value = text,
         onValueChange = {
             text = it
-            onQueryChange(text)
+            onQueryChange(it)
         },
         modifier = Modifier
             .fillMaxWidth()
@@ -170,19 +158,12 @@ fun AnimeSearchBar(
             imeAction = ImeAction.Search
         ),
         leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search") },
-        trailingIcon = {
-            Icon(
-                Icons.Default.Cancel,
-                contentDescription = "clear",
-                modifier = Modifier.clickable(
-
-                    onClick = {
-                        text = ""
-                        onQueryChange(text)
-                    }
-                )
-            )
-        }
+        trailingIcon = {Icon(Icons.Default.Clear, contentDescription = "clear", modifier = Modifier.clickable(
+            onClick = {
+                text = ""
+                onQueryChange("")
+            }
+        ))}
     )
 }
 
@@ -225,7 +206,7 @@ fun AnimeList(
     ) {
         items(
             items = animeList,
-            key = { it.id }
+            key = {it.id }
         ) { anime ->
             AnimeItem(
                 anime,

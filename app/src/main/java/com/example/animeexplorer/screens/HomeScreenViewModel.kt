@@ -3,6 +3,7 @@ package com.example.animeexplorer.screens
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.animeexplorer.data.ConnectivityObserver
 import com.example.animeexplorer.domain.AnimeRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
@@ -21,107 +22,133 @@ import retrofit2.http.Query
 
 @HiltViewModel
 class HomeScreenViewModel @Inject constructor(
-    private val repository: AnimeRepository
+    private val repository: AnimeRepository,
+    private val connectivityObserver: ConnectivityObserver
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
-
-    val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
+    val uiState = _uiState.asStateFlow()
 
     private val queryFlow = MutableStateFlow("")
+    private val isConnected = MutableStateFlow(false)
 
+    private var currentPage = 1
     private var searchJob: Job? = null
 
-    private var currentPage: Int = 1
-
     init {
+        observeNetworkStatus()
         observeQuery()
         loadInitialPage()
+
     }
 
-    private suspend fun loadAnimePage(
-        query: String,
-        page: Int,
-        append: Boolean
-    ){
-        _uiState.update {it.copy(isLoading = true)}
 
-        val result = repository.getAnimeList(query= query, page = page)
-        Log.d("ViewModel", "loadAnimePage: ${result.pagination}")
-
-        _uiState.update { state ->
-            val merged = (state.animeList + result.data)
-            val newList = merged.distinctBy { it.id }
-            state.copy(
-                animeList = newList,
-                isLoading = false,
-                endReached = !(result.pagination.hasNextPage)
-            )
+    private fun loadInitialPage() {
+        viewModelScope.launch {
+            if (isConnected.value) {
+                loadAnimePage(query = "", append = false)
+            }
         }
-        currentPage = result.pagination.currentPage
+    }
+
+    private suspend fun loadAnimePage(query: String, append: Boolean) {
+
+        val targetPage = if (append) currentPage + 1 else 1
+
+        _uiState.update { it.copy(isLoading = true) }
+
+        try {
+            val result = repository.getAnimeList(query, targetPage)
+
+            _uiState.update { state ->
+                val newList = if (append) {
+                    (state.animeList + result.data).distinctBy { it.id }
+                } else {
+                    result.data
+                }
+
+                state.copy(
+                    animeList = newList,
+                    endReached = result.pagination.hasNextPage.not(),
+                    isLoading = false
+                )
+            }
+
+            currentPage = targetPage
+            Log.d("viewModel", ":${result.pagination} $currentPage")
+
+        } catch (e: Exception) {
+            _uiState.update { it.copy(isLoading = false) }
+        }
     }
 
     @OptIn(FlowPreview::class)
-    private fun observeQuery(){
+    private fun observeQuery() {
         viewModelScope.launch {
             queryFlow
                 .debounce(400)
                 .distinctUntilChanged()
-                .collectLatest { query ->
-                    currentPage = 1
+                .collectLatest { q ->
+
+                    // Update UI state immediately
                     _uiState.update {
                         it.copy(
-                            query = query,
+                            query = q,
                             animeList = emptyList(),
                             endReached = false
                         )
                     }
-                    loadAnimePage(
-                        query = query,
-                        page = currentPage,
-                        append = false
-                    )
+                    currentPage = 1
+
+
+                    loadAnimePage(query = q, append = false)
+
                 }
         }
     }
 
-    fun loadInitialPage(){
-        searchJob = viewModelScope.launch {
-            loadAnimePage(
-                query = uiState.value.query,
-                page = currentPage,
-                append = false
-            )
-        }
-    }
-
-    fun onQueryChange(newQuery: String){
+    fun onQueryChange(newQuery: String) {
         queryFlow.value = newQuery
     }
 
-    fun loadingNextPage(){
-        val state = _uiState.value
-        Log.d("ViewModel", "loadingNextPage: ${state.query} ")
-
-        if(state.endReached) return
+    fun loadNextPage() {
+        if (!isConnected.value) return
+        if (_uiState.value.endReached) return
+        if (_uiState.value.isLoading) return
 
         searchJob = viewModelScope.launch {
-            val nextPage = currentPage + 1
+            loadAnimePage(_uiState.value.query, append = true)
+        }
+    }
 
-            loadAnimePage(
-                query = state.query,
-                page = nextPage,
-                append = true
-            )
+    private fun observeNetworkStatus() {
+        viewModelScope.launch {
+            connectivityObserver.observer()
+                .distinctUntilChanged()
+                .collectLatest { status ->
+                    isConnected.value = status
+
+                    if (status) {
+                        // Net regained
+                        val state = _uiState.value
+                        val q = queryFlow.value
+                        when{
+                            state.isLoading -> Unit
+                            state.animeList.isEmpty() ->{
+                                loadAnimePage(query = q, append = false)
+                            }
+                            !state.endReached -> {
+                                loadAnimePage(q,true)
+                            }
+                        }
+                    }else{
+                        cancelLoading()
+                    }
+                }
         }
     }
 
     fun cancelLoading(){
-        if(searchJob?.isActive == true) {
-            searchJob!!.cancel()
-            Log.d("ViewModel", "cancelLoading ")
-        }
+        if(searchJob?.isActive == true) searchJob!!.cancel()
     }
-
-
 }
