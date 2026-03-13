@@ -4,6 +4,8 @@ plugins {
     id("com.google.devtools.ksp")
     id("com.google.dagger.hilt.android")
     id("org.jetbrains.kotlin.plugin.serialization")
+    id("androidx.room")
+
 
 }
 
@@ -11,6 +13,9 @@ android {
     namespace = "com.example.animeexplorer"
     compileSdk {
         version = release(36)
+    }
+    room {
+        schemaDirectory("$projectDir/schemas")
     }
 
     defaultConfig {
@@ -39,6 +44,7 @@ android {
     buildFeatures {
         compose = true
     }
+
 }
 
 dependencies {
