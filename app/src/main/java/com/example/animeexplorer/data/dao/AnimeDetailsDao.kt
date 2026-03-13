@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
 import com.example.animeexplorer.data.CachedAnimeItem
+import com.example.animeexplorer.data.entity.AnimeCollectionsEntity
 import com.example.animeexplorer.data.entity.AnimeDetailsEntity
 
 

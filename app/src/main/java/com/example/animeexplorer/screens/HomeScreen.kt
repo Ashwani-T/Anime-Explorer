@@ -14,15 +14,10 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -39,7 +34,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.animeexplorer.components.AnimeItem
@@ -50,38 +44,32 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 
-// HomeScreen.kt
 @Composable
 fun HomeScreen(
     modifier: Modifier = Modifier,
     onAnimeClick: (Int) -> Unit,
-    onFabVisibilityChanged: (Boolean) -> Unit,           // NEW
-    registerScrollToTop: ((() -> Unit) -> Unit)          // NEW
+    registerScrollToTop: ((() -> Unit) -> Unit),
+    onFabVisibilityChanged: (Boolean) -> Unit
+
 ) {
     val viewModel: HomeScreenViewModel = hiltViewModel()
     val state by viewModel.uiState.collectAsState()
 
-    // The listState lives here; FAB depends on it
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
 
-    // Derived FAB visibility from scroll position
     val showFab by remember {
         derivedStateOf { listState.firstVisibleItemIndex > 3 }
     }
 
-    // Notify the app shell when visibility changes
     LaunchedEffect(listState) {
         snapshotFlow { showFab }
             .distinctUntilChanged()
             .collect { visible -> onFabVisibilityChanged(visible) }
     }
 
-    // Give MainActivity a way to scroll to the top
     LaunchedEffect(Unit) {
-        registerScrollToTop {
-            scope.launch { listState.animateScrollToItem(0) }
-        }
+        registerScrollToTop { scope.launch { listState.animateScrollToItem(0) } }
     }
 
     HomeScreenContent(
@@ -91,7 +79,7 @@ fun HomeScreen(
         loadMore = viewModel::loadNextPage,
         onAnimeClick = onAnimeClick,
         cancelLoading = viewModel::cancelLoading,
-        listState = listState // pass it down
+        listState = listState
     )
 }
 
@@ -125,7 +113,6 @@ fun HomeScreenContent(
     }
 }
 
-// AnimeSearchBar and AnimeList remain the same as your version (no Scaffold).
 @Composable
 fun AnimeSearchBar(
     query: String,

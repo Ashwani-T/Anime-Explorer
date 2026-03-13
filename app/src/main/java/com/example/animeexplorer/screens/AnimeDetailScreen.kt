@@ -41,53 +41,34 @@ import com.example.animeexplorer.domain.AnimeDetailUiModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AnimeDetailScreen(
-    onNavigateBack: () -> Unit,
     viewModel: AnimeDetailViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Anime Details") },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
-                        )
-                    }
-                }
+    when (val state = uiState) {
+        is AnimeDetailUiState.Loading -> {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.background),
+                contentAlignment = Alignment.Center
+            ) {
+                ArcLoader()
+            }
+        }
+
+        is AnimeDetailUiState.Success -> {
+            AnimeDetailContent(
+                anime = state.anime,
+                modifier = Modifier
             )
         }
-    ) { innerPadding ->
-        when (val state = uiState) {
-            is AnimeDetailUiState.Loading -> {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(innerPadding)
-                        .background(MaterialTheme.colorScheme.background),
-                    contentAlignment = Alignment.Center
-                ) {
-                    ArcLoader()
-                }
-            }
 
-            is AnimeDetailUiState.Success -> {
-                AnimeDetailContent(
-                    anime = state.anime,
-                    modifier = Modifier.padding(innerPadding)
-                )
-            }
-
-            is AnimeDetailUiState.Error -> {
-                AnimeDetailErrorScreen(
-                    message = state.message,
-                    onRetry = { viewModel.retry() },
-                    modifier = Modifier.padding(innerPadding)
-                )
-            }
+        is AnimeDetailUiState.Error -> {
+            AnimeDetailErrorScreen(
+                message = state.message,
+                onRetry = { viewModel.retry() }
+            )
         }
     }
 }

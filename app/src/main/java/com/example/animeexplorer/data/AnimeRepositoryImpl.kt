@@ -2,6 +2,7 @@ package com.example.animeexplorer.data
 
 import android.util.Log
 import com.example.animeexplorer.data.dao.AnimeDetailsDao
+import com.example.animeexplorer.data.dao.AnimeListDao
 import com.example.animeexplorer.domain.AnimeRepository
 import com.example.animeexplorer.domain.AnimeResponseModel
 import com.example.animeexplorer.domain.AnimeUiModel
@@ -12,12 +13,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.launch
+import java.security.PrivateKey
 import kotlin.coroutines.coroutineContext
 
 
 class AnimeRepositoryImpl @Inject constructor(
     private val apiService: AnimeApiService,
-    private val animeDetailsDao: AnimeDetailsDao
+    private val animeDetailsDao: AnimeDetailsDao,
+    private val animeListDao: AnimeListDao
 ): AnimeRepository {
     override suspend fun getAnimeList(query: String, page: Int): AnimeResponseModel {
 

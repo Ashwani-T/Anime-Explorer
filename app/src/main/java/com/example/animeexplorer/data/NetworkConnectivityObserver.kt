@@ -25,33 +25,40 @@ class NetworkConnectivityObserver @Inject constructor(
     private val connectivityManager = context.getSystemService<ConnectivityManager>()
 
     override fun observer(): Flow<Boolean> = callbackFlow {
+
         val callback = object : ConnectivityManager.NetworkCallback() {
-            override fun onCapabilitiesChanged(
-                network: Network,
-                networkCapabilities: NetworkCapabilities
-            ) {
-                super.onCapabilitiesChanged(network, networkCapabilities)
-                val connected = networkCapabilities.hasCapability(
-                    NetworkCapabilities.NET_CAPABILITY_VALIDATED
-                )
-                trySend(connected)
+
+            fun sendCurrentState() {
+                val network = connectivityManager?.activeNetwork
+                val caps = connectivityManager?.getNetworkCapabilities(network)
+
+                val isConnected =
+                    caps?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true &&
+                            caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
+
+                trySend(isConnected)
             }
 
+
+
             override fun onAvailable(network: Network) {
-                super.onAvailable(network)
-                trySend(true)
+                sendCurrentState()
+            }
+
+            override fun onCapabilitiesChanged(network: Network, networkCapabilities: NetworkCapabilities) {
+                sendCurrentState()
             }
 
             override fun onLost(network: Network) {
-                super.onLost(network)
-                trySend(false)
+                sendCurrentState()
             }
 
             override fun onUnavailable() {
-                super.onUnavailable()
                 trySend(false)
             }
         }
+        callback.sendCurrentState()
+
         connectivityManager?.registerDefaultNetworkCallback(callback)
 
         awaitClose {

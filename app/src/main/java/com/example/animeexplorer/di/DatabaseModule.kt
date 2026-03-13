@@ -5,6 +5,7 @@ import androidx.room.Room
 import com.example.animeexplorer.data.AnimeDetailDto
 import com.example.animeexplorer.data.AppDatabase
 import com.example.animeexplorer.data.dao.AnimeDetailsDao
+import com.example.animeexplorer.data.dao.AnimeListDao
 import com.example.animeexplorer.data.entity.AnimeDetailsEntity
 import dagger.Module
 import dagger.Provides
@@ -36,5 +37,13 @@ object DatabaseModule {
         database: AppDatabase
     ): AnimeDetailsDao{
         return database.animeDetailsDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideAnimeListDao(
+        database: AppDatabase
+    ): AnimeListDao{
+        return database.animeListDao()
     }
 }

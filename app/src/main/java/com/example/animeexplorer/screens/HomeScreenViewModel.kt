@@ -38,19 +38,7 @@ class HomeScreenViewModel @Inject constructor(
     init {
         observeNetworkStatus()
         observeQuery()
-        loadInitialPage()
-
     }
-
-
-    private fun loadInitialPage() {
-        viewModelScope.launch {
-            if (isConnected.value) {
-                loadAnimePage(query = "", append = false)
-            }
-        }
-    }
-
     private suspend fun loadAnimePage(query: String, append: Boolean) {
 
         val targetPage = if (append) currentPage + 1 else 1
@@ -90,7 +78,6 @@ class HomeScreenViewModel @Inject constructor(
                 .distinctUntilChanged()
                 .collectLatest { q ->
 
-                    // Update UI state immediately
                     _uiState.update {
                         it.copy(
                             query = q,
@@ -100,6 +87,7 @@ class HomeScreenViewModel @Inject constructor(
                     }
                     currentPage = 1
 
+                    Log.d("TAG", "observeQuery")
 
                     loadAnimePage(query = q, append = false)
 
@@ -129,18 +117,9 @@ class HomeScreenViewModel @Inject constructor(
                     isConnected.value = status
 
                     if (status) {
-                        // Net regained
                         val state = _uiState.value
                         val q = queryFlow.value
-                        when{
-                            state.isLoading -> Unit
-                            state.animeList.isEmpty() ->{
-                                loadAnimePage(query = q, append = false)
-                            }
-                            !state.endReached -> {
-                                loadAnimePage(q,true)
-                            }
-                        }
+                        loadAnimePage(query = q, append = false)
                     }else{
                         cancelLoading()
                     }
