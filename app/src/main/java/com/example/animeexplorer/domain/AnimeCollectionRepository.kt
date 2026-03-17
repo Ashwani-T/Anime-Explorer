@@ -14,7 +14,6 @@ interface AnimeCollectionRepository {
     suspend fun getLibraryCollection(malId: Int): Result<AnimeCollectionUiModel?>
     suspend fun getAllLibraryCollections(): Result<List<AnimeCollectionUiModel>>
 
-    // NEW: Flow to emit collection updates
     fun getCollectionUpdates(): Flow<CollectionUpdateEvent>
 }
 

@@ -1,6 +1,7 @@
 package com.example.animeexplorer.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,6 +21,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Block
 import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material.icons.rounded.Schedule
 import androidx.compose.material3.AssistChip
@@ -205,11 +207,15 @@ fun LibraryFilterRow(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier.fillMaxWidth()
         ) {
-            Icon(
-                imageVector = Icons.Rounded.Schedule,
-                contentDescription = "Preset",
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            IconButton(
+                onClick = { onStatusSelected(LibraryStatus.WATCH_LATER) }
+            ) {
+                Icon(
+                    imageVector = Icons.Rounded.Schedule,
+                    contentDescription = "Preset",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
 
             AssistChip(
                 onClick = {
@@ -228,7 +234,7 @@ fun LibraryFilterRow(
             // Show clear filter button if a filter is active
             if (currentPreset != "Default") {
                 IconButton(onClick = onClearFilter) {
-                    Icon(Icons.Rounded.Edit, contentDescription = "Clear filter")
+                    Icon(Icons.Rounded.Block, contentDescription = "Clear filter")
                 }
             }
         }

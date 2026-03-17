@@ -379,7 +379,14 @@ fun AnimeDetailBottomSheetContent(
                 val status = LibraryStatus.entries[index]
                 ElevatedFilterChip(
                     selected = currentStatus == status,
-                    onClick = { onStatusSelected(status) },
+                    onClick = {
+                        when(status){
+                            LibraryStatus.UNLISTED -> onEpisodeSelected(0)
+                            LibraryStatus.COMPLETED -> onEpisodeSelected(totalEpisodes)
+                            else -> onEpisodeSelected(episodesCompleted)
+                        }
+                        onStatusSelected(status)
+                    },
                     label = {
                         Text(
                             status.name.replace("_", " ").lowercase()
@@ -423,7 +430,7 @@ fun AnimeDetailBottomSheetContent(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Button(
-                    onClick = { onAddToCollection() },
+                    onClick = onAddToCollection,
                     modifier = Modifier.weight(1f)
                 ) {
                     Text("Update")

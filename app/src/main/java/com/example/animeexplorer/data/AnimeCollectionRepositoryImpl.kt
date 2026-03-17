@@ -7,7 +7,6 @@ import com.example.animeexplorer.data.local.dao.AnimeEpisodeDao
 import com.example.animeexplorer.data.local.entity.AnimeCollectionsEntity
 import com.example.animeexplorer.data.local.entity.LibraryStatus
 import com.example.animeexplorer.data.mapper.toAnimeCollectionUiModel
-import com.example.animeexplorer.data.mapper.toEpisodeEntity
 import com.example.animeexplorer.data.mapper.toEpisodeEntityList
 import com.example.animeexplorer.data.remote.AnimeApiService
 import com.example.animeexplorer.domain.AnimeCollectionRepository
@@ -24,7 +23,10 @@ class AnimeCollectionRepositoryImpl @Inject constructor(
     private val animeEpisodeDao: AnimeEpisodeDao
 ) : AnimeCollectionRepository {
 
-    // MutableSharedFlow to emit collection update events
+    private companion object {
+        const val TAG = "AnimeCollectionRepo"
+    }
+
     private val _collectionUpdates = MutableSharedFlow<CollectionUpdateEvent>()
 
     override fun getCollectionUpdates(): Flow<CollectionUpdateEvent> = _collectionUpdates
@@ -32,193 +34,148 @@ class AnimeCollectionRepositoryImpl @Inject constructor(
     private suspend fun emitUpdate(event: CollectionUpdateEvent) {
         _collectionUpdates.emit(event)
     }
-    override suspend fun addToLibrary(malId: Int, status: LibraryStatus): Result<Unit> {
+
+    private suspend fun <T> executeSafe(
+        errorMessage: String,
+        action: suspend () -> T
+    ): Result<T> = try {
+        Result.success(action())
+    } catch (e: Exception) {
+        Log.e(TAG, "$errorMessage: ${e.message}", e)
+        Result.failure(e)
+    }
+
+
+    private suspend fun updateCollectionProgressDirectly(malId: Int, completedCount: Int) {
+        animeCollectionDao.setEpisodesCompleted(malId, completedCount)
+        emitUpdate(CollectionUpdateEvent.Updated(malId))
+        Log.d(TAG, "Progress for anime $malId updated to $completedCount")
+    }
+
+
+    private suspend fun syncCollectionProgressFromEpisodes(malId: Int) {
+        val completedCount = animeEpisodeDao.getCompletedEpisodesCount(malId)
+        updateCollectionProgressDirectly(malId, completedCount)
+    }
+
+    private suspend fun handleProgressUpdate(
+        malId: Int,
+        fallbackCount: Int,
+        onHasEpisodes: suspend () -> Unit
+    ) {
+        if (animeEpisodeDao.getTotalEpisodesCount(malId) > 0) {
+            onHasEpisodes()
+            syncCollectionProgressFromEpisodes(malId)
+        } else {
+            updateCollectionProgressDirectly(malId, fallbackCount)
+        }
+    }
+
+
+    private suspend fun fetchAndSaveEpisodes(malId: Int, page: Int): Int {
         return try {
-            // Fetch anime details
-            val animeDetailResult = animeDetailsDao.getAnimeDetails(malId) ?: return Result.failure(
-                Exception("Unable to fetch Anime Details")
-            )
-
-            // Fetch episodes for the first page
-            val episodesResult = runCatching {
-                apiService.getAnimeEpisodes(malId, page = 1)
+            val response = apiService.getAnimeEpisodes(malId, page)
+            if (response.data.isNotEmpty()) {
+                val episodeEntities = response.data.toEpisodeEntityList(malId)
+                animeEpisodeDao.insertEpisodes(episodeEntities)
+                Log.d(TAG, "Saved ${episodeEntities.size} episodes for $malId (Page $page)")
+                episodeEntities.last().episodeNumber
+            } else {
+                -1
             }
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to fetch episodes for $malId: ${e.message}")
+            -1
+        }
+    }
 
-            val episodes = episodesResult.getOrNull()?.data ?: emptyList()
+    override suspend fun addToLibrary(malId: Int, status: LibraryStatus): Result<Unit> =
+        executeSafe("Error adding anime $malId to library") {
+            val animeDetail = animeDetailsDao.getAnimeDetails(malId)
+                ?: throw Exception("Anime details not found in local database")
 
-            // Create AnimeCollectionsEntity
+            // Attempt to fetch initial episodes
+            fetchAndSaveEpisodes(malId, page = 1)
+
             val collectionEntity = AnimeCollectionsEntity(
                 malId = malId,
-                title = animeDetailResult.title,
-                imageUrl = animeDetailResult.imageUrl,
-                type = animeDetailResult.type,
+                title = animeDetail.title,
+                imageUrl = animeDetail.imageUrl,
+                type = animeDetail.type,
                 status = status,
                 episodesCompleted = 0,
-                totalEpisodes = animeDetailResult.episodes
+                totalEpisodes = animeDetail.episodes
             )
 
-            // Save to collection
             animeCollectionDao.addToLibrary(collectionEntity)
-
-            // Save episodes if available
-            if (episodes.isNotEmpty()) {
-                val episodeEntities = episodes.toEpisodeEntityList(malId)
-                animeEpisodeDao.insertEpisodes(episodeEntities)
-                Log.d("AnimeCollectionRepo", "Added ${episodeEntities.size} episodes for anime $malId")
-            } else {
-                Log.d("AnimeCollectionRepo", "No episodes found for anime $malId")
-            }
-
-            // Emit event
             emitUpdate(CollectionUpdateEvent.Added(malId))
-            Log.d("AnimeCollectionRepo", "Added anime $malId to library with status $status")
-            Result.success(Unit)
-
-        } catch (e: Exception) {
-            Log.e("AnimeCollectionRepo", "Error adding to library: ${e.message}", e)
-            Result.failure(e)
         }
-    }
 
-    override suspend fun updateLibraryStatus(malId: Int, status: LibraryStatus): Result<Unit> {
-        return try {
+    override suspend fun updateLibraryStatus(malId: Int, status: LibraryStatus): Result<Unit> =
+        executeSafe("Error updating status for anime $malId") {
             animeCollectionDao.updateLibraryStatus(malId, status)
-            // Emit event
             emitUpdate(CollectionUpdateEvent.Updated(malId))
-            Log.d("AnimeCollectionRepo", "Updated library status for anime $malId to $status")
-            Result.success(Unit)
-        } catch (e: Exception) {
-            Log.e("AnimeCollectionRepo", "Error updating library status: ${e.message}", e)
-            Result.failure(e)
         }
-    }
 
     override suspend fun markEpisodeComplete(
         malId: Int,
         episodeNumber: Int,
         isCompleted: Boolean
-    ): Result<Unit> {
-        return try {
-            // Update episode status
+    ): Result<Unit> = executeSafe("Error marking episode $episodeNumber as completed for $malId") {
+        handleProgressUpdate(malId, if (isCompleted) episodeNumber else 0) {
             animeEpisodeDao.updateEpisodeStatus(malId, episodeNumber, isCompleted)
-
-            // Update episode progress in collection
-            val completedCount = animeEpisodeDao.getCompletedEpisodesCount(malId)
-            animeCollectionDao.setEpisodesCompleted(malId, completedCount)
-
-            Log.d(
-                "AnimeCollectionRepo",
-                "Marked episode $episodeNumber of anime $malId as $isCompleted. Total completed: $completedCount"
-            )
-            emitUpdate(CollectionUpdateEvent.Updated(malId))
-            Result.success(Unit)
-
-        } catch (e: Exception) {
-            Log.e("AnimeCollectionRepo", "Error marking episode complete: ${e.message}", e)
-            Result.failure(e)
         }
     }
 
-    override suspend fun updateEpisodeRange(malId: Int, upToEpisode: Int): Result<Unit> {
-        return try {
-            var currentPage= 1
-            var currentRangeLimit = animeEpisodeDao.getEpisodesByMalId(malId).last().episodeNumber
+    override suspend fun updateEpisodeRange(malId: Int, upToEpisode: Int): Result<Unit> =
+        executeSafe("Error updating episode range for $malId") {
+            val localEpisodes = animeEpisodeDao.getEpisodesByMalId(malId)
+            var currentMax = localEpisodes.lastOrNull()?.episodeNumber ?: 0
+            var currentPage = (localEpisodes.size / 100) + 1
 
-
-
-            while(currentRangeLimit < upToEpisode){
-                val currentRangeLimitResult = runCatching{
-                    val resp = apiService.getAnimeEpisodes(malId, page = currentPage+1)
-
-                    if (resp.data.isNotEmpty()) {
-                        val episodeEntities = resp.data.toEpisodeEntityList(malId)
-                        animeEpisodeDao.insertEpisodes(episodeEntities)
-                    } else {
-                        Log.d("AnimeCollectionRepo", "No episodes found for anime $malId")
-                    }
-                    currentPage++
-                    resp.data.last().toEpisodeEntity(malId).episodeNumber
-                }
-                currentRangeLimit = currentRangeLimitResult.getOrNull() ?: break
+            // Fetch missing episodes if necessary
+            while (currentMax < upToEpisode) {
+                val lastOnPage = fetchAndSaveEpisodes(malId, currentPage + 1)
+                if (lastOnPage == -1) break
+                currentMax = lastOnPage
+                currentPage++
             }
 
-            animeEpisodeDao.updateEpisodeInRange(malId, upToEpisode)
-
-            val completedCount = animeEpisodeDao.getCompletedEpisodesCount(malId)
-            animeCollectionDao.setEpisodesCompleted(malId, completedCount)
-
-            Log.d(
-                "AnimeCollectionRepo",
-                "Updated episode range for anime $malId up to episode $upToEpisode. Total completed: $completedCount"
-            )
-            emitUpdate(CollectionUpdateEvent.Updated(malId))
-            Result.success(Unit)
-
-        } catch (e: Exception) {
-            Log.e("AnimeCollectionRepo", "Error updating episode range: ${e.message}", e)
-            Result.failure(e)
+            handleProgressUpdate(malId, upToEpisode) {
+                animeEpisodeDao.updateEpisodeInRange(malId, upToEpisode)
+            }
         }
-    }
 
-    override suspend fun markAllEpisodeCompleted(malId: Int): Result<Unit> {
-        return try {
-            val episodes = animeEpisodeDao.getEpisodesByMalId(malId)
-
-            animeEpisodeDao.updateEpisodeInRange(malId, episodes.last().episodeNumber)
-
-            val completedCount = animeEpisodeDao.getCompletedEpisodesCount(malId)
-            animeCollectionDao.setEpisodesCompleted(malId, completedCount)
-
-            Log.d(
-                "AnimeCollectionRepo",
-                "Completely marked episode for anime $malId . Total completed: $completedCount"
-            )
-            emitUpdate(CollectionUpdateEvent.Updated(malId))
-            Result.success(Unit)
-        }catch (e: Exception){
-            Result.failure(e)
-        }
-    }
-
-    override suspend fun removeFromLibrary(malId: Int): Result<Unit> {
-        return try {
+    override suspend fun markAllEpisodeCompleted(malId: Int): Result<Unit> =
+        executeSafe("Error marking all episodes completed for $malId") {
             val collection = animeCollectionDao.getCollectionByMalId(malId)
-            if (collection != null) {
-                animeCollectionDao.removeFromLibrary(collection)
-                // Optionally delete episodes associated with this anime
-                animeEpisodeDao.deleteEpisodesByMalId(malId)
-                // Emit event
-                emitUpdate(CollectionUpdateEvent.Removed(malId))
-                Log.d("AnimeCollectionRepo", "Removed anime $malId from library")
-                Result.success(Unit)
-            } else {
-                Result.failure(Exception("Anime not found in library"))
+            val totalCount = collection?.totalEpisodes ?: 1
+            
+            handleProgressUpdate(malId, totalCount) {
+                val lastEpisode = animeEpisodeDao.getEpisodesByMalId(malId).lastOrNull()?.episodeNumber ?: 0
+                if (lastEpisode > 0) {
+                    animeEpisodeDao.updateEpisodeInRange(malId, lastEpisode)
+                }
             }
-        } catch (e: Exception) {
-            Log.e("AnimeCollectionRepo", "Error removing from library: ${e.message}", e)
-            Result.failure(e)
         }
-    }
 
-    override suspend fun getLibraryCollection(malId: Int): Result<AnimeCollectionUiModel?> {
-        return try {
-            val collection = animeCollectionDao.getCollectionByMalId(malId)?.toAnimeCollectionUiModel()
-            Result.success(collection)
-        } catch (e: Exception) {
-            Log.e("AnimeCollectionRepo", "Error fetching collection: ${e.message}", e)
-            Result.failure(e)
-        }
-    }
+    override suspend fun removeFromLibrary(malId: Int): Result<Unit> =
+        executeSafe("Error removing anime $malId from library") {
+            val collection = animeCollectionDao.getCollectionByMalId(malId)
+                ?: throw Exception("Anime $malId not found in library")
 
-    override suspend fun getAllLibraryCollections(): Result<List<AnimeCollectionUiModel>> {
-        return try {
-            val collections = animeCollectionDao.getAllCollections().map { entity->
-                entity.toAnimeCollectionUiModel()
-            }
-            Result.success(collections)
-        } catch (e: Exception) {
-            Log.e("AnimeCollectionRepo", "Error fetching all collections: ${e.message}", e)
-            Result.failure(e)
+            animeCollectionDao.removeFromLibrary(collection)
+            animeEpisodeDao.deleteEpisodesByMalId(malId)
+            emitUpdate(CollectionUpdateEvent.Removed(malId))
         }
-    }
+
+    override suspend fun getLibraryCollection(malId: Int): Result<AnimeCollectionUiModel?> =
+        executeSafe("Error fetching collection details for $malId") {
+            animeCollectionDao.getCollectionByMalId(malId)?.toAnimeCollectionUiModel()
+        }
+
+    override suspend fun getAllLibraryCollections(): Result<List<AnimeCollectionUiModel>> =
+        executeSafe("Error fetching all library collections") {
+            animeCollectionDao.getAllCollections().map { it.toAnimeCollectionUiModel() }
+        }
 }
