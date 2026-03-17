@@ -35,6 +35,9 @@ data class AnimeDto(
 
     @SerialName("type")
     val type: String? = null,
+
+    @SerialName("score")
+    val score: Double? = null
 )
 
 @Serializable

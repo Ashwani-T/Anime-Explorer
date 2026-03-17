@@ -16,7 +16,8 @@ data class CachedAnimeItem(
     val title: String,
     val description: String,
     val imageUrl: String,
-    val type: String
+    val type: String,
+    val score: Double
 )
 // Middle Object between db and api
 data class AnimeDetail(
@@ -38,7 +39,8 @@ fun AnimeDto.toUiModel(): AnimeUiModel {
         title = title?:"No Title",
         description = description?:"No description",
         duration = duration?:"No duration",
-        imageUrl = imageUrl.webp.imageUrl?:"No Image"
+        imageUrl = imageUrl.webp.imageUrl?:"No Image",
+        score = score?:0.0
     )
 }
 
@@ -112,6 +114,7 @@ fun CachedAnimeItem.toUiModel(): AnimeUiModel{
         title = title,
         description = description,
         duration = "",
-        imageUrl = imageUrl
+        imageUrl = imageUrl,
+        score = score
     )
 }

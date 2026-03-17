@@ -1,21 +1,28 @@
 package com.example.animeexplorer.screens
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyGridState
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -38,6 +45,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.animeexplorer.components.AnimeItem
 import com.example.animeexplorer.components.ArcLoader
+import com.example.animeexplorer.components.AutoAdvancePager
 import com.example.animeexplorer.domain.AnimeUiModel
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.debounce
@@ -55,7 +63,7 @@ fun HomeScreen(
     val viewModel: HomeScreenViewModel = hiltViewModel()
     val state by viewModel.uiState.collectAsState()
 
-    val listState = rememberLazyListState()
+    val listState = rememberLazyGridState()
     val scope = rememberCoroutineScope()
 
     val showFab by remember {
@@ -91,16 +99,16 @@ fun HomeScreenContent(
     loadMore: () -> Unit,
     onAnimeClick: (Int) -> Unit,
     cancelLoading: () -> Unit,
-    listState: LazyListState
+    listState: LazyGridState
 ) {
     Column(
         modifier = modifier
             .fillMaxSize()
     ) {
-        AnimeSearchBar(
-            query = state.query,
-            onQueryChange = onQueryChange
-        )
+//        AnimeSearchBar(
+//            query = state.query,
+//            onQueryChange = onQueryChange
+//        )
 
         AnimeList(
             animeList = state.animeList,
@@ -145,12 +153,15 @@ fun AnimeSearchBar(
             imeAction = ImeAction.Search
         ),
         leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search") },
-        trailingIcon = {Icon(Icons.Default.Clear, contentDescription = "clear", modifier = Modifier.clickable(
-            onClick = {
-                text = ""
-                onQueryChange("")
-            }
-        ))}
+        trailingIcon = {
+            Icon(
+                Icons.Default.Clear, contentDescription = "clear", modifier = Modifier.clickable(
+                    onClick = {
+                        text = ""
+                        onQueryChange("")
+                    }
+                ))
+        }
     )
 }
 
@@ -158,7 +169,7 @@ fun AnimeSearchBar(
 @Composable
 fun AnimeList(
     animeList: List<AnimeUiModel>,
-    listState: LazyListState,
+    listState: LazyGridState,
     onAnimeClick: (Int) -> Unit,
     isLoading: Boolean,
     loadMore: () -> Unit,
@@ -187,13 +198,56 @@ fun AnimeList(
             }
     }
 
-    LazyColumn(
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(2),
         state = listState,
         modifier = Modifier.fillMaxSize()
     ) {
+
+        if (animeList.isNotEmpty()) {
+
+            item(span = { GridItemSpan(maxLineSpan) }) {
+                AutoAdvancePager(
+                    animeList.subList(0, minOf(10, animeList.size))
+                )
+            }
+
+            item(span = { GridItemSpan(maxLineSpan) }) {
+                SectionHeader("Recently Updated")
+            }
+
+            item(span = { GridItemSpan(maxLineSpan) }) {
+                HorizontalAnimeList(
+                    animeList = animeList.take(6),
+                    onAnimeClick = onAnimeClick
+                )
+            }
+
+            item(span = { GridItemSpan(maxLineSpan) }) {
+                SectionHeader("Trending Animes")
+            }
+
+            item(span = { GridItemSpan(maxLineSpan) }) {
+                HorizontalAnimeList(
+                    animeList = animeList.take(6),
+                    onAnimeClick = onAnimeClick
+                )
+            }
+
+            item(span = { GridItemSpan(maxLineSpan) }) {
+                SectionHeader("Popular Animes")
+            }
+
+            item(span = { GridItemSpan(maxLineSpan) }) {
+                HorizontalAnimeList(
+                    animeList = animeList.take(6),
+                    onAnimeClick = onAnimeClick
+                )
+            }
+        }
         items(
             items = animeList,
-            key = {it.id }
+            key = { it.id }
         ) { anime ->
             AnimeItem(
                 anime,
@@ -202,7 +256,7 @@ fun AnimeList(
         }
 
         if (isLoading) {
-            item {
+            item(span = { GridItemSpan(maxLineSpan) }) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -215,3 +269,42 @@ fun AnimeList(
         }
     }
 }
+
+@Composable
+fun SectionHeader(
+    title: String,
+    modifier: Modifier = Modifier
+) {
+    Text(
+        text = title,
+        style = MaterialTheme.typography.headlineSmall,
+        color = MaterialTheme.colorScheme.onSurface,
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 12.dp)
+    )
+}
+
+@Composable
+fun HorizontalAnimeList(
+    animeList: List<AnimeUiModel>,
+    onAnimeClick: (Int) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    LazyRow(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        items(animeList, key = { it.id }) { anime ->
+            AnimeItem(
+                anime = anime,
+                onClick = { onAnimeClick(anime.id) },
+                modifier = Modifier
+                    .width(150.dp)
+            )
+        }
+    }
+}
+

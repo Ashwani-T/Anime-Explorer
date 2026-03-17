@@ -1,8 +1,6 @@
 package com.example.animeexplorer.domain
 
 import com.example.animeexplorer.data.local.entity.LibraryStatus
-import kotlin.compareTo
-import kotlin.text.toFloat
 
 
 data class AnimeResponseModel(
@@ -21,7 +19,8 @@ data class AnimeUiModel(
     val title: String,
     val description: String ,
     val duration: String ,
-    val imageUrl: String
+    val imageUrl: String,
+    val score: Double
 )
 
 

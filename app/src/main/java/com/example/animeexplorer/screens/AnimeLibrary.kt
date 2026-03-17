@@ -252,7 +252,7 @@ fun AnimeCollectionCard(
         onClick = { onClick(item.malId) },
         modifier = modifier
             .fillMaxWidth()
-            .aspectRatio(0.72f) // tweak to taste
+            .aspectRatio(0.72f)
     ) {
         Column(Modifier.fillMaxSize()) {
             // Image
