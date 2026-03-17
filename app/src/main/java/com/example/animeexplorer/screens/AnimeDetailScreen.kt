@@ -10,22 +10,27 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ElevatedFilterChip
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -35,15 +40,71 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.example.animeexplorer.components.ArcLoader
+import com.example.animeexplorer.data.local.entity.LibraryStatus
+import com.example.animeexplorer.domain.AnimeCollectionUiModel
 import com.example.animeexplorer.domain.AnimeDetailUiModel
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AnimeDetailScreen(
-    viewModel: AnimeDetailViewModel = hiltViewModel()
+    animeDetailViewModel: AnimeDetailViewModel = hiltViewModel(),
+    sheetState: SheetState? = null,
+    showSheet: Boolean = false,
+    onDismissSheet: () -> Unit = {}
 ) {
-    val uiState by viewModel.uiState.collectAsState()
+    val uiState by animeDetailViewModel.uiState.collectAsState()
+    val collectionState by animeDetailViewModel.collectionState.collectAsState()
+
+    // Local state for bottom sheet selections
+    var tempStatus: LibraryStatus by rememberSaveable { mutableStateOf(LibraryStatus.UNLISTED) }
+    var tempEpisodesCompleted by rememberSaveable { mutableIntStateOf(0) }
+
+    // Initialize/Reset temp state based on collectionState
+    LaunchedEffect(collectionState) {
+        if (collectionState != null) {
+            // If in collection: use DB values
+            tempStatus = collectionState!!.status
+            tempEpisodesCompleted = collectionState!!.episodesCompleted
+        } else {
+            // If not in collection: reset to defaults
+            tempStatus = LibraryStatus.UNLISTED
+            tempEpisodesCompleted = 0
+        }
+    }
+
+    if (sheetState != null && showSheet) {
+        ModalBottomSheet(
+            onDismissRequest = onDismissSheet,
+            sheetState = sheetState
+        ) {
+            val anime = (uiState as? AnimeDetailUiState.Success)?.anime
+
+            if (anime != null) {
+                AnimeDetailBottomSheetContent(
+                    isInCollection = collectionState != null,
+                    currentStatus = tempStatus,
+                    episodesCompleted = tempEpisodesCompleted,
+                    totalEpisodes = anime.episodes,
+                    onStatusSelected = { tempStatus = it },
+                    onEpisodeSelected = { tempEpisodesCompleted = it },
+                    onAddToCollection = {
+                        // If already in collection, use update method; otherwise use add method
+                        if (collectionState != null) {
+                            animeDetailViewModel.updateCollection(tempStatus, tempEpisodesCompleted)
+                        } else {
+                            animeDetailViewModel.addToCollection(tempStatus, tempEpisodesCompleted)
+                        }
+                        onDismissSheet()
+                    },
+                    onRemoveFromCollection = {
+                        animeDetailViewModel.removeFromCollection()
+                        onDismissSheet()
+                    }
+                )
+            }
+        }
+    }
 
     when (val state = uiState) {
         is AnimeDetailUiState.Loading -> {
@@ -67,7 +128,7 @@ fun AnimeDetailScreen(
         is AnimeDetailUiState.Error -> {
             AnimeDetailErrorScreen(
                 message = state.message,
-                onRetry = { viewModel.retry() }
+                onRetry = { animeDetailViewModel.retry() }
             )
         }
     }
@@ -262,6 +323,131 @@ fun AnimeDetailErrorScreen(
 
         Button(onClick = onRetry) {
             Text("Retry")
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AnimeDetailBottomSheetContent(
+    isInCollection: Boolean,
+    currentStatus: LibraryStatus,
+    episodesCompleted: Int,
+    totalEpisodes: Int,
+    onStatusSelected: (LibraryStatus) -> Unit,
+    onEpisodeSelected: (Int) -> Unit,
+    onAddToCollection: () -> Unit,
+    onRemoveFromCollection: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+            .padding(bottom = 32.dp),
+        horizontalAlignment = Alignment.Start
+    ) {
+        // Show "Add to Collection" if not in DB, otherwise show the current status
+        Text(
+            text = if (isInCollection) {
+                currentStatus.name.replace("_", " ")
+                    .lowercase()
+                    .replaceFirstChar { it.uppercase() }
+            } else {
+                "Add to Collection"
+            },
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Text(
+            text = "Status",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        LazyRow(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            items(LibraryStatus.entries.size) { index ->
+                val status = LibraryStatus.entries[index]
+                ElevatedFilterChip(
+                    selected = currentStatus == status,
+                    onClick = { onStatusSelected(status) },
+                    label = {
+                        Text(
+                            status.name.replace("_", " ").lowercase()
+                                .replaceFirstChar { it.uppercase() })
+                    }
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Text(
+            text = "Episode Progress ($episodesCompleted / ${if (totalEpisodes > 0) totalEpisodes else "?"})",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            val maxEpisodes = if (totalEpisodes > 0) totalEpisodes else 100
+            items(maxEpisodes + 1) { episode ->
+                FilterChip(
+                    selected = episodesCompleted == episode,
+                    onClick = { onEpisodeSelected(episode) },
+                    label = { Text(episode.toString()) }
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(32.dp))
+
+        // Show different buttons based on whether it's in collection
+        if (isInCollection) {
+            // Already in collection - show both Update and Remove buttons side by side
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Button(
+                    onClick = { onAddToCollection() },
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("Update")
+                }
+
+                Button(
+                    onClick = onRemoveFromCollection,
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.errorContainer,
+                        contentColor = MaterialTheme.colorScheme.onErrorContainer
+                    )
+                ) {
+                    Text("Remove")
+                }
+            }
+        } else {
+            // Not in collection - show only Add button
+            Button(
+                onClick = { onAddToCollection() },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Add to Collection")
+            }
         }
     }
 }

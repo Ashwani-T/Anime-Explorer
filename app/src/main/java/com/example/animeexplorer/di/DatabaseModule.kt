@@ -2,11 +2,10 @@ package com.example.animeexplorer.di
 
 import android.content.Context
 import androidx.room.Room
-import com.example.animeexplorer.data.AnimeDetailDto
-import com.example.animeexplorer.data.AppDatabase
-import com.example.animeexplorer.data.dao.AnimeDetailsDao
-import com.example.animeexplorer.data.dao.AnimeListDao
-import com.example.animeexplorer.data.entity.AnimeDetailsEntity
+import com.example.animeexplorer.data.local.AppDatabase
+import com.example.animeexplorer.data.local.dao.AnimeCollectionDao
+import com.example.animeexplorer.data.local.dao.AnimeDetailsDao
+import com.example.animeexplorer.data.local.dao.AnimeEpisodeDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -41,9 +40,16 @@ object DatabaseModule {
 
     @Provides
     @Singleton
-    fun provideAnimeListDao(
+    fun provideAnimeCollectionDao(
         database: AppDatabase
-    ): AnimeListDao{
-        return database.animeListDao()
+    ): AnimeCollectionDao{
+        return database.animeCollectionDao()
+    }
+
+    @Provides
+    fun provideEpisodeDao(
+        database: AppDatabase
+    ): AnimeEpisodeDao{
+        return database.animeEpisodeDao()
     }
 }

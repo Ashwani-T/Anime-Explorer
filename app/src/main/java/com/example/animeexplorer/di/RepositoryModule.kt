@@ -1,6 +1,8 @@
 package com.example.animeexplorer.di
 
+import com.example.animeexplorer.data.AnimeCollectionRepositoryImpl
 import com.example.animeexplorer.data.AnimeRepositoryImpl
+import com.example.animeexplorer.domain.AnimeCollectionRepository
 import com.example.animeexplorer.domain.AnimeRepository
 import dagger.Binds
 import dagger.Module
@@ -17,4 +19,10 @@ abstract class RepositoryModule {
     abstract fun bindAnimeRepository(
         animeRepositoryImpl: AnimeRepositoryImpl
     ): AnimeRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindAnimeCollectionRepository(
+        animeCollectionRepositoryImpl: AnimeCollectionRepositoryImpl
+    ): AnimeCollectionRepository
 }

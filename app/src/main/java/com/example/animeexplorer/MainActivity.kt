@@ -12,10 +12,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.Collections
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.Category
 import androidx.compose.material.icons.outlined.Collections
 import androidx.compose.material.icons.outlined.Home
@@ -30,6 +32,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -46,7 +49,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -55,15 +57,15 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navigation
 import com.example.animeexplorer.data.ConnectivityObserver
+import com.example.animeexplorer.screens.AnimeCategories
+import com.example.animeexplorer.screens.AnimeLibrary
 import com.example.animeexplorer.screens.AnimeDetailScreen
 import com.example.animeexplorer.screens.HomeScreen
 import com.example.animeexplorer.ui.theme.AppTheme
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-// MainActivity.kt
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
@@ -107,13 +109,19 @@ private fun AppScaffold(
 
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
+
     val isAnimeList = navBackStackEntry?.destination?.hasRoute<HomeDestination.AnimeList>()?: false
     val isAnimeDetail = navBackStackEntry?.destination?.hasRoute<HomeDestination.AnimeDetail>()?: false
-    Log.d("tag ","$isAnimeDetail")
+    val isMyCollection = navBackStackEntry?.destination?.hasRoute<AppDestination.MyCollection>()?: false
 
 
     var showFab by rememberSaveable { mutableStateOf(false) }
     var scrollToTop by remember { mutableStateOf<(() -> Unit)?>(null) }
+
+    val sheetState = rememberModalBottomSheetState()
+    var showSheet by rememberSaveable { mutableStateOf(false) }
+    Log.d("TAG", "showSheet:  $showSheet")
+
     Scaffold(
         topBar = {
             when{
@@ -141,12 +149,41 @@ private fun AppScaffold(
                         }
                     )
                 }
+                isMyCollection -> {
+                    TopAppBar(
+                        title = {
+                            Text(
+                                text = "My Collection",
+                                modifier = Modifier.fillMaxWidth(),
+                                textAlign = TextAlign.Center
+                            )
+                        },
+                        navigationIcon = {
+                            IconButton(onClick = {navController.popBackStack() }) {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                    contentDescription = "Back"
+                                )
+                            }
+                        },
+                        actions ={
+                            IconButton(onClick = { /* do something */ }) {
+                                Icon(
+                                    imageVector = Icons.Filled.Search,
+                                    contentDescription = "Search In Collection"
+                                )
+                            }
+                        }
+                    )
+                }
             }
         },
         bottomBar = {
             BottomNavigationBar(navController = navController)
         },
-        snackbarHost = { SnackbarHost(snackbarHostState) },
+        snackbarHost = {
+            SnackbarHost(snackbarHostState)
+        },
         floatingActionButton = {
             if (isAnimeList && showFab) {
                 FloatingActionButton(
@@ -158,12 +195,28 @@ private fun AppScaffold(
                     )
                 }
             }
+            if(isAnimeDetail){
+                FloatingActionButton(
+                    onClick = {
+                        showSheet = true
+                        scope.launch {
+                            sheetState.show()
+                        }
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.AddCircle,
+                        contentDescription = "Save to Collection"
+                    )
+                }
+            }
         }
     ) { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding)) {
             if(!isConnected){
                 OfflineBanner()
             }
+
 
             NavHost(
                 navController = navController,
@@ -182,8 +235,20 @@ private fun AppScaffold(
                         )
                     }
                     composable<HomeDestination.AnimeDetail> {
-                        AnimeDetailScreen()
+                        AnimeDetailScreen(
+                            sheetState = sheetState,
+                            showSheet = showSheet,
+                            onDismissSheet = { showSheet = false }
+                        )
                     }
+                }
+                composable<AppDestination.Category>{
+                    AnimeCategories()
+                }
+                composable<AppDestination.MyCollection>{
+                    AnimeLibrary(
+                        onClick = {malId -> navController.navigate(HomeDestination.AnimeDetail(malId))}
+                    )
                 }
             }
         }

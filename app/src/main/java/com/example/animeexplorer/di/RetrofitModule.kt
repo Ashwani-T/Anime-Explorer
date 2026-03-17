@@ -1,6 +1,6 @@
 package com.example.animeexplorer.di
 
-import com.example.animeexplorer.data.AnimeApiService
+import com.example.animeexplorer.data.remote.AnimeApiService
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import dagger.Module
 import dagger.Provides

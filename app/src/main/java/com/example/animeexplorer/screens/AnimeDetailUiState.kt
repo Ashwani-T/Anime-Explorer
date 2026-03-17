@@ -1,6 +1,6 @@
 package com.example.animeexplorer.screens
 
-import com.example.animeexplorer.data.AnimeDetailDto
+import com.example.animeexplorer.data.local.entity.LibraryStatus
 import com.example.animeexplorer.domain.AnimeDetailUiModel
 
 

@@ -1,26 +1,23 @@
 package com.example.animeexplorer.data
 
 import android.util.Log
-import com.example.animeexplorer.data.dao.AnimeDetailsDao
-import com.example.animeexplorer.data.dao.AnimeListDao
+import com.example.animeexplorer.data.local.dao.AnimeDetailsDao
+import com.example.animeexplorer.data.mapper.AnimeDetail
+import com.example.animeexplorer.data.mapper.toDomain
+import com.example.animeexplorer.data.mapper.toEntity
+import com.example.animeexplorer.data.mapper.toPageInfo
+import com.example.animeexplorer.data.mapper.toUiModel
+import com.example.animeexplorer.data.remote.AnimeApiService
 import com.example.animeexplorer.domain.AnimeRepository
 import com.example.animeexplorer.domain.AnimeResponseModel
 import com.example.animeexplorer.domain.AnimeUiModel
 import com.example.animeexplorer.domain.PageInfo
 import jakarta.inject.Inject
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.currentCoroutineContext
-import kotlinx.coroutines.launch
-import java.security.PrivateKey
-import kotlin.coroutines.coroutineContext
 
 
 class AnimeRepositoryImpl @Inject constructor(
     private val apiService: AnimeApiService,
     private val animeDetailsDao: AnimeDetailsDao,
-    private val animeListDao: AnimeListDao
 ): AnimeRepository {
     override suspend fun getAnimeList(query: String, page: Int): AnimeResponseModel {
 
@@ -35,12 +32,12 @@ class AnimeRepositoryImpl @Inject constructor(
             apiService.getAnimeList(query = query.takeIf{ query.isNotBlank() }, page = page)
         }.onFailure { exception ->
 
-            if(query.isBlank()){
-                animeList = animeDetailsDao.getAnimeList().map {cachedAnime ->
+            animeList = if(query.isBlank()){
+                animeDetailsDao.getAnimeList().map {cachedAnime ->
                     cachedAnime.toUiModel()
                 }
             }else{
-                animeList = animeDetailsDao.getSearchedAnimeList(query).map {cachedAnimeItem ->
+                animeDetailsDao.getSearchedAnimeList(query).map {cachedAnimeItem ->
                     cachedAnimeItem.toUiModel()
                 }
             }

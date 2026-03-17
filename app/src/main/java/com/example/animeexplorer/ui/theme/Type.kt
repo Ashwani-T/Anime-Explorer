@@ -15,11 +15,10 @@ val provider = GoogleFont.Provider(
 
 val bodyFontFamily = FontFamily(
     Font(
-        googleFont = GoogleFont("Noto Sans JP"),
+        googleFont = GoogleFont("Poppins"),
         fontProvider = provider,
     )
 )
-
 val displayFontFamily = FontFamily(
     Font(
         googleFont = GoogleFont("Poppins"),
@@ -27,7 +26,6 @@ val displayFontFamily = FontFamily(
     )
 )
 
-// Default Material 3 typography values
 val baseline = Typography()
 
 val AppTypography = Typography(

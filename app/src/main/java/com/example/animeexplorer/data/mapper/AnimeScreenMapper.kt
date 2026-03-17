@@ -1,10 +1,23 @@
-package com.example.animeexplorer.data
+package com.example.animeexplorer.data.mapper
 
-import com.example.animeexplorer.data.entity.AnimeDetailsEntity
+import com.example.animeexplorer.data.remote.dto.AnimeDetailDto
+import com.example.animeexplorer.data.remote.dto.AnimeDto
+import com.example.animeexplorer.data.remote.dto.Pagination
+import com.example.animeexplorer.data.local.entity.AnimeDetailsEntity
 import com.example.animeexplorer.domain.AnimeDetailUiModel
 import com.example.animeexplorer.domain.AnimeUiModel
 import com.example.animeexplorer.domain.PageInfo
 
+
+
+
+data class CachedAnimeItem(
+    val malId: Int,
+    val title: String,
+    val description: String,
+    val imageUrl: String,
+    val type: String
+)
 // Middle Object between db and api
 data class AnimeDetail(
     val id: Int,
@@ -22,11 +35,10 @@ data class AnimeDetail(
 fun AnimeDto.toUiModel(): AnimeUiModel {
     return AnimeUiModel(
         id = id,
-        title = title?:"No Title" ,
+        title = title?:"No Title",
         description = description?:"No description",
         duration = duration?:"No duration",
-        imageUrl = imageUrl.webp.imageUrl?:"No Image",
-        type = type?:"No Type"
+        imageUrl = imageUrl.webp.imageUrl?:"No Image"
     )
 }
 
@@ -100,7 +112,6 @@ fun CachedAnimeItem.toUiModel(): AnimeUiModel{
         title = title,
         description = description,
         duration = "",
-        imageUrl = imageUrl,
-        type = type
+        imageUrl = imageUrl
     )
 }

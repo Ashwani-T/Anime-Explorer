@@ -1,5 +1,8 @@
 package com.example.animeexplorer.domain
 
+import com.example.animeexplorer.data.local.entity.LibraryStatus
+import kotlin.compareTo
+import kotlin.text.toFloat
 
 
 data class AnimeResponseModel(
@@ -18,8 +21,7 @@ data class AnimeUiModel(
     val title: String,
     val description: String ,
     val duration: String ,
-    val imageUrl: String ,
-    val type: String
+    val imageUrl: String
 )
 
 
@@ -34,3 +36,17 @@ data class AnimeDetailUiModel(
     val episodes: Int,
     val year: Int
 )
+
+data class AnimeCollectionUiModel(
+    val malId: Int,
+    val title: String,
+    val imageUrl: String,
+    val type: String,
+    val status: LibraryStatus,
+    val episodesCompleted: Int,
+    val totalEpisodes: Int
+){
+    val progress: Float = if (totalEpisodes > 0) {
+        (episodesCompleted.coerceAtMost(totalEpisodes)).toFloat() / totalEpisodes
+    } else 0f
+}
