@@ -12,7 +12,7 @@ data class TopLevelDestination(
 
 sealed interface AppDestination {
     @Serializable data object Home: AppDestination
-    @Serializable data object Category: AppDestination
+    @Serializable data object Search: AppDestination
     @Serializable data object MyCollection: AppDestination
 
 }

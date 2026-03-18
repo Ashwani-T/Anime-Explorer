@@ -16,7 +16,7 @@ import jakarta.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 
-class AnimeCollectionRepositoryImpl @Inject constructor(
+class AnimeCollectionRepositoryImpl_New @Inject constructor(
     private val apiService: AnimeApiService,
     private val animeDetailsDao: AnimeDetailsDao,
     private val animeCollectionDao: AnimeCollectionDao,
@@ -185,3 +185,4 @@ class AnimeCollectionRepositoryImpl @Inject constructor(
             animeCollectionDao.getAllCollections().map { it.toAnimeCollectionUiModel() }
         }
 }
+

@@ -12,13 +12,16 @@ import com.example.animeexplorer.domain.AnimeRepository
 import com.example.animeexplorer.domain.AnimeResponseModel
 import com.example.animeexplorer.domain.AnimeUiModel
 import com.example.animeexplorer.domain.PageInfo
+import com.example.animeexplorer.domain.enums.AnimeFilter
+import com.example.animeexplorer.domain.enums.AnimeRating
+import com.example.animeexplorer.domain.enums.AnimeType
 import jakarta.inject.Inject
 
 
 class AnimeRepositoryImpl @Inject constructor(
     private val apiService: AnimeApiService,
     private val animeDetailsDao: AnimeDetailsDao,
-): AnimeRepository {
+) : AnimeRepository {
     override suspend fun getAnimeList(query: String, page: Int): AnimeResponseModel {
 
 
@@ -29,20 +32,24 @@ class AnimeRepositoryImpl @Inject constructor(
         )
 
         runCatching {
-            apiService.getAnimeList(query = query.takeIf{ query.isNotBlank() }, page = page)
+            apiService.getAnimeList(
+                query = query.takeIf { query.isNotBlank() },
+                page = page,
+                genres = null
+            )
         }.onFailure { exception ->
 
-            animeList = if(query.isBlank()){
-                animeDetailsDao.getAnimeList().map {cachedAnime ->
+            animeList = if (query.isBlank()) {
+                animeDetailsDao.getAnimeList().map { cachedAnime ->
                     cachedAnime.toUiModel()
                 }
-            }else{
-                animeDetailsDao.getSearchedAnimeList(query).map {cachedAnimeItem ->
+            } else {
+                animeDetailsDao.getSearchedAnimeList(query).map { cachedAnimeItem ->
                     cachedAnimeItem.toUiModel()
                 }
             }
             Log.d("AnimeRepoException", "${exception.message}")
-        }.onSuccess {response ->
+        }.onSuccess { response ->
             animeList = response.data.map { anime ->
                 anime.toUiModel()
             }
@@ -58,7 +65,7 @@ class AnimeRepositoryImpl @Inject constructor(
 
     override suspend fun getAnimeDetail(malId: Int): Result<AnimeDetail> {
 
-        return try{
+        return try {
             val cachedAnimeDetail = animeDetailsDao.getAnimeDetails(malId)
 
             cachedAnimeDetail?.let {
@@ -71,8 +78,29 @@ class AnimeRepositoryImpl @Inject constructor(
             animeDetailsDao.insertAnimeDetails(responseDomain.toEntity())
             Result.success(responseDomain)
 
-        }catch (e: Exception){
+        } catch (e: Exception) {
             Result.failure(exception = e)
+        }
+    }
+
+    override suspend fun getTopAnime(
+        type: AnimeType?,
+        filter: AnimeFilter?,
+        rating: AnimeRating?,
+    ): Result<List<AnimeUiModel>> {
+        return try {
+            val response = apiService.getTopAnime(
+                type = type?.type,
+                filter = filter?.filter,
+                rating = rating?.rating,
+            )
+
+            val domainList = response.data.map { it.toUiModel()}
+
+            Result.success(domainList)
+
+        } catch (e: Exception) {
+            Result.failure(e)
         }
     }
 }

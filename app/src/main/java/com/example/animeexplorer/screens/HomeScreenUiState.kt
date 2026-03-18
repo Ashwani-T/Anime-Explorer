@@ -2,11 +2,18 @@ package com.example.animeexplorer.screens
 
 import com.example.animeexplorer.domain.AnimeUiModel
 
-
+data class HomeSection(
+    val items: List<AnimeUiModel> = emptyList(),
+    val isLoading: Boolean = false,
+    val error: String? = null
+)
 data class HomeUiState(
     val query: String = "",
-    val animeList: List<AnimeUiModel> = emptyList(),
-    val isLoading: Boolean = false,
-    val error: String? = null,
-    val endReached: Boolean = false
+    val horizontalPager: List<AnimeUiModel> = emptyList(),
+    val trending: HomeSection = HomeSection(),
+    val top: HomeSection = HomeSection(),
+    val upcoming: HomeSection = HomeSection(),
+    val favorites: HomeSection = HomeSection(),
+
+    val isRefreshing: Boolean = false
 )

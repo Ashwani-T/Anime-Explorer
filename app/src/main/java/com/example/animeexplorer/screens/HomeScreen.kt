@@ -13,7 +13,6 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardActions
@@ -48,7 +47,6 @@ import com.example.animeexplorer.components.ArcLoader
 import com.example.animeexplorer.components.AutoAdvancePager
 import com.example.animeexplorer.domain.AnimeUiModel
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 
@@ -84,7 +82,7 @@ fun HomeScreen(
         modifier = modifier,
         state = state,
         onQueryChange = viewModel::onQueryChange,
-        loadMore = viewModel::loadNextPage,
+//        loadMore = viewModel::loadNextPage,
         onAnimeClick = onAnimeClick,
         cancelLoading = viewModel::cancelLoading,
         listState = listState
@@ -96,7 +94,7 @@ fun HomeScreenContent(
     modifier: Modifier = Modifier,
     state: HomeUiState,
     onQueryChange: (String) -> Unit,
-    loadMore: () -> Unit,
+//    loadMore: () -> Unit,
     onAnimeClick: (Int) -> Unit,
     cancelLoading: () -> Unit,
     listState: LazyGridState
@@ -111,12 +109,13 @@ fun HomeScreenContent(
 //        )
 
         AnimeList(
-            animeList = state.animeList,
+            horizontalPagerList = state.horizontalPager,
+            trending = state.trending.items,
+            top = state.top.items,
+            upcoming = state.upcoming.items,
             listState = listState,
-            isLoading = state.isLoading,
-            loadMore = loadMore,
             onAnimeClick = onAnimeClick,
-            cancelLoading = cancelLoading
+            isLoading = state.isRefreshing
         )
     }
 }
@@ -168,35 +167,36 @@ fun AnimeSearchBar(
 @OptIn(FlowPreview::class)
 @Composable
 fun AnimeList(
-    animeList: List<AnimeUiModel>,
+    horizontalPagerList: List<AnimeUiModel>,
+    trending: List<AnimeUiModel>,
+    top: List<AnimeUiModel>,
+    upcoming: List<AnimeUiModel>,
     listState: LazyGridState,
     onAnimeClick: (Int) -> Unit,
     isLoading: Boolean,
-    loadMore: () -> Unit,
-    cancelLoading: () -> Unit
 ) {
-    val shouldLoadMore by remember {
-        derivedStateOf {
-            val layoutInfo = listState.layoutInfo
-            val totalItems = layoutInfo.totalItemsCount
-            val lastVisible = layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
+//    val shouldLoadMore by remember {
+//        derivedStateOf {
+//            val layoutInfo = listState.layoutInfo
+//            val totalItems = layoutInfo.totalItemsCount
+//            val lastVisible = layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
+//
+//            totalItems > 0 && lastVisible >= totalItems - 2
+//        }
+//    }
 
-            totalItems > 0 && lastVisible >= totalItems - 2
-        }
-    }
-
-    LaunchedEffect(listState) {
-        snapshotFlow { shouldLoadMore }
-            .distinctUntilChanged()
-            .debounce(200)
-            .collect { atBottom ->
-                if (atBottom) {
-                    loadMore()
-                } else {
-                    cancelLoading()
-                }
-            }
-    }
+//    LaunchedEffect(listState) {
+//        snapshotFlow { shouldLoadMore }
+//            .distinctUntilChanged()
+//            .debounce(200)
+//            .collect { atBottom ->
+//                if (atBottom) {
+//                    loadMore()
+//                } else {
+//                    cancelLoading()
+//                }
+//            }
+//    }
 
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
@@ -204,21 +204,21 @@ fun AnimeList(
         modifier = Modifier.fillMaxSize()
     ) {
 
-        if (animeList.isNotEmpty()) {
+        if (horizontalPagerList.isNotEmpty() && trending.isNotEmpty() && top.isNotEmpty() && upcoming.isNotEmpty()) {
 
             item(span = { GridItemSpan(maxLineSpan) }) {
                 AutoAdvancePager(
-                    animeList.subList(0, minOf(10, animeList.size))
+                    horizontalPagerList.subList(0, minOf(10, horizontalPagerList.size))
                 )
             }
 
             item(span = { GridItemSpan(maxLineSpan) }) {
-                SectionHeader("Recently Updated")
+                SectionHeader("Top Anime")
             }
 
             item(span = { GridItemSpan(maxLineSpan) }) {
                 HorizontalAnimeList(
-                    animeList = animeList.take(6),
+                    animeList = top.take(10),
                     onAnimeClick = onAnimeClick
                 )
             }
@@ -229,31 +229,31 @@ fun AnimeList(
 
             item(span = { GridItemSpan(maxLineSpan) }) {
                 HorizontalAnimeList(
-                    animeList = animeList.take(6),
+                    animeList = trending.take(10),
                     onAnimeClick = onAnimeClick
                 )
             }
 
             item(span = { GridItemSpan(maxLineSpan) }) {
-                SectionHeader("Popular Animes")
+                SectionHeader("Upcoming Animes")
             }
 
             item(span = { GridItemSpan(maxLineSpan) }) {
                 HorizontalAnimeList(
-                    animeList = animeList.take(6),
+                    animeList = upcoming.take(6),
                     onAnimeClick = onAnimeClick
                 )
             }
         }
-        items(
-            items = animeList,
-            key = { it.id }
-        ) { anime ->
-            AnimeItem(
-                anime,
-                onClick = { onAnimeClick(anime.id) }
-            )
-        }
+//        items(
+//            items = animeList,
+//            key = { it.id }
+//        ) { anime ->
+//            AnimeItem(
+//                anime,
+//                onClick = { onAnimeClick(anime.id) }
+//            )
+//        }
 
         if (isLoading) {
             item(span = { GridItemSpan(maxLineSpan) }) {

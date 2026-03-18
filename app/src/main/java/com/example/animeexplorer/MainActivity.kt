@@ -13,14 +13,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AddCircle
-import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.Collections
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.outlined.Category
 import androidx.compose.material.icons.outlined.Collections
 import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -57,10 +56,10 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navigation
 import com.example.animeexplorer.data.ConnectivityObserver
-import com.example.animeexplorer.screens.AnimeCategories
-import com.example.animeexplorer.screens.AnimeLibrary
 import com.example.animeexplorer.screens.AnimeDetailScreen
+import com.example.animeexplorer.screens.AnimeLibrary
 import com.example.animeexplorer.screens.HomeScreen
+import com.example.animeexplorer.screens.SearchAnime
 import com.example.animeexplorer.ui.theme.AppTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -242,8 +241,8 @@ private fun AppScaffold(
                         )
                     }
                 }
-                composable<AppDestination.Category>{
-                    AnimeCategories()
+                composable<AppDestination.Search>{
+                    SearchAnime()
                 }
                 composable<AppDestination.MyCollection>{
                     AnimeLibrary(
@@ -287,10 +286,10 @@ fun BottomNavigationBar(
                 label = "Home"
             ),
             TopLevelDestination(
-                route = AppDestination.Category,
-                selectedIcon = Icons.Filled.Category,
-                unSelectedIcon = Icons.Outlined.Category,
-                label = "Category"
+                route = AppDestination.Search,
+                selectedIcon = Icons.Filled.Search,
+                unSelectedIcon = Icons.Outlined.Search,
+                label = "Search"
             ),
             TopLevelDestination(
                 route = AppDestination.MyCollection,

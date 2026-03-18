@@ -6,7 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 
 @Composable
-fun AnimeCategories(modifier: Modifier = Modifier) {
+fun SearchAnime(modifier: Modifier = Modifier) {
     Column() {
         Text("WORK IN PROGRESS")
     }
