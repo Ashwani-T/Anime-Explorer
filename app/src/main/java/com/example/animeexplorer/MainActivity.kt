@@ -20,6 +20,7 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.Collections
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -112,6 +113,7 @@ private fun AppScaffold(
     val isAnimeList = navBackStackEntry?.destination?.hasRoute<HomeDestination.AnimeList>()?: false
     val isAnimeDetail = navBackStackEntry?.destination?.hasRoute<HomeDestination.AnimeDetail>()?: false
     val isMyCollection = navBackStackEntry?.destination?.hasRoute<AppDestination.MyCollection>()?: false
+    val isSearch = navBackStackEntry?.destination?.hasRoute<AppDestination.Search>()?: false
 
 
     var showFab by rememberSaveable { mutableStateOf(false) }
@@ -170,6 +172,19 @@ private fun AppScaffold(
                                 Icon(
                                     imageVector = Icons.Filled.Search,
                                     contentDescription = "Search In Collection"
+                                )
+                            }
+                        }
+                    )
+                }
+                isSearch -> {
+                    CenterAlignedTopAppBar(
+                        title = { Text("Search Anime") },
+                        navigationIcon = {
+                            IconButton(onClick = { navController.popBackStack() }) {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                    contentDescription = "Back"
                                 )
                             }
                         }
@@ -321,4 +336,3 @@ fun BottomNavigationBar(
         }
     }
 }
-
