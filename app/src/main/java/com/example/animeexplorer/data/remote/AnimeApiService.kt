@@ -42,8 +42,8 @@ interface AnimeApiService {
         @Query("page") page: Int = 1
     ): AnimeResponseDto
 
-    @GET("recommendations/anime")
-    suspend fun getAnimeRecommendation(): AnimeResponseDto
+    @GET("seasons/now")
+    suspend fun getThisSeasonAnime(): AnimeResponseDto
 
     @GET("genres/anime")
     suspend fun getAnimeGenres(

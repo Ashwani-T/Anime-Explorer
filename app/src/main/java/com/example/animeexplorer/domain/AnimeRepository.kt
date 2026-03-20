@@ -31,6 +31,6 @@ interface AnimeRepository {
         genres: Set<GenreModel>? = emptySet(),
     ): Result<List<AnimeUiModel>>
 
-//    suspend fun getAnimeGenres(): Result<List<GenreModel>>
+    suspend fun getThisSeasonAnime(): Result<List<AnimeUiModel>>
 }
 

@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
@@ -32,6 +33,7 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.SearchOff
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.VideoLibrary
 import androidx.compose.material.icons.outlined.FilterList
@@ -60,6 +62,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -75,7 +78,7 @@ import com.example.animeexplorer.domain.enums.StatusType
 @Composable
 fun SearchAnime(
     modifier: Modifier = Modifier,
-    onAnimeClick: (Int)->Unit,
+    onAnimeClick: (Int) -> Unit,
 ) {
 
     val viewModel: SearchViewModel = hiltViewModel()
@@ -103,14 +106,14 @@ fun SearchAnime(
                 )
             },
             trailingIcon = {
-                if(uiState.searchQuery.isEmpty()){
+                if (uiState.searchQuery.isEmpty()) {
                     IconButton(onClick = { showMainFilterSheet = true }) {
                         Icon(
                             imageVector = Icons.Default.FilterList,
                             contentDescription = "Filter Icon"
                         )
                     }
-                }else{
+                } else {
                     IconButton(onClick = {
                         viewModel.resetFilters()
                         viewModel.onSearchQueryChange("")
@@ -133,17 +136,17 @@ fun SearchAnime(
 
         ElevatedFilterChip(
             selected = showMainFilterSheet,
-            onClick = {showMainFilterSheet = true},
+            onClick = { showMainFilterSheet = true },
             label = {
                 Text("Filter")
             },
             leadingIcon = {
-                if(showMainFilterSheet){
+                if (showMainFilterSheet) {
                     Icon(
                         imageVector = Icons.Outlined.FilterList,
                         contentDescription = "Filter Icon"
                     )
-                }else{
+                } else {
                     Icon(
                         imageVector = Icons.Filled.FilterList,
                         contentDescription = "Filter Icon"
@@ -160,12 +163,21 @@ fun SearchAnime(
             verticalArrangement = Arrangement.spacedBy(8.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            items(uiState.animeList, key = { it.id }) { anime ->
-                AnimeItem(
-                    anime = anime,
-                    onClick = { onAnimeClick(anime.id) }
-                )
+
+            if (uiState.animeList.isEmpty()) {
+                item(span = { GridItemSpan(maxLineSpan) }) {
+                    EmptySheet()
+                }
+
+            } else {
+                items(uiState.animeList, key = { it.id }) { anime ->
+                    AnimeItem(
+                        anime = anime,
+                        onClick = { onAnimeClick(anime.id) }
+                    )
+                }
             }
+
         }
 
         // Main Filter Bottom Sheet
@@ -258,7 +270,7 @@ fun FilterSheetContent(
         ) {
             FilterOptionCard(
                 label = "SORT BY",
-                value = uiState.selectedSort?.displayName?: "Select Sort",
+                value = uiState.selectedSort?.displayName ?: "Select Sort",
                 icon = Icons.AutoMirrored.Filled.Sort,
                 onClick = { onOpenSubSheet(SubSheetType.SORT) },
                 modifier = Modifier.weight(1f)
@@ -385,7 +397,11 @@ fun SortOrderButton(
                     modifier = Modifier.size(14.dp)
                 )
                 Spacer(modifier = Modifier.width(4.dp))
-                Text(text = order.name, style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold)
+                Text(
+                    text = order.name,
+                    style = MaterialTheme.typography.bodySmall,
+                    fontWeight = FontWeight.Bold
+                )
             }
         }
     }
@@ -427,7 +443,11 @@ fun FilterOptionCard(
     Card(
         modifier = modifier.clickable { onClick() },
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(
+                alpha = 0.3f
+            )
+        ),
         border = BorderStroke(1.dp, Color.Gray.copy(alpha = 0.2f))
     ) {
         Row(
@@ -438,7 +458,11 @@ fun FilterOptionCard(
             Spacer(modifier = Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(text = label, style = MaterialTheme.typography.labelSmall, color = Color.Gray)
-                Text(text = value, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
+                Text(
+                    text = value,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.SemiBold
+                )
             }
             Icon(imageVector = Icons.Default.KeyboardArrowDown, contentDescription = null)
         }
@@ -450,7 +474,10 @@ fun GenreChip(label: String, isSelected: Boolean, onClick: () -> Unit) {
     Surface(
         modifier = Modifier.clickable { onClick() },
         shape = RoundedCornerShape(12.dp),
-        border = BorderStroke(1.dp, if (isSelected) Color(0xFF9EA7E5) else Color.Gray.copy(alpha = 0.5f)),
+        border = BorderStroke(
+            1.dp,
+            if (isSelected) Color(0xFF9EA7E5) else Color.Gray.copy(alpha = 0.5f)
+        ),
         color = if (isSelected) Color(0xFF9EA7E5).copy(alpha = 0.2f) else Color.Transparent
     ) {
         Text(
@@ -479,7 +506,7 @@ fun SelectionSheetContent(type: SubSheetType, onSelect: (Any) -> Unit) {
         )
         LazyColumn {
             items(options) { option ->
-                val displayName = when(option) {
+                val displayName = when (option) {
                     is SortType -> option.displayName
                     is FormatType -> option.displayName
                     is StatusType -> option.displayName
@@ -497,5 +524,25 @@ fun SelectionSheetContent(type: SubSheetType, onSelect: (Any) -> Unit) {
             }
         }
         Spacer(modifier = Modifier.height(32.dp))
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun EmptySheet() {
+    Column(
+        modifier = Modifier.padding(12.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Icon(
+            imageVector = Icons.Filled.SearchOff,
+            contentDescription = "Search Icon"
+        )
+        Text(
+            text = "No Result Found",
+            fontWeight = FontWeight.Bold
+        )
+
     }
 }

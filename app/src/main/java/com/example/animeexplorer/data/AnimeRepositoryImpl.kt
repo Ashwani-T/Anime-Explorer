@@ -135,4 +135,19 @@ class AnimeRepositoryImpl @Inject constructor(
             Result.failure(e)
         }
     }
+
+
+    override suspend fun getThisSeasonAnime(): Result<List<AnimeUiModel>> {
+        return try {
+            val recommendationResult = apiService.getThisSeasonAnime().data.map {anime ->
+                anime.toUiModel()
+            }
+            Log.d("Ashwani", "${recommendationResult.size}: ")
+
+            Result.success(recommendationResult)
+        }catch (e: Exception){
+            Log.d("Ashwani", "${e.message}: ")
+            Result.failure(Exception(e.message))
+        }
+    }
 }

@@ -6,15 +6,11 @@ import androidx.lifecycle.viewModelScope
 import com.example.animeexplorer.data.ConnectivityObserver
 import com.example.animeexplorer.domain.AnimeRepository
 import com.example.animeexplorer.domain.enums.AnimeFilter
-import com.example.animeexplorer.domain.enums.AnimeType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
-import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -75,6 +71,13 @@ class HomeScreenViewModel @Inject constructor(
                         it.copy(
                             favorites = HomeSection(items = result, isLoading = false, error = null)
                         )
+                    }
+                }
+
+            val currentSeasonAnime = repository.getThisSeasonAnime()
+                .onSuccess { animeList ->
+                    _uiState.update { state ->
+                        state.copy(currentSeason = HomeSection(items = animeList, isLoading = false, error = null))
                     }
                 }
 

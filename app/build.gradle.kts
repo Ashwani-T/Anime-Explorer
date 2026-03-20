@@ -14,9 +14,7 @@ android {
     compileSdk {
         version = release(36)
     }
-    room {
-        schemaDirectory("$projectDir/schemas")
-    }
+
 
     defaultConfig {
         applicationId = "com.example.animeexplorer"
@@ -47,6 +45,9 @@ android {
 
 }
 
+room {
+    schemaDirectory("$projectDir/schemas")
+}
 dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
