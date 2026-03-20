@@ -13,8 +13,13 @@ import com.example.animeexplorer.domain.AnimeResponseModel
 import com.example.animeexplorer.domain.AnimeUiModel
 import com.example.animeexplorer.domain.PageInfo
 import com.example.animeexplorer.domain.enums.AnimeFilter
-import com.example.animeexplorer.domain.enums.AnimeRating
 import com.example.animeexplorer.domain.enums.AnimeType
+import com.example.animeexplorer.domain.enums.FormatType
+import com.example.animeexplorer.domain.enums.RatingType
+import com.example.animeexplorer.domain.enums.SortOrder
+import com.example.animeexplorer.domain.enums.SortType
+import com.example.animeexplorer.domain.enums.StatusType
+import com.example.animeexplorer.screens.GenreModel
 import jakarta.inject.Inject
 
 
@@ -35,7 +40,6 @@ class AnimeRepositoryImpl @Inject constructor(
             apiService.getAnimeList(
                 query = query.takeIf { query.isNotBlank() },
                 page = page,
-                genres = null
             )
         }.onFailure { exception ->
 
@@ -86,20 +90,48 @@ class AnimeRepositoryImpl @Inject constructor(
     override suspend fun getTopAnime(
         type: AnimeType?,
         filter: AnimeFilter?,
-        rating: AnimeRating?,
+        rating: RatingType?,
     ): Result<List<AnimeUiModel>> {
         return try {
+            Log.d("TAG", "getTopAnime: IN")
             val response = apiService.getTopAnime(
                 type = type?.type,
                 filter = filter?.filter,
-                rating = rating?.rating,
+                rating = rating?.name?.lowercase()
             )
 
-            val domainList = response.data.map { it.toUiModel()}
+            val domainList = response.data.map { it.toUiModel() }
 
             Result.success(domainList)
 
         } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun getFilteredAnime(
+        query: String,
+        orderBy: SortType?,
+        sortOrder: SortOrder?,
+        format: FormatType?,
+        status: StatusType?,
+        rating: RatingType?,
+        genres: Set<GenreModel>?
+    ): Result<List<AnimeUiModel>> {
+        return try {
+            val searchedResult = apiService.getAnimeList(
+                query = query.takeIf { query.isNotBlank() },
+                genres = genres?.joinToString(separator = ",") { it.malId.toString() },
+                type = format?.apiName,
+                status = status?.apiName,
+                rating = rating?.apiName,
+                orderBy = orderBy?.apiName,
+                sortOrder = sortOrder?.apiName,
+            )
+            val animeList: List<AnimeUiModel> = searchedResult.data.map { it.toUiModel() }
+
+            Result.success(animeList)
+        }catch (e: Exception){
             Result.failure(e)
         }
     }

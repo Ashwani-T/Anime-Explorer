@@ -60,7 +60,8 @@ fun AnimeItem(
                         .fillMaxWidth()
                         .height(180.dp)
                 )
-                RatingBadge(anime.score, modifier.padding(8.dp))
+
+                RatingBadge(anime.score, modifier = Modifier.padding(6.dp))
             }
 
             Row(
@@ -93,7 +94,7 @@ fun RatingBadge(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
             .background(Color(0xFF6A5BE2), RoundedCornerShape(12.dp))
-            .padding(horizontal = 8.dp, vertical = 4.dp)
+
     ) {
         Icon(
             Icons.Filled.Star,

@@ -4,6 +4,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,25 +15,32 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Sort
-import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.ArrowDownward
+import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.VideoLibrary
+import androidx.compose.material.icons.outlined.FilterList
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ElevatedFilterChip
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -54,35 +62,38 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.animeexplorer.components.AnimeItem
+import com.example.animeexplorer.domain.enums.FormatType
+import com.example.animeexplorer.domain.enums.RatingType
+import com.example.animeexplorer.domain.enums.SortOrder
+import com.example.animeexplorer.domain.enums.SortType
+import com.example.animeexplorer.domain.enums.StatusType
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SearchAnime(modifier: Modifier = Modifier) {
-    var searchQuery by remember { mutableStateOf("") }
+fun SearchAnime(
+    modifier: Modifier = Modifier,
+    onAnimeClick: (Int)->Unit,
+) {
+
+    val viewModel: SearchViewModel = hiltViewModel()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var showMainFilterSheet by remember { mutableStateOf(false) }
-    
-    // Filter States
-    var selectedSort by remember { mutableStateOf("Select Sort") }
-    var selectedSeason by remember { mutableStateOf("Select Season") }
-    var selectedStatus by remember { mutableStateOf("Select Status") }
-    var selectedFormat by remember { mutableStateOf("Select Format") }
-    var selectedGenres by remember { mutableStateOf(setOf<String>()) }
 
-    // Sub-sheet states
     var activeSubSheet by remember { mutableStateOf<SubSheetType?>(null) }
-
-    val filters = listOf("Season", "Trending", "Popular")
-    var quickFilter by remember { mutableStateOf<String?>(null) }
 
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(16.dp)
+            .padding(horizontal = 16.dp)
     ) {
+        Spacer(modifier = Modifier.height(16.dp))
         // Search Bar
         OutlinedTextField(
-            value = searchQuery,
-            onValueChange = { searchQuery = it },
+            value = uiState.searchQuery,
+            onValueChange = { viewModel.onSearchQueryChange(it) },
             modifier = Modifier.fillMaxWidth(),
             placeholder = { Text("Search anime...") },
             leadingIcon = {
@@ -92,11 +103,24 @@ fun SearchAnime(modifier: Modifier = Modifier) {
                 )
             },
             trailingIcon = {
-                IconButton(onClick = { showMainFilterSheet = true }) {
-                    Icon(
-                        imageVector = Icons.Default.FilterList,
-                        contentDescription = "Filter Icon"
-                    )
+                if(uiState.searchQuery.isEmpty()){
+                    IconButton(onClick = { showMainFilterSheet = true }) {
+                        Icon(
+                            imageVector = Icons.Default.FilterList,
+                            contentDescription = "Filter Icon"
+                        )
+                    }
+                }else{
+                    IconButton(onClick = {
+                        viewModel.resetFilters()
+                        viewModel.onSearchQueryChange("")
+
+                    }) {
+                        Icon(
+                            imageVector = Icons.Default.Clear,
+                            contentDescription = "Clear Icon"
+                        )
+                    }
                 }
             },
             shape = RoundedCornerShape(28.dp),
@@ -105,17 +129,41 @@ fun SearchAnime(modifier: Modifier = Modifier) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Prebuilt Filters
-        LazyRow(
+        //Filter Chip
+
+        ElevatedFilterChip(
+            selected = showMainFilterSheet,
+            onClick = {showMainFilterSheet = true},
+            label = {
+                Text("Filter")
+            },
+            leadingIcon = {
+                if(showMainFilterSheet){
+                    Icon(
+                        imageVector = Icons.Outlined.FilterList,
+                        contentDescription = "Filter Icon"
+                    )
+                }else{
+                    Icon(
+                        imageVector = Icons.Filled.FilterList,
+                        contentDescription = "Filter Icon"
+                    )
+                }
+            }
+        )
+
+        // Anime Grid
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(2),
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(bottom = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            items(filters) { filter ->
-                FilterChip(
-                    selected = quickFilter == filter,
-                    onClick = { 
-                        quickFilter = if (quickFilter == filter) null else filter 
-                    },
-                    label = { Text(filter) }
+            items(uiState.animeList, key = { it.id }) { anime ->
+                AnimeItem(
+                    anime = anime,
+                    onClick = { onAnimeClick(anime.id) }
                 )
             }
         }
@@ -127,28 +175,14 @@ fun SearchAnime(modifier: Modifier = Modifier) {
                 sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
             ) {
                 FilterSheetContent(
-                    selectedSort = selectedSort,
-                    selectedSeason = selectedSeason,
-                    selectedStatus = selectedStatus,
-                    selectedFormat = selectedFormat,
-                    selectedGenres = selectedGenres,
+                    uiState = uiState,
                     onOpenSubSheet = { activeSubSheet = it },
-                    onGenreToggle = { genre ->
-                        selectedGenres = if (selectedGenres.contains(genre)) {
-                            selectedGenres - genre
-                        } else {
-                            selectedGenres + genre
-                        }
-                    },
-                    onReset = {
-                        selectedSort = "Select Sort"
-                        selectedSeason = "Select Season"
-                        selectedStatus = "Select Status"
-                        selectedFormat = "Select Format"
-                        selectedGenres = emptySet()
-                    },
+                    onToggleSortOrder = { viewModel.toggleSortOrder() },
+                    onGenreToggle = { viewModel.toggleGenre(it) },
+                    onReset = { viewModel.resetFilters() },
                     onApply = {
                         showMainFilterSheet = false
+                        viewModel.loadAnime()
                     }
                 )
             }
@@ -164,10 +198,10 @@ fun SearchAnime(modifier: Modifier = Modifier) {
                     type = type,
                     onSelect = { value ->
                         when (type) {
-                            SubSheetType.SORT -> selectedSort = value
-                            SubSheetType.SEASON -> selectedSeason = value
-                            SubSheetType.STATUS -> selectedStatus = value
-                            SubSheetType.FORMAT -> selectedFormat = value
+                            SubSheetType.SORT -> viewModel.onSortTypeChange(value as SortType)
+                            SubSheetType.FORMAT -> viewModel.onFormatChange(value as FormatType)
+                            SubSheetType.STATUS -> viewModel.onStatusChange(value as StatusType)
+                            SubSheetType.RATING -> viewModel.onRatingChange(value as RatingType)
                         }
                         activeSubSheet = null
                     }
@@ -177,17 +211,14 @@ fun SearchAnime(modifier: Modifier = Modifier) {
     }
 }
 
-enum class SubSheetType { SORT, SEASON, STATUS, FORMAT }
+enum class SubSheetType { SORT, FORMAT, STATUS, RATING }
 
 @Composable
 fun FilterSheetContent(
-    selectedSort: String,
-    selectedSeason: String,
-    selectedStatus: String,
-    selectedFormat: String,
-    selectedGenres: Set<String>,
+    uiState: SearchUiState,
     onOpenSubSheet: (SubSheetType) -> Unit,
-    onGenreToggle: (String) -> Unit,
+    onToggleSortOrder: () -> Unit,
+    onGenreToggle: (GenreModel) -> Unit,
     onReset: () -> Unit,
     onApply: () -> Unit
 ) {
@@ -221,30 +252,42 @@ fun FilterSheetContent(
         // SORT Section
         SectionHeader(icon = Icons.AutoMirrored.Filled.Sort, title = "SORT")
         Spacer(modifier = Modifier.height(12.dp))
-        FilterOptionCard(
-            label = "SORT BY",
-            value = selectedSort,
-            icon = Icons.AutoMirrored.Filled.Sort,
-            onClick = { onOpenSubSheet(SubSheetType.SORT) }
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            FilterOptionCard(
+                label = "SORT BY",
+                value = uiState.selectedSort?.displayName?: "Select Sort",
+                icon = Icons.AutoMirrored.Filled.Sort,
+                onClick = { onOpenSubSheet(SubSheetType.SORT) },
+                modifier = Modifier.weight(1f)
+            )
+            Spacer(modifier = Modifier.width(12.dp))
+            SortOrderButton(
+                order = uiState.sortOrder,
+                onClick = onToggleSortOrder,
+                modifier = Modifier.width(80.dp)
+            )
+        }
 
         Spacer(modifier = Modifier.height(24.dp))
 
         // FILTERS Section
-        SectionHeader(icon = Icons.AutoMirrored.Filled.Sort, title = "FILTERS") // Reusing icon for visual consistency
+        SectionHeader(icon = Icons.AutoMirrored.Filled.Sort, title = "FILTERS")
         Spacer(modifier = Modifier.height(12.dp))
         Row(modifier = Modifier.fillMaxWidth()) {
             FilterOptionCard(
-                label = "SEASON",
-                value = selectedSeason,
-                icon = Icons.Default.CalendarMonth,
-                onClick = { onOpenSubSheet(SubSheetType.SEASON) },
+                label = "FORMAT",
+                value = uiState.selectedFormat?.displayName ?: "Select Format",
+                icon = Icons.Default.VideoLibrary,
+                onClick = { onOpenSubSheet(SubSheetType.FORMAT) },
                 modifier = Modifier.weight(1f)
             )
             Spacer(modifier = Modifier.width(12.dp))
             FilterOptionCard(
                 label = "STATUS",
-                value = selectedStatus,
+                value = uiState.selectedStatus?.displayName ?: "Select Status",
                 icon = Icons.Default.Info,
                 onClick = { onOpenSubSheet(SubSheetType.STATUS) },
                 modifier = Modifier.weight(1f)
@@ -252,10 +295,10 @@ fun FilterSheetContent(
         }
         Spacer(modifier = Modifier.height(12.dp))
         FilterOptionCard(
-            label = "FORMAT",
-            value = selectedFormat,
-            icon = Icons.Default.VideoLibrary,
-            onClick = { onOpenSubSheet(SubSheetType.FORMAT) }
+            label = "RATING",
+            value = uiState.selectedRating?.displayName ?: "Select Rating",
+            icon = Icons.Default.Star,
+            onClick = { onOpenSubSheet(SubSheetType.RATING) }
         )
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -263,12 +306,11 @@ fun FilterSheetContent(
         // GENRES Section
         SectionHeader(icon = Icons.Default.Category, title = "GENRES")
         Spacer(modifier = Modifier.height(12.dp))
-        val genres = listOf("Action", "Adventure", "Comedy", "Drama", "Fantasy", "Horror", "Mystery", "Romance", "Sci-Fi", "Slice of Life")
         LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            items(genres) { genre ->
+            items(uiState.availableGenres) { genre ->
                 GenreChip(
-                    label = genre,
-                    isSelected = selectedGenres.contains(genre),
+                    label = genre.name,
+                    isSelected = uiState.selectedGenres.any { it.malId == genre.malId },
                     onClick = { onGenreToggle(genre) }
                 )
             }
@@ -287,7 +329,11 @@ fun FilterSheetContent(
                 shape = RoundedCornerShape(12.dp),
                 border = BorderStroke(1.dp, Color.Gray)
             ) {
-                Icon(Icons.Default.Refresh, contentDescription = null, modifier = Modifier.size(18.dp))
+                Icon(
+                    Icons.Default.Refresh,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
+                )
                 Spacer(modifier = Modifier.width(4.dp))
                 Text("RESET", color = MaterialTheme.colorScheme.onSurface)
             }
@@ -297,9 +343,49 @@ fun FilterSheetContent(
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF9EA7E5))
             ) {
-                Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(18.dp))
+                Icon(
+                    Icons.Default.Check,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
+                )
                 Spacer(modifier = Modifier.width(4.dp))
                 Text("APPLY FILTERS", color = Color.DarkGray, fontWeight = FontWeight.Bold)
+            }
+        }
+    }
+}
+
+@Composable
+fun SortOrderButton(
+    order: SortOrder,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier.clickable { onClick() },
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(
+                alpha = 0.3f
+            )
+        ),
+        border = BorderStroke(1.dp, Color.Gray.copy(alpha = 0.2f))
+    ) {
+        Column(
+            modifier = Modifier
+                .padding(8.dp)
+                .fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(text = "ORDER", style = MaterialTheme.typography.labelSmall, color = Color.Gray)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = if (order == SortOrder.ASC) Icons.Default.ArrowUpward else Icons.Default.ArrowDownward,
+                    contentDescription = null,
+                    modifier = Modifier.size(14.dp)
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(text = order.name, style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold)
             }
         }
     }
@@ -377,12 +463,12 @@ fun GenreChip(label: String, isSelected: Boolean, onClick: () -> Unit) {
 }
 
 @Composable
-fun SelectionSheetContent(type: SubSheetType, onSelect: (String) -> Unit) {
-    val options = when (type) {
-        SubSheetType.SORT -> listOf("Popularity", "Score", "Latest", "A-Z")
-        SubSheetType.SEASON -> listOf("Winter", "Spring", "Summer", "Fall")
-        SubSheetType.STATUS -> listOf("Airing", "Finished", "Upcoming", "Hiatus")
-        SubSheetType.FORMAT -> listOf("TV", "Movie", "OVA", "Special", "ONA")
+fun SelectionSheetContent(type: SubSheetType, onSelect: (Any) -> Unit) {
+    val options: List<Any> = when (type) {
+        SubSheetType.SORT -> SortType.entries
+        SubSheetType.FORMAT -> FormatType.entries
+        SubSheetType.STATUS -> StatusType.entries
+        SubSheetType.RATING -> RatingType.entries
     }
 
     Column(modifier = Modifier.padding(16.dp)) {
@@ -393,8 +479,15 @@ fun SelectionSheetContent(type: SubSheetType, onSelect: (String) -> Unit) {
         )
         LazyColumn {
             items(options) { option ->
+                val displayName = when(option) {
+                    is SortType -> option.displayName
+                    is FormatType -> option.displayName
+                    is StatusType -> option.displayName
+                    is RatingType -> option.displayName
+                    else -> option.toString()
+                }
                 Text(
-                    text = option,
+                    text = displayName,
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable { onSelect(option) }

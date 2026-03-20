@@ -81,10 +81,7 @@ fun HomeScreen(
     HomeScreenContent(
         modifier = modifier,
         state = state,
-        onQueryChange = viewModel::onQueryChange,
-//        loadMore = viewModel::loadNextPage,
         onAnimeClick = onAnimeClick,
-        cancelLoading = viewModel::cancelLoading,
         listState = listState
     )
 }
@@ -93,10 +90,7 @@ fun HomeScreen(
 fun HomeScreenContent(
     modifier: Modifier = Modifier,
     state: HomeUiState,
-    onQueryChange: (String) -> Unit,
-//    loadMore: () -> Unit,
     onAnimeClick: (Int) -> Unit,
-    cancelLoading: () -> Unit,
     listState: LazyGridState
 ) {
     Column(

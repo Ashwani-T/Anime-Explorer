@@ -257,7 +257,9 @@ private fun AppScaffold(
                     }
                 }
                 composable<AppDestination.Search>{
-                    SearchAnime()
+                    SearchAnime(onAnimeClick={malId->
+                        navController.navigate(HomeDestination.AnimeDetail(malId))
+                    })
                 }
                 composable<AppDestination.MyCollection>{
                     AnimeLibrary(

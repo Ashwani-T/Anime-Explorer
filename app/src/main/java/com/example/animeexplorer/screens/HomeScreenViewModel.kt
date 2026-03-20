@@ -27,16 +27,10 @@ class HomeScreenViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState = _uiState.asStateFlow()
-
-    private val queryFlow = MutableStateFlow("")
     private val isConnected = MutableStateFlow(false)
-//
-//    private var currentPage = 1
-    private var searchJob: Job? = null
 
     init {
         observeNetworkStatus()
-        //observeQuery()
     }
     private suspend fun loadAnimePage() {
 
@@ -54,6 +48,7 @@ class HomeScreenViewModel @Inject constructor(
                     )
                 }
             }
+                .onFailure { e -> Log.d("Ashwani", "${e.message}") }
 
             val topAnime = repository.getTopAnime()
                 .onSuccess { result ->
@@ -83,6 +78,8 @@ class HomeScreenViewModel @Inject constructor(
                     }
                 }
 
+
+
             _uiState.update { it.copy(isRefreshing = false) }
 
         } catch (e: Exception) {
@@ -90,44 +87,6 @@ class HomeScreenViewModel @Inject constructor(
         }
     }
 
-//    @OptIn(FlowPreview::class)
-//    private fun observeQuery() {
-//        viewModelScope.launch {
-//            queryFlow
-//                .debounce(400)
-//                .distinctUntilChanged()
-//                .collectLatest { q ->
-//
-//                    _uiState.update {
-//                        it.copy(
-//                            query = q,
-//                            animeList = emptyList(),
-//                            endReached = false
-//                        )
-//                    }
-//                    currentPage = 1
-//
-//                    Log.d("TAG", "observeQuery")
-//
-//                    loadAnimePage(query = q, append = false)
-//
-//                }
-//        }
-//    }
-
-    fun onQueryChange(newQuery: String) {
-        queryFlow.value = newQuery
-    }
-
-//    fun loadNextPage() {
-//        if (!isConnected.value) return
-//        if (_uiState.value.endReached) return
-//        if (_uiState.value.isLoading) return
-//
-//        searchJob = viewModelScope.launch {
-//            loadAnimePage(_uiState.value.query, append = true)
-//        }
-//    }
 
     private fun observeNetworkStatus() {
         viewModelScope.launch {
@@ -137,18 +96,9 @@ class HomeScreenViewModel @Inject constructor(
                     isConnected.value = status
 
                     if (status) {
-                        val state = _uiState.value
-                        val q = queryFlow.value
-                        loadAnimePage()
-                    }else{
-                        cancelLoading()
+                       loadAnimePage()
                     }
                 }
         }
     }
-
-    fun cancelLoading(){
-        if(searchJob?.isActive == true) searchJob!!.cancel()
-    }
-
 }
