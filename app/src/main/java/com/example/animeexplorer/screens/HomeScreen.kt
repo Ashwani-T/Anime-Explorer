@@ -39,30 +39,15 @@ import kotlinx.coroutines.launch
 @Composable
 fun HomeScreen(
     modifier: Modifier = Modifier,
-    onAnimeClick: (Int) -> Unit,
-    registerScrollToTop: ((() -> Unit) -> Unit),
-    onFabVisibilityChanged: (Boolean) -> Unit
+    onAnimeClick: (Int) -> Unit
 
 ) {
     val viewModel: HomeScreenViewModel = hiltViewModel()
     val state by viewModel.uiState.collectAsState()
 
     val listState = rememberLazyGridState()
-    val scope = rememberCoroutineScope()
 
-    val showFab by remember {
-        derivedStateOf { listState.firstVisibleItemIndex > 3 }
-    }
 
-    LaunchedEffect(listState) {
-        snapshotFlow { showFab }
-            .distinctUntilChanged()
-            .collect { visible -> onFabVisibilityChanged(visible) }
-    }
-
-    LaunchedEffect(Unit) {
-        registerScrollToTop { scope.launch { listState.animateScrollToItem(0) } }
-    }
 
     HomeScreenContent(
         modifier = modifier,

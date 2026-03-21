@@ -4,7 +4,6 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.animeexplorer.domain.AnimeRepository
-import com.example.animeexplorer.domain.AnimeUiModel
 import com.example.animeexplorer.domain.enums.FormatType
 import com.example.animeexplorer.domain.enums.RatingType
 import com.example.animeexplorer.domain.enums.SortOrder
@@ -12,6 +11,7 @@ import com.example.animeexplorer.domain.enums.SortType
 import com.example.animeexplorer.domain.enums.StatusType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -23,22 +23,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-data class GenreModel(
-    val malId: Int,
-    val name: String
-)
-
-data class SearchUiState(
-    val searchQuery: String = "",
-    val animeList: List<AnimeUiModel> = emptyList(),
-    val selectedSort: SortType? = null,
-    val sortOrder: SortOrder = SortOrder.DESC,
-    val selectedFormat: FormatType? = null,
-    val selectedStatus: StatusType? = null,
-    val selectedRating: RatingType? = null,
-    val selectedGenres: Set<GenreModel> = emptySet(),
-    val availableGenres: List<GenreModel> = emptyList(),
-)
 
 @HiltViewModel
 class SearchViewModel @Inject constructor(
@@ -62,7 +46,12 @@ class SearchViewModel @Inject constructor(
                 .map { it.searchQuery }
                 .distinctUntilChanged()
                 .debounce { 200 }
-                .collectLatest { loadAnime() }
+                .collectLatest {
+                    _uiState.update { state ->
+                        state.copy(isLoading = true, animeList = emptyList(), pageNumber = 1)
+                    }
+                    loadAnime()
+                }
         }
     }
 
@@ -135,26 +124,41 @@ class SearchViewModel @Inject constructor(
     }
 
     fun loadAnime() {
+
+
         viewModelScope.launch {
             val currentState = uiState.value
             Log.d("Ashwani", "ui state =  ${uiState.value}")
             val result = animeRepository.getFilteredAnime(
-                currentState.searchQuery,
-                currentState.selectedSort,
-                currentState.sortOrder,
-                currentState.selectedFormat,
-                currentState.selectedStatus,
-                currentState.selectedRating,
-                currentState.selectedGenres
+                query = currentState.searchQuery,
+                page = currentState.pageNumber,
+                orderBy =  currentState.selectedSort,
+                sortOrder = currentState.sortOrder,
+                format = currentState.selectedFormat,
+                status = currentState.selectedStatus,
+                rating = currentState.selectedRating,
+                genres = currentState.selectedGenres
             )
 
             result.onSuccess {animeList ->
-                val filteredList = animeList.distinctBy { it.id }
-                _uiState.update { it.copy(animeList = filteredList)}
+                val filteredList = (uiState.value.animeList + animeList).distinctBy { it.id }
+                _uiState.update { it.copy(animeList = filteredList, isLoading = false )}
             }.onFailure { error ->
+                _uiState.update { it.copy(isLoading = false, pageNumber = it.pageNumber - 1)}
                 Log.d("ANIME EXPLORER", "${error.message}")
             }
 
         }
     }
+
+    fun onLoadMore(){
+        Log.d("ANIME EXPLORER", "laoding entered: ")
+        if(uiState.value.isLoading) return
+
+        _uiState.update { it.copy(isLoading = true, pageNumber = it.pageNumber + 1)}
+
+        loadAnime()
+
+    }
+
 }

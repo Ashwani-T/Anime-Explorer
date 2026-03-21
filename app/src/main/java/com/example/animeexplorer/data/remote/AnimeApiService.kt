@@ -19,7 +19,7 @@ interface AnimeApiService {
         @Query("rating") rating: String? = null,
         @Query("order_by") orderBy: String? = null,
         @Query("sort") sortOrder: String? = null,
-        @Query("page") page: Int = 1,
+        @Query("page") page: Int? = 1,
         @Query("limit") limit: Int = 25
     ): AnimeResponseDto
 

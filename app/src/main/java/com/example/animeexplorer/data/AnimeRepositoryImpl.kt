@@ -111,6 +111,7 @@ class AnimeRepositoryImpl @Inject constructor(
 
     override suspend fun getFilteredAnime(
         query: String,
+        page: Int?,
         orderBy: SortType?,
         sortOrder: SortOrder?,
         format: FormatType?,
@@ -121,6 +122,7 @@ class AnimeRepositoryImpl @Inject constructor(
         return try {
             val searchedResult = apiService.getAnimeList(
                 query = query.takeIf { query.isNotBlank() },
+                page = page,
                 genres = genres?.joinToString(separator = ",") { it.malId.toString() },
                 type = format?.apiName,
                 status = status?.apiName,

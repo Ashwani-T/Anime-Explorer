@@ -96,7 +96,7 @@ private fun AppScaffold(
         .collectAsState(true)
 
     LaunchedEffect(isConnected) {
-        if(!isConnected){
+        if (!isConnected) {
             scope.launch {
                 snackbarHostState.showSnackbar(
                     message = "Connection Lost"
@@ -110,10 +110,12 @@ private fun AppScaffold(
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
 
-    val isAnimeList = navBackStackEntry?.destination?.hasRoute<HomeDestination.AnimeList>()?: false
-    val isAnimeDetail = navBackStackEntry?.destination?.hasRoute<HomeDestination.AnimeDetail>()?: false
-    val isMyCollection = navBackStackEntry?.destination?.hasRoute<AppDestination.MyCollection>()?: false
-    val isSearch = navBackStackEntry?.destination?.hasRoute<AppDestination.Search>()?: false
+    val isAnimeList = navBackStackEntry?.destination?.hasRoute<HomeDestination.AnimeList>() ?: false
+    val isAnimeDetail =
+        navBackStackEntry?.destination?.hasRoute<HomeDestination.AnimeDetail>() ?: false
+    val isMyCollection =
+        navBackStackEntry?.destination?.hasRoute<AppDestination.MyCollection>() ?: false
+    val isSearch = navBackStackEntry?.destination?.hasRoute<AppDestination.Search>() ?: false
 
 
     var showFab by rememberSaveable { mutableStateOf(false) }
@@ -125,7 +127,7 @@ private fun AppScaffold(
 
     Scaffold(
         topBar = {
-            when{
+            when {
                 isAnimeList -> {
                     TopAppBar(
                         title = {
@@ -137,11 +139,12 @@ private fun AppScaffold(
                         }
                     )
                 }
+
                 isAnimeDetail -> {
                     TopAppBar(
                         title = { Text("Anime Details") },
                         navigationIcon = {
-                            IconButton(onClick = {navController.popBackStack() }) {
+                            IconButton(onClick = { navController.popBackStack() }) {
                                 Icon(
                                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                                     contentDescription = "Back"
@@ -150,6 +153,7 @@ private fun AppScaffold(
                         }
                     )
                 }
+
                 isMyCollection -> {
                     TopAppBar(
                         title = {
@@ -160,14 +164,14 @@ private fun AppScaffold(
                             )
                         },
                         navigationIcon = {
-                            IconButton(onClick = {navController.popBackStack() }) {
+                            IconButton(onClick = { navController.popBackStack() }) {
                                 Icon(
                                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                                     contentDescription = "Back"
                                 )
                             }
                         },
-                        actions ={
+                        actions = {
                             IconButton(onClick = { /* do something */ }) {
                                 Icon(
                                     imageVector = Icons.Filled.Search,
@@ -177,6 +181,7 @@ private fun AppScaffold(
                         }
                     )
                 }
+
                 isSearch -> {
                     CenterAlignedTopAppBar(
                         title = { Text("Search Anime") },
@@ -199,7 +204,7 @@ private fun AppScaffold(
             SnackbarHost(snackbarHostState)
         },
         floatingActionButton = {
-            if (isAnimeList && showFab) {
+            if (isSearch && showFab) {
                 FloatingActionButton(
                     onClick = { scrollToTop?.invoke() }
                 ) {
@@ -209,7 +214,7 @@ private fun AppScaffold(
                     )
                 }
             }
-            if(isAnimeDetail){
+            if (isAnimeDetail) {
                 FloatingActionButton(
                     onClick = {
                         showSheet = true
@@ -227,7 +232,7 @@ private fun AppScaffold(
         }
     ) { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding)) {
-            if(!isConnected){
+            if (!isConnected) {
                 OfflineBanner()
             }
 
@@ -244,8 +249,6 @@ private fun AppScaffold(
                             onAnimeClick = { malId ->
                                 navController.navigate(HomeDestination.AnimeDetail(malId))
                             },
-                            onFabVisibilityChanged = { visible -> showFab = visible },
-                            registerScrollToTop = { scroller -> scrollToTop = scroller }
                         )
                     }
                     composable<HomeDestination.AnimeDetail> {
@@ -256,14 +259,24 @@ private fun AppScaffold(
                         )
                     }
                 }
-                composable<AppDestination.Search>{
-                    SearchAnime(onAnimeClick={malId->
-                        navController.navigate(HomeDestination.AnimeDetail(malId))
-                    })
+                composable<AppDestination.Search> {
+                    SearchAnime(
+                        onAnimeClick = { malId ->
+                            navController.navigate(HomeDestination.AnimeDetail(malId))
+                        },
+                        onFabVisibilityChanged = { visible -> showFab = visible },
+                        registerScrollToTop = { scroller -> scrollToTop = scroller }
+                    )
                 }
-                composable<AppDestination.MyCollection>{
+                composable<AppDestination.MyCollection> {
                     AnimeLibrary(
-                        onClick = {malId -> navController.navigate(HomeDestination.AnimeDetail(malId))}
+                        onClick = { malId ->
+                            navController.navigate(
+                                HomeDestination.AnimeDetail(
+                                    malId
+                                )
+                            )
+                        }
                     )
                 }
             }
@@ -274,12 +287,12 @@ private fun AppScaffold(
 @Composable
 fun OfflineBanner() {
     Box(
-        modifier= Modifier
+        modifier = Modifier
             .fillMaxWidth()
             .background(Color.Red)
             .padding(6.dp),
         contentAlignment = Alignment.Center
-    ){
+    ) {
         Text(
             text = "You are Offline",
             color = Color.White,
@@ -310,7 +323,7 @@ fun BottomNavigationBar(
             ),
             TopLevelDestination(
                 route = AppDestination.MyCollection,
-                selectedIcon =  Icons.Filled.Collections,
+                selectedIcon = Icons.Filled.Collections,
                 unSelectedIcon = Icons.Outlined.Collections,
                 label = "Collections"
             )
@@ -325,9 +338,9 @@ fun BottomNavigationBar(
                 },
                 icon = {
                     Icon(
-                        imageVector = if(selectedDestinationIdx == index){
+                        imageVector = if (selectedDestinationIdx == index) {
                             destination.selectedIcon
-                        }else{
+                        } else {
                             destination.unSelectedIcon
                         },
                         contentDescription = ""

@@ -23,6 +23,7 @@ interface AnimeRepository {
 
     suspend fun getFilteredAnime(
         query: String,
+        page: Int?,
         orderBy: SortType? = null,
         sortOrder: SortOrder? = null,
         format: FormatType? = null,
