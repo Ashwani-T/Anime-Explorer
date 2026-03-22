@@ -116,16 +116,7 @@ class AnimeLibraryViewModel @Inject constructor(
         }
     }
 
-    fun updateQuery(newQuery: String) {
-        _query.value = newQuery
-        // TODO: Implement search filtering if needed
-    }
 
-    fun retryLoadCollections() {
-        loadLibraryCollections()
-    }
-
-    // NEW: Helper function to apply current filter
     private fun applyCurrentFilter(
         collections: List<AnimeCollectionUiModel>,
         selectedFilter: LibraryStatus?

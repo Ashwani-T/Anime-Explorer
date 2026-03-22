@@ -30,7 +30,7 @@ interface AnimeRepository {
         status: StatusType? = null,
         rating: RatingType? = null,
         genres: Set<GenreModel>? = emptySet(),
-    ): Result<List<AnimeUiModel>>
+    ): Result<AnimeResponseModel>
 
     suspend fun getThisSeasonAnime(): Result<List<AnimeUiModel>>
 }

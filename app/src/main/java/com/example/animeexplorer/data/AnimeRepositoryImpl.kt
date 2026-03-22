@@ -31,7 +31,7 @@ class AnimeRepositoryImpl @Inject constructor(
 
 
         var animeList: List<AnimeUiModel> = emptyList()
-        var pageInfo: PageInfo = PageInfo(
+        var pageInfo = PageInfo(
             hasNextPage = true,
             currentPage = page,
         )
@@ -118,8 +118,10 @@ class AnimeRepositoryImpl @Inject constructor(
         status: StatusType?,
         rating: RatingType?,
         genres: Set<GenreModel>?
-    ): Result<List<AnimeUiModel>> {
-        return try {
+    ): Result<AnimeResponseModel> {
+
+
+        try {
             val searchedResult = apiService.getAnimeList(
                 query = query.takeIf { query.isNotBlank() },
                 page = page,
@@ -130,24 +132,32 @@ class AnimeRepositoryImpl @Inject constructor(
                 orderBy = orderBy?.apiName,
                 sortOrder = sortOrder?.apiName,
             )
-            val animeList: List<AnimeUiModel> = searchedResult.data.map { it.toUiModel() }
 
-            Result.success(animeList)
-        }catch (e: Exception){
-            Result.failure(e)
+            Log.d("TAG", "getFilteredAnime: ${searchedResult.pagination}")
+            val animeList = searchedResult.data.map { it.toUiModel() }
+            val pageInfo = searchedResult.pagination.toPageInfo()
+            return Result.success(
+                AnimeResponseModel(
+                    data = animeList,
+                    pagination = pageInfo,
+                )
+            )
+
+        } catch (e: Exception) {
+            return Result.failure(Exception(e.message))
         }
     }
 
 
     override suspend fun getThisSeasonAnime(): Result<List<AnimeUiModel>> {
         return try {
-            val recommendationResult = apiService.getThisSeasonAnime().data.map {anime ->
+            val recommendationResult = apiService.getThisSeasonAnime().data.map { anime ->
                 anime.toUiModel()
             }
             Log.d("Ashwani", "${recommendationResult.size}: ")
 
             Result.success(recommendationResult)
-        }catch (e: Exception){
+        } catch (e: Exception) {
             Log.d("Ashwani", "${e.message}: ")
             Result.failure(Exception(e.message))
         }

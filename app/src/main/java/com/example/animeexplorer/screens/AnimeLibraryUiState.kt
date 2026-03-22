@@ -4,7 +4,6 @@ import com.example.animeexplorer.data.local.entity.LibraryStatus
 import com.example.animeexplorer.domain.AnimeCollectionUiModel
 
 data class AnimeLibraryUiState(
-    val query: String = "",
     val isLoading: Boolean = false,
     val allCollections: List<AnimeCollectionUiModel> = emptyList(),
     val collections: List<AnimeCollectionUiModel> = emptyList(),

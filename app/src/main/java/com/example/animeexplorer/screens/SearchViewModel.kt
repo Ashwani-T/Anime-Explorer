@@ -13,12 +13,15 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -30,49 +33,36 @@ class SearchViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SearchUiState())
-    val uiState: StateFlow<SearchUiState> = _uiState.asStateFlow()
+    val uiState: StateFlow<SearchUiState> = _uiState.onStart {
+        Log.d("TAG", ": ${_uiState.value.animeList.size}")
+        resetAndReloadAnime()
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000),SearchUiState())
+
+
+
+    private val _searchQueryState = MutableStateFlow("")
 
 
     init {
-        loadGenres()
-        loadAnime()
-        observeUiStateChange()
+        observeSearchQuery()
     }
 
     @OptIn(FlowPreview::class)
-    fun observeUiStateChange(){
+    fun observeSearchQuery() {
         viewModelScope.launch {
-            uiState
-                .map { it.searchQuery }
-                .distinctUntilChanged()
-                .debounce { 200 }
-                .collectLatest {
-                    _uiState.update { state ->
-                        state.copy(isLoading = true, animeList = emptyList(), pageNumber = 1)
+            _searchQueryState
+                .debounce(300)
+                .collect {
+                    _uiState.update { state->
+                        state.copy(animeList = emptyList(), pageNumber = 1, isLoading = true)
                     }
                     loadAnime()
                 }
         }
     }
-
-    private fun loadGenres() {
-        val mockGenres = listOf(
-            GenreModel(1, "Action"),
-            GenreModel(2, "Adventure"),
-            GenreModel(4, "Comedy"),
-            GenreModel(8, "Drama"),
-            GenreModel(10, "Fantasy"),
-            GenreModel(14, "Horror"),
-            GenreModel(7, "Mystery"),
-            GenreModel(22, "Romance"),
-            GenreModel(24, "Sci-Fi"),
-            GenreModel(36, "Slice of Life")
-        )
-        _uiState.update { it.copy(availableGenres = mockGenres) }
-    }
-
     fun onSearchQueryChange(query: String) {
         _uiState.update { it.copy(searchQuery = query) }
+        _searchQueryState.value = query
     }
 
     fun onSortTypeChange(sortType: SortType) {
@@ -124,15 +114,13 @@ class SearchViewModel @Inject constructor(
     }
 
     fun loadAnime() {
-
-
         viewModelScope.launch {
             val currentState = uiState.value
-            Log.d("Ashwani", "ui state =  ${uiState.value}")
+            Log.d("Ashwani", "ui state =  ${uiState.value.animeList.size}")
             val result = animeRepository.getFilteredAnime(
                 query = currentState.searchQuery,
                 page = currentState.pageNumber,
-                orderBy =  currentState.selectedSort,
+                orderBy = currentState.selectedSort,
                 sortOrder = currentState.sortOrder,
                 format = currentState.selectedFormat,
                 status = currentState.selectedStatus,
@@ -140,25 +128,41 @@ class SearchViewModel @Inject constructor(
                 genres = currentState.selectedGenres
             )
 
-            result.onSuccess {animeList ->
-                val filteredList = (uiState.value.animeList + animeList).distinctBy { it.id }
-                _uiState.update { it.copy(animeList = filteredList, isLoading = false )}
+            result.onSuccess { response ->
+                Log.d("TAG", "loadAnime: ${response.pagination}")
+                val filteredList = (uiState.value.animeList + response.data).distinctBy { it.id }
+                _uiState.update {
+                    it.copy(
+                        animeList = filteredList,
+                        hasNextPage = response.pagination.hasNextPage,
+                        isLoading = false
+                    )
+                }
+
             }.onFailure { error ->
-                _uiState.update { it.copy(isLoading = false, pageNumber = it.pageNumber - 1)}
+                _uiState.update { it.copy(isLoading = false, pageNumber = it.pageNumber - 1) }
                 Log.d("ANIME EXPLORER", "${error.message}")
             }
 
         }
     }
 
-    fun onLoadMore(){
+    fun onLoadMore() {
         Log.d("ANIME EXPLORER", "laoding entered: ")
-        if(uiState.value.isLoading) return
 
-        _uiState.update { it.copy(isLoading = true, pageNumber = it.pageNumber + 1)}
 
+        if (!(uiState.value.isLoading) && uiState.value.hasNextPage) {
+            _uiState.update { it.copy(isLoading = true, pageNumber = it.pageNumber + 1) }
+            loadAnime()
+        } else {
+            Log.d("TAG", "onLoadMore: REACHED END OF LIST")
+        }
+
+    }
+
+    fun resetAndReloadAnime(){
+        _uiState.value = SearchUiState(searchQuery = _searchQueryState.value)
         loadAnime()
-
     }
 
 }

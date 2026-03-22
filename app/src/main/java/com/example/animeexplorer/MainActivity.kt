@@ -172,7 +172,9 @@ private fun AppScaffold(
                             }
                         },
                         actions = {
-                            IconButton(onClick = { /* do something */ }) {
+                            IconButton(onClick = {
+                                navController.navigate(AppDestination.Search)
+                            }) {
                                 Icon(
                                     imageVector = Icons.Filled.Search,
                                     contentDescription = "Search In Collection"
@@ -305,40 +307,60 @@ fun OfflineBanner() {
 fun BottomNavigationBar(
     navController: NavHostController
 ) {
-    NavigationBar {
-        var selectedDestinationIdx by rememberSaveable { mutableIntStateOf(0) }
+    val currentRoute = navController.currentBackStackEntryAsState().value?.destination
+    Log.d("TAG", "BottomNavigationBar: $currentRoute")
 
-        val topLevelDestination = listOf(
-            TopLevelDestination(
-                route = AppDestination.Home,
-                selectedIcon = Icons.Filled.Home,
-                unSelectedIcon = Icons.Outlined.Home,
-                label = "Home"
-            ),
-            TopLevelDestination(
-                route = AppDestination.Search,
-                selectedIcon = Icons.Filled.Search,
-                unSelectedIcon = Icons.Outlined.Search,
-                label = "Search"
-            ),
-            TopLevelDestination(
-                route = AppDestination.MyCollection,
-                selectedIcon = Icons.Filled.Collections,
-                unSelectedIcon = Icons.Outlined.Collections,
-                label = "Collections"
-            )
+    val topLevelDestination = listOf(
+        TopLevelDestination(
+            route = AppDestination.Home,
+            selectedIcon = Icons.Filled.Home,
+            unSelectedIcon = Icons.Outlined.Home,
+            label = "Home"
+        ),
+        TopLevelDestination(
+            route = AppDestination.Search,
+            selectedIcon = Icons.Filled.Search,
+            unSelectedIcon = Icons.Outlined.Search,
+            label = "Search"
+        ),
+        TopLevelDestination(
+            route = AppDestination.MyCollection,
+            selectedIcon = Icons.Filled.Collections,
+            unSelectedIcon = Icons.Outlined.Collections,
+            label = "Collections"
         )
+    )
 
-        topLevelDestination.forEachIndexed { index, destination ->
+    NavigationBar {
+
+        topLevelDestination.forEach { destination ->
+            val selected = when (destination.route) {
+                AppDestination.Home, HomeDestination.AnimeList ->
+                    currentRoute?.hasRoute<HomeDestination.AnimeList>() == true
+
+                AppDestination.Search ->
+                    currentRoute?.hasRoute<AppDestination.Search>() == true
+
+                AppDestination.MyCollection ->
+                    currentRoute?.hasRoute<AppDestination.MyCollection>() == true
+
+                else -> false
+            }
+
             NavigationBarItem(
-                selected = selectedDestinationIdx == index,
+                selected = selected,
                 onClick = {
-                    navController.navigate(destination.route)
-                    selectedDestinationIdx = index
+                    navController.navigate(destination.route) {
+                        popUpTo(navController.graph.startDestinationId) {
+                            saveState = true
+                        }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
                 },
                 icon = {
                     Icon(
-                        imageVector = if (selectedDestinationIdx == index) {
+                        imageVector = if (selected) {
                             destination.selectedIcon
                         } else {
                             destination.unSelectedIcon
