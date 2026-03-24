@@ -2,8 +2,10 @@ package com.example.animeexplorer.di
 
 import com.example.animeexplorer.data.AnimeCollectionRepositoryImpl
 import com.example.animeexplorer.data.AnimeRepositoryImpl
+import com.example.animeexplorer.data.HomeRepositoryImpl
 import com.example.animeexplorer.domain.AnimeCollectionRepository
 import com.example.animeexplorer.domain.AnimeRepository
+import com.example.animeexplorer.domain.HomeRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -25,4 +27,10 @@ abstract class RepositoryModule {
     abstract fun bindAnimeCollectionRepository(
         animeCollectionRepositoryImpl: AnimeCollectionRepositoryImpl
     ): AnimeCollectionRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindHomeRepositoryImpl(
+        homeRepositoryImpl: HomeRepositoryImpl
+    ): HomeRepository
 }

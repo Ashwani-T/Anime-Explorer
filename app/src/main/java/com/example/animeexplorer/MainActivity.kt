@@ -319,7 +319,7 @@ fun BottomNavigationBar(
 
     val topLevelDestination = listOf(
         TopLevelDestination(
-            route = AppDestination.Home,
+            route = HomeDestination.AnimeList,
             selectedIcon = Icons.Filled.Home,
             unSelectedIcon = Icons.Outlined.Home,
             label = "Home"

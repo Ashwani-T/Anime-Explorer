@@ -1,5 +1,6 @@
 package com.example.animeexplorer.data.mapper
 
+import com.example.animeexplorer.data.local.entity.AnimeCacheEntity
 import com.example.animeexplorer.data.remote.dto.AnimeDetailDto
 import com.example.animeexplorer.data.remote.dto.AnimeDto
 import com.example.animeexplorer.data.remote.dto.Pagination
@@ -41,6 +42,31 @@ fun AnimeDto.toUiModel(): AnimeUiModel {
         duration = duration?:"No duration",
         imageUrl = imageUrl.webp.imageUrl?:"No Image",
         score = score?:0.0
+    )
+}
+
+// Anime DTO to Anime Cache Entity
+fun AnimeDto.toAnimeCacheEntity(category: String): AnimeCacheEntity{
+    return AnimeCacheEntity(
+        id = id,
+        title = title?:"No Title",
+        description = description?:"No description",
+        imageUrl = imageUrl.webp.imageUrl?:"No Image",
+        score = score?: 0.0,
+        category = category,
+    )
+}
+
+// Anime Cache Entity to AnimeUiModel
+
+fun AnimeCacheEntity.toUiModel(): AnimeUiModel {
+    return AnimeUiModel(
+        id = id,
+        title = title,
+        description = description,
+        duration = "",
+        imageUrl = imageUrl,
+        score = score
     )
 }
 

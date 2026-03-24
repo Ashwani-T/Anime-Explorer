@@ -11,7 +11,6 @@ import com.example.animeexplorer.data.mapper.toEpisodeEntityList
 import com.example.animeexplorer.data.remote.AnimeApiService
 import com.example.animeexplorer.domain.AnimeCollectionRepository
 import com.example.animeexplorer.domain.AnimeCollectionUiModel
-import com.example.animeexplorer.domain.CollectionUpdateEvent
 import jakarta.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow

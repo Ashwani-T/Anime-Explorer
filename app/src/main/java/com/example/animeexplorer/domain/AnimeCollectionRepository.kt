@@ -13,10 +13,3 @@ interface AnimeCollectionRepository {
     suspend fun getLibraryCollection(malId: Int): Result<AnimeCollectionUiModel?>
     fun getAllLibraryCollections(): Flow<List<AnimeCollectionUiModel>>
 }
-
-// Event to notify about collection changes
-sealed class CollectionUpdateEvent {
-    data class Added(val malId: Int) : CollectionUpdateEvent()
-    data class Updated(val malId: Int) : CollectionUpdateEvent()
-    data class Removed(val malId: Int) : CollectionUpdateEvent()
-}

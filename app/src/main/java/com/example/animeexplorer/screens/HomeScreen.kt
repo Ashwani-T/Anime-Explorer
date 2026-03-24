@@ -1,5 +1,6 @@
 package com.example.animeexplorer.screens
 
+import android.util.Log
 import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
@@ -79,6 +80,7 @@ fun HomeScreenContent(
             seasonAnime = state.currentSeason.items,
             top = state.top.items,
             upcoming = state.upcoming.items,
+            favorite= state.favorites.items,
             listState = listState,
             onAnimeClick = onAnimeClick,
             isLoading = state.isRefreshing,
@@ -96,6 +98,7 @@ fun AnimeList(
     trending: List<AnimeUiModel>,
     top: List<AnimeUiModel>,
     upcoming: List<AnimeUiModel>,
+    favorite: List<AnimeUiModel>,
     listState: LazyGridState,
     onAnimeClick: (Int) -> Unit,
     isLoading: Boolean,
@@ -108,6 +111,8 @@ fun AnimeList(
         state = listState,
         modifier = Modifier.fillMaxSize()
     ) {
+        Log.d("TAG", "HOME SCREEN: $isLoading")
+
 
         if (horizontalPagerList.isNotEmpty() && trending.isNotEmpty() && top.isNotEmpty() && upcoming.isNotEmpty()) {
 
@@ -127,6 +132,18 @@ fun AnimeList(
             item(span = { GridItemSpan(maxLineSpan) }) {
                 HorizontalAnimeList(
                     animeList = seasonAnime,
+                    onAnimeClick = onAnimeClick,
+                    sharedTransitionScope = sharedTransitionScope,
+                    animatedContentScope = animatedContentScope
+                )
+            }
+            item(span = { GridItemSpan(maxLineSpan) }) {
+                SectionHeader("Favourite Anime")
+            }
+
+            item(span = { GridItemSpan(maxLineSpan) }) {
+                HorizontalAnimeList(
+                    animeList = favorite.take(10),
                     onAnimeClick = onAnimeClick,
                     sharedTransitionScope = sharedTransitionScope,
                     animatedContentScope = animatedContentScope
@@ -171,9 +188,7 @@ fun AnimeList(
                     animatedContentScope = animatedContentScope
                 )
             }
-        }
-
-        if (isLoading) {
+        }else{
             item(span = { GridItemSpan(maxLineSpan) }) {
                 Box(
                     modifier = Modifier
@@ -185,6 +200,8 @@ fun AnimeList(
                 }
             }
         }
+
+
     }
 }
 
