@@ -1,7 +1,11 @@
 package com.example.animeexplorer.screens
 
 import android.util.Log
+import androidx.compose.animation.AnimatedContentScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -23,6 +27,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Sort
@@ -59,7 +64,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -75,29 +79,28 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.animeexplorer.components.AnimeItem
-import com.example.animeexplorer.components.ArcLoader
+import com.example.animeexplorer.core.components.AnimeItem
+import com.example.animeexplorer.core.components.ArcLoader
 import com.example.animeexplorer.domain.enums.FormatType
 import com.example.animeexplorer.domain.enums.RatingType
 import com.example.animeexplorer.domain.enums.SortOrder
 import com.example.animeexplorer.domain.enums.SortType
 import com.example.animeexplorer.domain.enums.StatusType
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class, FlowPreview::class)
+@OptIn(ExperimentalMaterial3Api::class, FlowPreview::class, ExperimentalSharedTransitionApi::class)
 @Composable
 fun SearchAnime(
     modifier: Modifier = Modifier,
     onAnimeClick: (Int) -> Unit,
     onFabVisibilityChanged: (Boolean) -> Unit,
-    registerScrollToTop: ((() -> Unit) -> Unit)
+    registerScrollToTop: ((() -> Unit) -> Unit),
+    sharedTransitionScope: SharedTransitionScope,
+    animatedContentScope: AnimatedContentScope
 ) {
 
     val viewModel: SearchViewModel = hiltViewModel()
@@ -127,73 +130,75 @@ fun SearchAnime(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(horizontal = 16.dp)
+            .padding(horizontal = 12.dp)
     ) {
-        Spacer(modifier = Modifier.height(16.dp))
         // Search Bar
-        OutlinedTextField(
-            value = uiState.searchQuery,
-            onValueChange = { viewModel.onSearchQueryChange(it) },
-            modifier = Modifier.fillMaxWidth(),
-            placeholder = { Text("Search anime...") },
-            leadingIcon = {
+        Row(
+            modifier = Modifier.padding(horizontal = 4.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            OutlinedTextField(
+                value = uiState.searchQuery,
+                onValueChange = { viewModel.onSearchQueryChange(it) },
+                modifier = Modifier.weight(1f),
+                placeholder = { Text("Search anime...") },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Search,
+                        contentDescription = "Search Icon"
+                    )
+                },
+                trailingIcon = {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(end = 4.dp)
+                    ) {
+                        if (uiState.searchQuery.isNotEmpty()) {
+                            IconButton(
+                                onClick = { viewModel.onSearchQueryChange("") },
+                                modifier = Modifier.size(40.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Clear,
+                                    contentDescription = "Clear search",
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                        }
+                        IconButton(onClick = { showMainFilterSheet = true }) {
+                            Icon(
+                                imageVector = Icons.Default.FilterList,
+                                contentDescription = "Filter Icon"
+                            )
+                        }
+                    }
+                },
+                shape = RoundedCornerShape(28.dp),
+                singleLine = true
+            )
+            IconButton(
+                onClick = viewModel::toggleSortOrder,
+                modifier = Modifier
+                    .border(
+                        width = 1.dp,
+                        color = Color.Gray,
+                        shape = CircleShape
+                    )
+            ) {
                 Icon(
-                    imageVector = Icons.Default.Search,
-                    contentDescription = "Search Icon"
+                    imageVector = if (uiState.sortOrder == SortOrder.ASC)
+                        Icons.Default.ArrowUpward
+                    else
+                        Icons.Default.ArrowDownward,
+                    contentDescription = null,
+                    modifier = Modifier.size(14.dp)
                 )
-            },
-            trailingIcon = {
-                if (uiState.searchQuery.isEmpty()) {
-                    IconButton(onClick = { showMainFilterSheet = true }) {
-                        Icon(
-                            imageVector = Icons.Default.FilterList,
-                            contentDescription = "Filter Icon"
-                        )
-                    }
-                } else {
-                    IconButton(onClick = {
-                        viewModel.resetFilters()
-                        viewModel.onSearchQueryChange("")
-
-                    }) {
-                        Icon(
-                            imageVector = Icons.Default.Clear,
-                            contentDescription = "Clear Icon"
-                        )
-                    }
-                }
-            },
-            shape = RoundedCornerShape(28.dp),
-            singleLine = true
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        //Filter Chip
-
-        ElevatedFilterChip(
-            selected = showMainFilterSheet,
-            onClick = { showMainFilterSheet = true },
-            label = {
-                Text("Filter")
-            },
-            leadingIcon = {
-                if (showMainFilterSheet) {
-                    Icon(
-                        imageVector = Icons.Outlined.FilterList,
-                        contentDescription = "Filter Icon"
-                    )
-                } else {
-                    Icon(
-                        imageVector = Icons.Filled.FilterList,
-                        contentDescription = "Filter Icon"
-                    )
-                }
             }
-        )
+        }
 
-        if(uiState.animeList.isEmpty() && uiState.isLoading) {
-            Box(modifier = Modifier.fillMaxWidth(),contentAlignment = Alignment.Center){
+        if (uiState.animeList.isEmpty() && uiState.isLoading) {
+            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                 ArcLoader()
             }
         }
@@ -217,7 +222,9 @@ fun SearchAnime(
                 items(uiState.animeList, key = { it.id }) { anime ->
                     AnimeItem(
                         anime = anime,
-                        onClick = { onAnimeClick(anime.id) }
+                        onClick = { onAnimeClick(anime.id) },
+                        sharedTransitionScope = sharedTransitionScope,
+                        animatedContentScope = animatedContentScope
                     )
                 }
             }
@@ -234,12 +241,11 @@ fun SearchAnime(
                 FilterSheetContent(
                     uiState = uiState,
                     onOpenSubSheet = { activeSubSheet = it },
-                    onToggleSortOrder = { viewModel.toggleSortOrder() },
                     onGenreToggle = { viewModel.toggleGenre(it) },
                     onReset = { viewModel.resetFilters() },
                     onApply = {
                         showMainFilterSheet = false
-                        viewModel.loadAnime()
+                        viewModel.onApplyFilter()
                     }
                 )
             }
@@ -304,7 +310,6 @@ enum class SubSheetType { SORT, FORMAT, STATUS, RATING }
 fun FilterSheetContent(
     uiState: SearchUiState,
     onOpenSubSheet: (SubSheetType) -> Unit,
-    onToggleSortOrder: () -> Unit,
     onGenreToggle: (GenreModel) -> Unit,
     onReset: () -> Unit,
     onApply: () -> Unit
@@ -350,17 +355,10 @@ fun FilterSheetContent(
                 onClick = { onOpenSubSheet(SubSheetType.SORT) },
                 modifier = Modifier.weight(1f)
             )
-            Spacer(modifier = Modifier.width(12.dp))
-            SortOrderButton(
-                order = uiState.sortOrder,
-                onClick = onToggleSortOrder,
-                modifier = Modifier.width(80.dp)
-            )
         }
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // FILTERS Section
         SectionHeader(icon = Icons.AutoMirrored.Filled.Sort, title = "FILTERS")
         Spacer(modifier = Modifier.height(12.dp))
         Row(modifier = Modifier.fillMaxWidth()) {
@@ -437,46 +435,6 @@ fun FilterSheetContent(
                 )
                 Spacer(modifier = Modifier.width(4.dp))
                 Text("APPLY FILTERS", color = Color.DarkGray, fontWeight = FontWeight.Bold)
-            }
-        }
-    }
-}
-
-@Composable
-fun SortOrderButton(
-    order: SortOrder,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Card(
-        modifier = modifier.clickable { onClick() },
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(
-                alpha = 0.3f
-            )
-        ),
-        border = BorderStroke(1.dp, Color.Gray.copy(alpha = 0.2f))
-    ) {
-        Column(
-            modifier = Modifier
-                .padding(8.dp)
-                .fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(text = "ORDER", style = MaterialTheme.typography.labelSmall, color = Color.Gray)
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    imageVector = if (order == SortOrder.ASC) Icons.Default.ArrowUpward else Icons.Default.ArrowDownward,
-                    contentDescription = null,
-                    modifier = Modifier.size(14.dp)
-                )
-                Spacer(modifier = Modifier.width(4.dp))
-                Text(
-                    text = order.name,
-                    style = MaterialTheme.typography.bodySmall,
-                    fontWeight = FontWeight.Bold
-                )
             }
         }
     }

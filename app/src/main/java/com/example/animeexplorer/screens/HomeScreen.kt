@@ -1,5 +1,8 @@
 package com.example.animeexplorer.screens
 
+import androidx.compose.animation.AnimatedContentScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,27 +20,23 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import com.example.animeexplorer.components.AnimeItem
-import com.example.animeexplorer.components.ArcLoader
-import com.example.animeexplorer.components.AutoAdvancePager
+import com.example.animeexplorer.core.components.AnimeItem
+import com.example.animeexplorer.core.components.ArcLoader
+import com.example.animeexplorer.core.components.AutoAdvancePager
 import com.example.animeexplorer.domain.AnimeUiModel
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun HomeScreen(
+    sharedTransitionScope: SharedTransitionScope,
+    animatedContentScope: AnimatedContentScope,
     modifier: Modifier = Modifier,
     onAnimeClick: (Int) -> Unit
 
@@ -53,16 +52,21 @@ fun HomeScreen(
         modifier = modifier,
         state = state,
         onAnimeClick = onAnimeClick,
-        listState = listState
+        listState = listState,
+        sharedTransitionScope = sharedTransitionScope,
+        animatedContentScope = animatedContentScope
     )
 }
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun HomeScreenContent(
     modifier: Modifier = Modifier,
     state: HomeUiState,
     onAnimeClick: (Int) -> Unit,
-    listState: LazyGridState
+    listState: LazyGridState,
+    sharedTransitionScope: SharedTransitionScope,
+    animatedContentScope: AnimatedContentScope
 ) {
     Column(
         modifier = modifier
@@ -77,12 +81,14 @@ fun HomeScreenContent(
             upcoming = state.upcoming.items,
             listState = listState,
             onAnimeClick = onAnimeClick,
-            isLoading = state.isRefreshing
+            isLoading = state.isRefreshing,
+            sharedTransitionScope = sharedTransitionScope,
+            animatedContentScope = animatedContentScope
         )
     }
 }
 
-@OptIn(FlowPreview::class)
+@OptIn(FlowPreview::class, ExperimentalSharedTransitionApi::class)
 @Composable
 fun AnimeList(
     horizontalPagerList: List<AnimeUiModel>,
@@ -93,6 +99,8 @@ fun AnimeList(
     listState: LazyGridState,
     onAnimeClick: (Int) -> Unit,
     isLoading: Boolean,
+    sharedTransitionScope: SharedTransitionScope,
+    animatedContentScope: AnimatedContentScope
 ) {
 
     LazyVerticalGrid(
@@ -105,7 +113,10 @@ fun AnimeList(
 
             item(span = { GridItemSpan(maxLineSpan) }) {
                 AutoAdvancePager(
-                    horizontalPagerList.subList(0, minOf(10, horizontalPagerList.size))
+                    animeList = horizontalPagerList.subList(0, minOf(10, horizontalPagerList.size)),
+                    onAnimeClick= onAnimeClick,
+                    sharedTransitionScope = sharedTransitionScope,
+                    animatedContentScope = animatedContentScope
                 )
             }
 
@@ -116,7 +127,9 @@ fun AnimeList(
             item(span = { GridItemSpan(maxLineSpan) }) {
                 HorizontalAnimeList(
                     animeList = seasonAnime,
-                    onAnimeClick = onAnimeClick
+                    onAnimeClick = onAnimeClick,
+                    sharedTransitionScope = sharedTransitionScope,
+                    animatedContentScope = animatedContentScope
                 )
             }
 
@@ -127,7 +140,9 @@ fun AnimeList(
             item(span = { GridItemSpan(maxLineSpan) }) {
                 HorizontalAnimeList(
                     animeList = top.take(10),
-                    onAnimeClick = onAnimeClick
+                    onAnimeClick = onAnimeClick,
+                    sharedTransitionScope = sharedTransitionScope,
+                    animatedContentScope = animatedContentScope
                 )
             }
 
@@ -138,7 +153,9 @@ fun AnimeList(
             item(span = { GridItemSpan(maxLineSpan) }) {
                 HorizontalAnimeList(
                     animeList = trending.take(10),
-                    onAnimeClick = onAnimeClick
+                    onAnimeClick = onAnimeClick,
+                    sharedTransitionScope = sharedTransitionScope,
+                    animatedContentScope = animatedContentScope
                 )
             }
 
@@ -149,7 +166,9 @@ fun AnimeList(
             item(span = { GridItemSpan(maxLineSpan) }) {
                 HorizontalAnimeList(
                     animeList = upcoming.take(6),
-                    onAnimeClick = onAnimeClick
+                    onAnimeClick = onAnimeClick,
+                    sharedTransitionScope = sharedTransitionScope,
+                    animatedContentScope = animatedContentScope
                 )
             }
         }
@@ -184,10 +203,13 @@ fun SectionHeader(
     )
 }
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun HorizontalAnimeList(
     animeList: List<AnimeUiModel>,
     onAnimeClick: (Int) -> Unit,
+    sharedTransitionScope: SharedTransitionScope,
+    animatedContentScope: AnimatedContentScope,
     modifier: Modifier = Modifier
 ) {
     LazyRow(
@@ -201,9 +223,10 @@ fun HorizontalAnimeList(
                 anime = anime,
                 onClick = { onAnimeClick(anime.id) },
                 modifier = Modifier
-                    .width(150.dp)
+                    .width(150.dp),
+                sharedTransitionScope = sharedTransitionScope,
+                animatedContentScope = animatedContentScope
             )
         }
     }
 }
-

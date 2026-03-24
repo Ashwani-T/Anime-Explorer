@@ -1,5 +1,9 @@
 package com.example.animeexplorer.screens
 
+import androidx.compose.animation.AnimatedContentScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -11,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -19,6 +24,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ElevatedFilterChip
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SheetState
@@ -29,29 +35,33 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import coil.compose.AsyncImage
-import com.example.animeexplorer.components.ArcLoader
+import com.example.animeexplorer.core.components.ArcLoader
+import com.example.animeexplorer.core.components.LinearProgressCustom
 import com.example.animeexplorer.data.local.entity.LibraryStatus
-import com.example.animeexplorer.domain.AnimeCollectionUiModel
 import com.example.animeexplorer.domain.AnimeDetailUiModel
 
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
 @Composable
 fun AnimeDetailScreen(
     animeDetailViewModel: AnimeDetailViewModel = hiltViewModel(),
     sheetState: SheetState? = null,
     showSheet: Boolean = false,
-    onDismissSheet: () -> Unit = {}
+    onDismissSheet: () -> Unit = {},
+    sharedTransitionScope: SharedTransitionScope,
+    animatedContentScope: AnimatedContentScope
 ) {
     val uiState by animeDetailViewModel.uiState.collectAsState()
     val collectionState by animeDetailViewModel.collectionState.collectAsState()
@@ -121,7 +131,9 @@ fun AnimeDetailScreen(
         is AnimeDetailUiState.Success -> {
             AnimeDetailContent(
                 anime = state.anime,
-                modifier = Modifier
+                modifier = Modifier,
+                sharedTransitionScope = sharedTransitionScope,
+                animatedContentScope = animatedContentScope
             )
         }
 
@@ -134,10 +146,13 @@ fun AnimeDetailScreen(
     }
 }
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun AnimeDetailContent(
     anime: AnimeDetailUiModel,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    sharedTransitionScope: SharedTransitionScope,
+    animatedContentScope: AnimatedContentScope
 ) {
     Column(
         modifier = modifier
@@ -147,24 +162,42 @@ fun AnimeDetailContent(
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        AsyncImage(
-            model = anime.imageUrl,
-            contentDescription = anime.title,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(300.dp)
-                .clip(RoundedCornerShape(16.dp))
-        )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        with(sharedTransitionScope) {
+            AsyncImage(
+                model = anime.imageUrl,
+                contentDescription = anime.title,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .sharedElement(
+                        rememberSharedContentState(key = "image/${anime.id}"),
+                        animatedVisibilityScope = animatedContentScope
+                    )
+                    .fillMaxWidth()
+                    .height(300.dp)
+                    .clip(RoundedCornerShape(16.dp))
+            )
 
-        Text(
-            text = anime.title,
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onBackground
-        )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(
+                text = anime.title,
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier.sharedBounds(
+                    sharedContentState = rememberSharedContentState(key = "title/${anime.id}"),
+                    animatedVisibilityScope = animatedContentScope,
+                    boundsTransform = { _, _ ->
+                        tween(durationMillis = 500)
+                    },
+                    resizeMode = SharedTransitionScope.ResizeMode.scaleToBounds(),
+                    placeholderSize = SharedTransitionScope.PlaceholderSize.AnimatedSize
+
+                )
+            )
+        }
 
         Spacer(modifier = Modifier.height(12.dp))
 
@@ -340,6 +373,9 @@ fun AnimeDetailBottomSheetContent(
     onRemoveFromCollection: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    var lazyEpisodeRowStatus by remember {mutableStateOf(false)}
+    val lazyLibraryRowState = rememberLazyListState()
+
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -372,6 +408,7 @@ fun AnimeDetailBottomSheetContent(
         Spacer(modifier = Modifier.height(8.dp))
 
         LazyRow(
+            state= lazyLibraryRowState,
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
@@ -380,10 +417,22 @@ fun AnimeDetailBottomSheetContent(
                 ElevatedFilterChip(
                     selected = currentStatus == status,
                     onClick = {
-                        when(status){
-                            LibraryStatus.UNLISTED -> onEpisodeSelected(0)
-                            LibraryStatus.COMPLETED -> onEpisodeSelected(totalEpisodes)
-                            else -> onEpisodeSelected(episodesCompleted)
+                        when (status) {
+                            LibraryStatus.UNLISTED -> {
+                                lazyEpisodeRowStatus = false
+                                onEpisodeSelected(0)
+                            }
+                            LibraryStatus.COMPLETED -> {
+                                lazyEpisodeRowStatus = false
+                                onEpisodeSelected(totalEpisodes)
+                            }
+                            LibraryStatus.ON_Hold -> {
+                                lazyEpisodeRowStatus = false
+                            }
+                            else -> {
+                                onEpisodeSelected(0)
+                                lazyEpisodeRowStatus = true
+                            }
                         }
                         onStatusSelected(status)
                     },
@@ -396,6 +445,8 @@ fun AnimeDetailBottomSheetContent(
             }
         }
 
+
+
         Spacer(modifier = Modifier.height(24.dp))
 
         Text(
@@ -407,6 +458,7 @@ fun AnimeDetailBottomSheetContent(
         Spacer(modifier = Modifier.height(8.dp))
 
         LazyRow(
+
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -414,6 +466,7 @@ fun AnimeDetailBottomSheetContent(
             items(maxEpisodes + 1) { episode ->
                 FilterChip(
                     selected = episodesCompleted == episode,
+                    enabled = lazyEpisodeRowStatus,
                     onClick = { onEpisodeSelected(episode) },
                     label = { Text(episode.toString()) }
                 )
@@ -451,6 +504,7 @@ fun AnimeDetailBottomSheetContent(
             // Not in collection - show only Add button
             Button(
                 onClick = { onAddToCollection() },
+                enabled = currentStatus != LibraryStatus.UNLISTED,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("Add to Collection")

@@ -1,4 +1,4 @@
-package com.example.animeexplorer.components
+package com.example.animeexplorer.core.components
 
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloat

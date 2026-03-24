@@ -9,9 +9,12 @@ import com.example.animeexplorer.domain.AnimeCollectionUiModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -21,66 +24,20 @@ class AnimeLibraryViewModel @Inject constructor(
 ): ViewModel() {
 
     private val _uiState = MutableStateFlow(AnimeLibraryUiState())
-    val uiState: StateFlow<AnimeLibraryUiState> = _uiState.asStateFlow()
+    val uiState: StateFlow<AnimeLibraryUiState> = combine(
+        collectionRepository.getAllLibraryCollections(),
+        _uiState
+    ){ data, state ->
+        val filteredList = applyCurrentFilter(data,state.selectedFilter)
+        state.copy(allCollections = data, collections = filteredList)
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = AnimeLibraryUiState(isLoading = true)
+    )
     private val _query = MutableStateFlow("")
     val query: StateFlow<String> = _query.asStateFlow()
 
-    init {
-        loadLibraryCollections()
-         listenToCollectionUpdates()
-    }
-
-    fun loadLibraryCollections() {
-        viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, error = null) }
-            try {
-                val result = collectionRepository.getAllLibraryCollections()
-                result.fold(
-                    onSuccess = { collections ->
-                        _uiState.update { state ->
-                            state.copy(
-                                allCollections = collections,
-                                collections = applyCurrentFilter(collections, state.selectedFilter),
-                                isLoading = false,
-                                error = null
-                            )
-                        }
-                        Log.d("AnimeLibraryVM", "Loaded ${collections.size} collections")
-                    },
-                    onFailure = { exception ->
-                        _uiState.update { state ->
-                            state.copy(
-                                isLoading = false,
-                                error = exception.message ?: "Failed to load collections"
-                            )
-                        }
-                        Log.e("AnimeLibraryVM", "Error loading collections: ${exception.message}", exception)
-                    }
-                )
-            } catch (e: Exception) {
-                _uiState.update { state ->
-                    state.copy(
-                        isLoading = false,
-                        error = "Unexpected error: ${e.message}"
-                    )
-                }
-                Log.e("AnimeLibraryVM", "Unexpected error: ${e.message}", e)
-            }
-        }
-    }
-
-    // NEW: Listen to collection update events from repository
-    private fun listenToCollectionUpdates() {
-        viewModelScope.launch {
-            collectionRepository.getCollectionUpdates().collectLatest { event ->
-                Log.d("AnimeLibraryVM", "Collection update event received: $event")
-                // Reload collections when any update occurs
-                loadLibraryCollections()
-            }
-        }
-    }
-
-    // ...existing code...
     fun filterByStatus(status: LibraryStatus) {
         _uiState.update { state ->
             val filtered = applyCurrentFilter(state.allCollections, status)
@@ -106,15 +63,7 @@ class AnimeLibraryViewModel @Inject constructor(
         Log.d("AnimeLibraryVM", "Cleared filter, showing all ${uiState.value.collections.size} collections")
     }
 
-    fun setPreset(presetName: String) {
-        when (presetName) {
-            "Default" -> clearFilter()
-            "Watching" -> filterByStatus(LibraryStatus.WATCHING)
-            "On Hold" -> filterByStatus(LibraryStatus.ON_Hold)
-            "Completed" -> filterByStatus(LibraryStatus.COMPLETED)
-            "Watch Later" -> filterByStatus(LibraryStatus.WATCH_LATER)
-        }
-    }
+
 
 
     private fun applyCurrentFilter(

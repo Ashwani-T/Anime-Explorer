@@ -73,6 +73,8 @@ class SearchViewModel @Inject constructor(
         _uiState.update {
             it.copy(sortOrder = if (it.sortOrder == SortOrder.ASC) SortOrder.DESC else SortOrder.ASC)
         }
+        onApplyFilter()
+
     }
 
     fun onFormatChange(format: FormatType?) {
@@ -147,6 +149,14 @@ class SearchViewModel @Inject constructor(
         }
     }
 
+    fun onApplyFilter(){
+        _uiState.update { state ->
+            state.copy(animeList = emptyList(), isLoading = true)
+        }
+
+        loadAnime()
+    }
+
     fun onLoadMore() {
         Log.d("ANIME EXPLORER", "laoding entered: ")
 
@@ -161,7 +171,7 @@ class SearchViewModel @Inject constructor(
     }
 
     fun resetAndReloadAnime(){
-        _uiState.value = SearchUiState(searchQuery = _searchQueryState.value)
+        _uiState.value = SearchUiState(searchQuery = _searchQueryState.value, isLoading = true)
         loadAnime()
     }
 

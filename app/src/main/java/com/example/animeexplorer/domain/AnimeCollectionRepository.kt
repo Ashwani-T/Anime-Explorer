@@ -7,14 +7,11 @@ import kotlinx.coroutines.flow.Flow
 interface AnimeCollectionRepository {
     suspend fun addToLibrary(malId: Int, status: LibraryStatus): Result<Unit>
     suspend fun updateLibraryStatus(malId: Int, status: LibraryStatus): Result<Unit>
-    suspend fun markEpisodeComplete(malId: Int, episodeNumber: Int, isCompleted: Boolean): Result<Unit>
     suspend fun updateEpisodeRange(malId: Int, upToEpisode: Int): Result<Unit>
     suspend fun markAllEpisodeCompleted(malId: Int): Result<Unit>
     suspend fun removeFromLibrary(malId: Int): Result<Unit>
     suspend fun getLibraryCollection(malId: Int): Result<AnimeCollectionUiModel?>
-    suspend fun getAllLibraryCollections(): Result<List<AnimeCollectionUiModel>>
-
-    fun getCollectionUpdates(): Flow<CollectionUpdateEvent>
+    fun getAllLibraryCollections(): Flow<List<AnimeCollectionUiModel>>
 }
 
 // Event to notify about collection changes

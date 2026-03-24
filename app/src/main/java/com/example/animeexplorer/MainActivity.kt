@@ -5,6 +5,8 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -37,7 +39,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -83,7 +84,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
 @Composable
 private fun AppScaffold(
     connectivityObserver: ConnectivityObserver
@@ -237,49 +238,55 @@ private fun AppScaffold(
             if (!isConnected) {
                 OfflineBanner()
             }
+            SharedTransitionLayout {
+                NavHost(
+                    navController = navController,
+                    startDestination = AppDestination.Home,
 
-
-            NavHost(
-                navController = navController,
-                startDestination = AppDestination.Home,
-
-                ) {
-                navigation<AppDestination.Home>(startDestination = HomeDestination.AnimeList) {
-                    composable<HomeDestination.AnimeList> {
-                        HomeScreen(
-                            modifier = Modifier,
+                    ) {
+                    navigation<AppDestination.Home>(startDestination = HomeDestination.AnimeList) {
+                        composable<HomeDestination.AnimeList> {
+                            HomeScreen(
+                                sharedTransitionScope = this@SharedTransitionLayout,
+                                animatedContentScope = this@composable,
+                                modifier = Modifier,
+                                onAnimeClick = { malId ->
+                                    navController.navigate(HomeDestination.AnimeDetail(malId))
+                                },
+                            )
+                        }
+                        composable<HomeDestination.AnimeDetail> {
+                            AnimeDetailScreen(
+                                sharedTransitionScope = this@SharedTransitionLayout,
+                                animatedContentScope = this@composable,
+                                sheetState = sheetState,
+                                showSheet = showSheet,
+                                onDismissSheet = { showSheet = false }
+                            )
+                        }
+                    }
+                    composable<AppDestination.Search> {
+                        SearchAnime(
                             onAnimeClick = { malId ->
                                 navController.navigate(HomeDestination.AnimeDetail(malId))
                             },
+                            onFabVisibilityChanged = { visible -> showFab = visible },
+                            registerScrollToTop = { scroller -> scrollToTop = scroller },
+                            sharedTransitionScope = this@SharedTransitionLayout,
+                            animatedContentScope = this@composable
                         )
                     }
-                    composable<HomeDestination.AnimeDetail> {
-                        AnimeDetailScreen(
-                            sheetState = sheetState,
-                            showSheet = showSheet,
-                            onDismissSheet = { showSheet = false }
-                        )
-                    }
-                }
-                composable<AppDestination.Search> {
-                    SearchAnime(
-                        onAnimeClick = { malId ->
-                            navController.navigate(HomeDestination.AnimeDetail(malId))
-                        },
-                        onFabVisibilityChanged = { visible -> showFab = visible },
-                        registerScrollToTop = { scroller -> scrollToTop = scroller }
-                    )
-                }
-                composable<AppDestination.MyCollection> {
-                    AnimeLibrary(
-                        onClick = { malId ->
-                            navController.navigate(
-                                HomeDestination.AnimeDetail(
-                                    malId
+                    composable<AppDestination.MyCollection> {
+                        AnimeLibrary(
+                            onClick = { malId ->
+                                navController.navigate(
+                                    HomeDestination.AnimeDetail(
+                                        malId
+                                    )
                                 )
-                            )
-                        }
-                    )
+                            }
+                        )
+                    }
                 }
             }
         }
@@ -336,7 +343,7 @@ fun BottomNavigationBar(
         topLevelDestination.forEach { destination ->
             val selected = when (destination.route) {
                 AppDestination.Home, HomeDestination.AnimeList ->
-                    currentRoute?.hasRoute<HomeDestination.AnimeList>() == true
+                    currentRoute?.hasRoute<HomeDestination>() == true
 
                 AppDestination.Search ->
                     currentRoute?.hasRoute<AppDestination.Search>() == true
@@ -350,13 +357,7 @@ fun BottomNavigationBar(
             NavigationBarItem(
                 selected = selected,
                 onClick = {
-                    navController.navigate(destination.route) {
-                        popUpTo(navController.graph.startDestinationId) {
-                            saveState = true
-                        }
-                        launchSingleTop = true
-                        restoreState = true
-                    }
+                    navController.navigate(destination.route)
                 },
                 icon = {
                     Icon(

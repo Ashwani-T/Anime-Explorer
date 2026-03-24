@@ -13,8 +13,12 @@ import com.example.animeexplorer.domain.AnimeCollectionRepository
 import com.example.animeexplorer.domain.AnimeCollectionUiModel
 import com.example.animeexplorer.domain.CollectionUpdateEvent
 import jakarta.inject.Inject
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
+import okhttp3.Dispatcher
 
 class AnimeCollectionRepositoryImpl @Inject constructor(
     private val apiService: AnimeApiService,
@@ -25,14 +29,6 @@ class AnimeCollectionRepositoryImpl @Inject constructor(
 
     private companion object {
         const val TAG = "AnimeCollectionRepo"
-    }
-
-    private val _collectionUpdates = MutableSharedFlow<CollectionUpdateEvent>()
-
-    override fun getCollectionUpdates(): Flow<CollectionUpdateEvent> = _collectionUpdates
-
-    private suspend fun emitUpdate(event: CollectionUpdateEvent) {
-        _collectionUpdates.emit(event)
     }
 
     private suspend fun <T> executeSafe(
@@ -95,7 +91,6 @@ class AnimeCollectionRepositoryImpl @Inject constructor(
             val animeDetail = animeDetailsDao.getAnimeDetails(malId)
                 ?: throw Exception("Anime details not found in local database")
 
-            // Fetch initial episodes from API
             fetchAndSaveEpisodes(malId, page = 1)
 
             val collectionEntity = AnimeCollectionsEntity(
@@ -109,42 +104,22 @@ class AnimeCollectionRepositoryImpl @Inject constructor(
             )
 
             animeCollectionDao.addToLibrary(collectionEntity)
-            emitUpdate(CollectionUpdateEvent.Added(malId))
             Log.d(TAG, "Added anime $malId to library with status $status")
         }
 
     override suspend fun updateLibraryStatus(malId: Int, status: LibraryStatus): Result<Unit> =
         executeSafe("Error updating status for anime $malId") {
             animeCollectionDao.updateLibraryStatus(malId, status)
-            emitUpdate(CollectionUpdateEvent.Updated(malId))
             Log.d(TAG, "Updated anime $malId status to $status")
         }
 
-    override suspend fun markEpisodeComplete(
-        malId: Int,
-        episodeNumber: Int,
-        isCompleted: Boolean
-    ): Result<Unit> = executeSafe("Error marking episode $episodeNumber as completed for $malId") {
-        // Update episode status
-        animeEpisodeDao.updateEpisodeStatus(malId, episodeNumber, isCompleted)
-
-        // Sync collection progress from episodes
-        syncProgressFromEpisodes(malId)
-        emitUpdate(CollectionUpdateEvent.Updated(malId))
-        Log.d(TAG, "Episode $episodeNumber marked as ${if (isCompleted) "completed" else "incomplete"} for anime $malId")
-    }
-
     override suspend fun updateEpisodeRange(malId: Int, upToEpisode: Int): Result<Unit> =
         executeSafe("Error updating episode range for $malId") {
-            // Ensure episodes are fetched up to the target
             ensureEpisodesFetched(malId, upToEpisode)
 
-            // Mark all episodes up to the target as completed
             animeEpisodeDao.updateEpisodeInRange(malId, upToEpisode)
 
-            // Sync collection progress
             syncProgressFromEpisodes(malId)
-            emitUpdate(CollectionUpdateEvent.Updated(malId))
             Log.d(TAG, "Updated episode range for anime $malId up to episode $upToEpisode")
         }
 
@@ -160,7 +135,6 @@ class AnimeCollectionRepositoryImpl @Inject constructor(
 
             // Sync collection progress
             syncProgressFromEpisodes(malId)
-            emitUpdate(CollectionUpdateEvent.Updated(malId))
             Log.d(TAG, "Marked all episodes as completed for anime $malId")
         }
 
@@ -171,7 +145,6 @@ class AnimeCollectionRepositoryImpl @Inject constructor(
 
             animeCollectionDao.removeFromLibrary(collection)
             animeEpisodeDao.deleteEpisodesByMalId(malId)
-            emitUpdate(CollectionUpdateEvent.Removed(malId))
             Log.d(TAG, "Removed anime $malId from library")
         }
 
@@ -180,8 +153,12 @@ class AnimeCollectionRepositoryImpl @Inject constructor(
             animeCollectionDao.getCollectionByMalId(malId)?.toAnimeCollectionUiModel()
         }
 
-    override suspend fun getAllLibraryCollections(): Result<List<AnimeCollectionUiModel>> =
-        executeSafe("Error fetching all library collections") {
-            animeCollectionDao.getAllCollections().map { it.toAnimeCollectionUiModel() }
-        }
+    override fun getAllLibraryCollections(): Flow<List<AnimeCollectionUiModel>> {
+        return animeCollectionDao
+            .observeAllCollections()
+            .map { entities ->
+                entities.map { it.toAnimeCollectionUiModel() }
+            }
+            .flowOn(Dispatchers.Default)
+    }
 }

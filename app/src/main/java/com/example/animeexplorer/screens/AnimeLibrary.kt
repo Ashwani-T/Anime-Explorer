@@ -42,8 +42,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import coil.compose.AsyncImage
-import com.example.animeexplorer.components.ArcLoader
-import com.example.animeexplorer.components.LinearProgressCustom
+import com.example.animeexplorer.core.components.ArcLoader
+import com.example.animeexplorer.core.components.LinearProgressCustom
 import com.example.animeexplorer.data.local.entity.LibraryStatus
 import com.example.animeexplorer.domain.AnimeCollectionUiModel
 import com.example.animeexplorer.ui.theme.AppTheme
@@ -110,8 +110,6 @@ fun AnimeLibrary(
                         LibraryFilterRow(
                             selectedStatus = uiState.selectedFilter,
                             onStatusSelected = { status -> viewModel.filterByStatus(status) },
-                            currentPreset = uiState.selectedPreset,
-                            onPresetClick = { preset -> viewModel.setPreset(preset) },
                             onClearFilter = { viewModel.clearFilter() },
                             modifier = Modifier.fillMaxWidth()
                         )
@@ -165,8 +163,6 @@ fun AnimeLibrary(
 fun LibraryFilterRow(
     selectedStatus: LibraryStatus?,
     onStatusSelected: (LibraryStatus) -> Unit,
-    currentPreset: String,
-    onPresetClick: (String) -> Unit,
     onClearFilter: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -179,6 +175,15 @@ fun LibraryFilterRow(
                 .padding(4.dp),
             horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
+            item {
+                FilterChip(
+                    selected = selectedStatus == null,
+                    onClick = { onClearFilter() },
+                    label = { Text("All") },
+                    leadingIcon = null,
+                    modifier = Modifier.weight(1f)
+                )
+            }
             items(LibraryStatus.entries.size) { index ->
                 val status = LibraryStatus.entries[index]
                 if (status != LibraryStatus.UNLISTED) {
@@ -197,45 +202,7 @@ fun LibraryFilterRow(
 
             }
         }
-
         Spacer(Modifier.height(12.dp))
-
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            IconButton(
-                onClick = { onStatusSelected(LibraryStatus.WATCH_LATER) }
-            ) {
-                Icon(
-                    imageVector = Icons.Rounded.Schedule,
-                    contentDescription = "Preset",
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-
-            AssistChip(
-                onClick = {
-                    // Toggle between presets
-                    if (currentPreset == "Default") {
-                        onPresetClick("Watching")
-                    } else {
-                        onPresetClick("Default")
-                    }
-                },
-                label = { Text(currentPreset) }
-            )
-
-            Spacer(Modifier.weight(1f))
-
-            // Show clear filter button if a filter is active
-            if (currentPreset != "Default") {
-                IconButton(onClick = onClearFilter) {
-                    Icon(Icons.Rounded.Block, contentDescription = "Clear filter")
-                }
-            }
-        }
     }
 }
 

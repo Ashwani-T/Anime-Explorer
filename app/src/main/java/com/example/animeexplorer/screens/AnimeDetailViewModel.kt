@@ -120,7 +120,7 @@ class AnimeDetailViewModel @Inject constructor(
                 collectionRepository.updateLibraryStatus(malId, status).fold(
                     onSuccess = {
                         // Then update episodes if specified
-                        if (episodes > 0) {
+                        if (episodes >= 0) {
                             collectionRepository.updateEpisodeRange(malId, episodes)
                         }
                         loadCollectionStatus()

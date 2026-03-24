@@ -1,6 +1,5 @@
-package com.example.animeexplorer.data.local
+package com.example.animeexplorer.core.database
 
-import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import com.example.animeexplorer.data.local.dao.AnimeCollectionDao

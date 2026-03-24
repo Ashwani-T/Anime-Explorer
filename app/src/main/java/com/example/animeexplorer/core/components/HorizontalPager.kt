@@ -1,9 +1,11 @@
-package com.example.animeexplorer.components
+package com.example.animeexplorer.core.components
 
+import androidx.compose.animation.AnimatedContentScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.foundation.interaction.collectIsPressedAsState
@@ -17,7 +19,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Icon
@@ -31,19 +32,21 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.animeexplorer.domain.AnimeUiModel
 import kotlinx.coroutines.delay
 
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun AutoAdvancePager(
     animeList: List<AnimeUiModel>,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onAnimeClick: (Int) -> Unit,
+    sharedTransitionScope: SharedTransitionScope,
+    animatedContentScope: AnimatedContentScope
 ) {
 
 
@@ -82,7 +85,13 @@ fun AutoAdvancePager(
         HorizontalPager(
             pagerState
         ) { index ->
-            AnimeHeroCard(anime = animeList[index], index = index)
+            AnimeHeroCard(
+                anime = animeList[index],
+                onAnimeClick = onAnimeClick,
+                sharedTransitionScope = sharedTransitionScope,
+                animatedContentScope = animatedContentScope,
+                index = index
+            )
         }
         DotsIndicator(
             totalDots = animeList.size,
@@ -93,17 +102,24 @@ fun AutoAdvancePager(
 }
 
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun AnimeHeroCard(
     modifier: Modifier = Modifier,
     anime: AnimeUiModel,
+    onAnimeClick: (Int) -> Unit,
+    sharedTransitionScope: SharedTransitionScope,
+    animatedContentScope: AnimatedContentScope,
     index: Int
 ) {
     Column(
         modifier = Modifier.fillMaxWidth()
     ) {
         AnimeItem(
-            anime
+            anime = anime,
+            onClick = onAnimeClick,
+            sharedTransitionScope = sharedTransitionScope,
+            animatedContentScope = animatedContentScope
         )
         Row(
             modifier = Modifier

@@ -2,7 +2,7 @@ package com.example.animeexplorer.di
 
 import android.content.Context
 import androidx.room.Room
-import com.example.animeexplorer.data.local.AppDatabase
+import com.example.animeexplorer.core.database.AppDatabase
 import com.example.animeexplorer.data.local.dao.AnimeCollectionDao
 import com.example.animeexplorer.data.local.dao.AnimeDetailsDao
 import com.example.animeexplorer.data.local.dao.AnimeEpisodeDao

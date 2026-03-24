@@ -5,11 +5,11 @@ import androidx.room.PrimaryKey
 
 
 enum class LibraryStatus{
+    WATCH_LATER,
+    COMPLETED,
     WATCHING,
     ON_Hold,
-    UNLISTED,
-    COMPLETED,
-    WATCH_LATER
+    UNLISTED
 }
 
 @Entity("anime_collections")
