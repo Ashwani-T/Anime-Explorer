@@ -61,12 +61,14 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -78,6 +80,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.ProcessLifecycleOwner
+import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.animeexplorer.core.components.AnimeItem
 import com.example.animeexplorer.core.components.ArcLoader
@@ -105,11 +111,68 @@ fun SearchAnime(
 
     val viewModel: SearchViewModel = hiltViewModel()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    var showMainFilterSheet by remember { mutableStateOf(false) }
 
+    //Handling Activity Lifecycle and Triggering Refresh
+    var wasInBackground by rememberSaveable{mutableStateOf(false)}
+
+
+    LifecycleEventEffect(
+        event = Lifecycle.Event.ON_STOP,
+        lifecycleOwner = ProcessLifecycleOwner.get()
+    ) {
+        Log.d("TAG", "App went to background")
+        wasInBackground = true
+    }
+
+    LifecycleEventEffect(
+        event = Lifecycle.Event.ON_START,
+        lifecycleOwner = ProcessLifecycleOwner.get()
+    ) {
+        // To avoid the initial trigger when the screen first loads,
+        // you can check the 'currentState' or use a 'LaunchedEffect' with a flag
+        if (wasInBackground){
+            Log.d("TAG", "App returned to foreground")
+            viewModel.resetAndReloadAnime()
+        }
+        wasInBackground = false
+//
+    }
+
+//    val lifecycle = ProcessLifecycleOwner.get().lifecycle
+//    var wasInBackground by remember{mutableStateOf(false)}
+//
+//    DisposableEffect(lifecycle) {
+//        val observer = LifecycleEventObserver{_,event ->
+//            Log.d("TAG", "EVENT TRIGGERRED: ${event.name}")
+//            when(event){
+//                Lifecycle.Event.ON_STOP -> {
+//                    wasInBackground = true
+//                }
+//
+//                Lifecycle.Event.ON_START ->{
+//                    if(wasInBackground){
+//                        //viewModel.resetAndReloadAnime()
+//                        wasInBackground=false
+//                    }
+//                }
+//                else -> Unit
+//            }
+//        }
+//
+//        lifecycle.addObserver(observer)
+//
+//        onDispose {
+//            //lifecycle.removeObserver(observer)
+//        }
+//    }
+
+    // Bottom Sheet
+    var showMainFilterSheet by remember { mutableStateOf(false) }
     var activeSubSheet by remember { mutableStateOf<SubSheetType?>(null) }
 
 
+
+    // Managing FAB Functionality
     val lazyGridState = rememberLazyGridState()
     val scope = rememberCoroutineScope()
 
@@ -156,7 +219,9 @@ fun SearchAnime(
                     ) {
                         if (uiState.searchQuery.isNotEmpty()) {
                             IconButton(
-                                onClick = { viewModel.onSearchQueryChange("") },
+                                onClick = {
+                                    viewModel.onSearchQueryChange("")
+                                },
                                 modifier = Modifier.size(40.dp)
                             ) {
                                 Icon(

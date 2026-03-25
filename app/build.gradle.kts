@@ -83,5 +83,7 @@ dependencies {
     ksp(libs.androidx.room.compiler)
     implementation(libs.androidx.ui)
     implementation(libs.androidx.compose.animation)
+    implementation(libs.androidx.lifecycle.process)
+    implementation(libs.androidx.lifecycle.runtime.compose)
 
 }

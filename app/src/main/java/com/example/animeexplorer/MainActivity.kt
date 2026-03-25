@@ -51,6 +51,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination.Companion.hasRoute
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -319,7 +320,7 @@ fun BottomNavigationBar(
 
     val topLevelDestination = listOf(
         TopLevelDestination(
-            route = HomeDestination.AnimeList,
+            route = AppDestination.Home,
             selectedIcon = Icons.Filled.Home,
             unSelectedIcon = Icons.Outlined.Home,
             label = "Home"
@@ -357,7 +358,14 @@ fun BottomNavigationBar(
             NavigationBarItem(
                 selected = selected,
                 onClick = {
-                    navController.navigate(destination.route)
+                    navController.navigate(destination.route){
+                        popUpTo(navController.graph.findStartDestination().id) {
+                            saveState = true
+                        }
+                        launchSingleTop = true
+                        restoreState = true
+
+                    }
                 },
                 icon = {
                     Icon(

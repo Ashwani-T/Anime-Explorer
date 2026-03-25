@@ -11,6 +11,9 @@ junitVersion = "1.3.0"
 espressoCore = "3.7.0"
 kotlinxCoroutinesAndroid = "1.10.2"
 kotlinxSerializationJsonVersion = "1.10.0"
+lifecycleBom = "2.7.0"
+lifecycleProcess = "2.10.0"
+lifecycleRuntimeCompose = "2.10.0"
 lifecycleRuntimeKtx = "2.10.0"
 activityCompose = "1.12.4"
 kotlin = "2.0.21"
@@ -31,6 +34,10 @@ androidx-compose-animation = { module = "androidx.compose.animation:animation", 
 androidx-compose-material-icons-extended = { module = "androidx.compose.material:material-icons-extended" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
+androidx-lifecycle-bom = { module = "androidx.lifecycle:lifecycle-bom", version.ref = "lifecycleBom" }
+androidx-lifecycle-process = { module = "androidx.lifecycle:lifecycle-process", version.ref = "lifecycleProcess" }
+androidx-lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycleRuntimeCompose" }
+androidx-lifecyle-process = { module = "androidx.lifecycle:lifecyle-process" }
 androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomCompiler" }
 androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "roomKtx" }
 androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomRuntime" }

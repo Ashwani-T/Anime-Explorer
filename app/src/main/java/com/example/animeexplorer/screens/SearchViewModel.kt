@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
@@ -33,11 +34,7 @@ class SearchViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SearchUiState())
-    val uiState: StateFlow<SearchUiState> = _uiState.onStart {
-        Log.d("TAG", ": ${_uiState.value.animeList.size}")
-        resetAndReloadAnime()
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000),SearchUiState())
-
+    val uiState: StateFlow<SearchUiState> = _uiState.asStateFlow()
 
 
     private val _searchQueryState = MutableStateFlow("")
@@ -173,6 +170,11 @@ class SearchViewModel @Inject constructor(
     fun resetAndReloadAnime(){
         _uiState.value = SearchUiState(searchQuery = _searchQueryState.value, isLoading = true)
         loadAnime()
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        Log.d("TAG", "VIEWMODEL DESTROYED: SearchViewModel")
     }
 
 }
