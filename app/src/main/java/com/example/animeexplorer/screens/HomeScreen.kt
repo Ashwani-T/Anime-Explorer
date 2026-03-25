@@ -23,6 +23,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -46,8 +47,6 @@ fun HomeScreen(
     val state by viewModel.uiState.collectAsState()
 
     val listState = rememberLazyGridState()
-
-
 
     HomeScreenContent(
         modifier = modifier,
@@ -73,7 +72,6 @@ fun HomeScreenContent(
         modifier = modifier
             .fillMaxSize()
     ) {
-
         AnimeList(
             horizontalPagerList = state.horizontalPager,
             trending = state.trending.items,
@@ -111,25 +109,22 @@ fun AnimeList(
         state = listState,
         modifier = Modifier.fillMaxSize()
     ) {
-        Log.d("TAG", "HOME SCREEN: $isLoading")
-
-
         if (horizontalPagerList.isNotEmpty() && trending.isNotEmpty() && top.isNotEmpty() && upcoming.isNotEmpty()) {
 
-            item(span = { GridItemSpan(maxLineSpan) }) {
+            item(key = "pager", span = { GridItemSpan(maxLineSpan) }) {
                 AutoAdvancePager(
-                    animeList = horizontalPagerList.subList(0, minOf(10, horizontalPagerList.size)),
+                    animeList = remember(horizontalPagerList) { horizontalPagerList.subList(0, minOf(10, horizontalPagerList.size)) },
                     onAnimeClick= onAnimeClick,
                     sharedTransitionScope = sharedTransitionScope,
                     animatedContentScope = animatedContentScope
                 )
             }
 
-            item(span = { GridItemSpan(maxLineSpan) }) {
+            item(key = "header_season", span = { GridItemSpan(maxLineSpan) }) {
                 SectionHeader("This Season")
             }
 
-            item(span = { GridItemSpan(maxLineSpan) }) {
+            item(key = "list_season", span = { GridItemSpan(maxLineSpan) }) {
                 HorizontalAnimeList(
                     animeList = seasonAnime,
                     onAnimeClick = onAnimeClick,
@@ -137,59 +132,59 @@ fun AnimeList(
                     animatedContentScope = animatedContentScope
                 )
             }
-            item(span = { GridItemSpan(maxLineSpan) }) {
+            item(key = "header_favorite", span = { GridItemSpan(maxLineSpan) }) {
                 SectionHeader("Favourite Anime")
             }
 
-            item(span = { GridItemSpan(maxLineSpan) }) {
+            item(key = "list_favorite", span = { GridItemSpan(maxLineSpan) }) {
                 HorizontalAnimeList(
-                    animeList = favorite.take(10),
+                    animeList = remember(favorite) { favorite.take(10) },
                     onAnimeClick = onAnimeClick,
                     sharedTransitionScope = sharedTransitionScope,
                     animatedContentScope = animatedContentScope
                 )
             }
 
-            item(span = { GridItemSpan(maxLineSpan) }) {
+            item(key = "header_top", span = { GridItemSpan(maxLineSpan) }) {
                 SectionHeader("Top Anime")
             }
 
-            item(span = { GridItemSpan(maxLineSpan) }) {
+            item(key = "list_top", span = { GridItemSpan(maxLineSpan) }) {
                 HorizontalAnimeList(
-                    animeList = top.take(10),
+                    animeList = remember(top) { top.take(10) },
                     onAnimeClick = onAnimeClick,
                     sharedTransitionScope = sharedTransitionScope,
                     animatedContentScope = animatedContentScope
                 )
             }
 
-            item(span = { GridItemSpan(maxLineSpan) }) {
+            item(key = "header_trending", span = { GridItemSpan(maxLineSpan) }) {
                 SectionHeader("Trending Animes")
             }
 
-            item(span = { GridItemSpan(maxLineSpan) }) {
+            item(key = "list_trending", span = { GridItemSpan(maxLineSpan) }) {
                 HorizontalAnimeList(
-                    animeList = trending.take(10),
+                    animeList = remember(trending) { trending.take(10) },
                     onAnimeClick = onAnimeClick,
                     sharedTransitionScope = sharedTransitionScope,
                     animatedContentScope = animatedContentScope
                 )
             }
 
-            item(span = { GridItemSpan(maxLineSpan) }) {
+            item(key = "header_upcoming", span = { GridItemSpan(maxLineSpan) }) {
                 SectionHeader("Upcoming Animes")
             }
 
-            item(span = { GridItemSpan(maxLineSpan) }) {
+            item(key = "list_upcoming", span = { GridItemSpan(maxLineSpan) }) {
                 HorizontalAnimeList(
-                    animeList = upcoming.take(6),
+                    animeList = remember(upcoming) { upcoming.take(6) },
                     onAnimeClick = onAnimeClick,
                     sharedTransitionScope = sharedTransitionScope,
                     animatedContentScope = animatedContentScope
                 )
             }
-        }else{
-            item(span = { GridItemSpan(maxLineSpan) }) {
+        } else if (isLoading) {
+            item(key = "loader", span = { GridItemSpan(maxLineSpan) }) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -200,8 +195,6 @@ fun AnimeList(
                 }
             }
         }
-
-
     }
 }
 
@@ -235,12 +228,15 @@ fun HorizontalAnimeList(
             .padding(vertical = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        items(animeList, key = { it.id }) { anime ->
+        items(
+            items = animeList, 
+            key = { it.id },
+            contentType = { "anime_item" }
+        ) { anime ->
             AnimeItem(
                 anime = anime,
                 onClick = { onAnimeClick(anime.id) },
-                modifier = Modifier
-                    .width(150.dp),
+                modifier = Modifier.width(150.dp),
                 sharedTransitionScope = sharedTransitionScope,
                 animatedContentScope = animatedContentScope
             )
