@@ -12,11 +12,10 @@ import com.example.animeexplorer.domain.AnimeCollectionRepository
 import com.example.animeexplorer.domain.AnimeCollectionUiModel
 import com.example.animeexplorer.domain.AnimeRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import jakarta.inject.Inject
+import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 @HiltViewModel
@@ -90,16 +89,8 @@ class AnimeDetailViewModel @Inject constructor(
             try {
                 collectionRepository.addToLibrary(malId, status).fold(
                     onSuccess = {
-
-                            Log.d("TAG", "addToCollection: $status")
-                            if(status == LibraryStatus.COMPLETED){
-                                collectionRepository.markAllEpisodeCompleted(malId)
-                            }else{
-
-                                collectionRepository.updateEpisodeRange(malId, episodes)
-                            }
-
-
+                        Log.d("TAG", "addToCollection: $status")
+                        collectionRepository.updateEpisodesCompleted(malId, episodes)
                         loadCollectionStatus()
                         Log.d("AnimeDetailVM", "Added to collection with status: $status, episodes: $episodes")
                     },
@@ -116,12 +107,10 @@ class AnimeDetailViewModel @Inject constructor(
     fun updateCollection(status: LibraryStatus, episodes: Int) {
         viewModelScope.launch {
             try {
-                // Update the status first
                 collectionRepository.updateLibraryStatus(malId, status).fold(
                     onSuccess = {
-                        // Then update episodes if specified
                         if (episodes >= 0) {
-                            collectionRepository.updateEpisodeRange(malId, episodes)
+                            collectionRepository.updateEpisodesCompleted(malId, episodes)
                         }
                         loadCollectionStatus()
                         Log.d("AnimeDetailVM", "Updated collection with status: $status, episodes: $episodes")

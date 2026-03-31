@@ -2,7 +2,6 @@ package com.example.animeexplorer.data.remote
 
 import com.example.animeexplorer.data.remote.dto.AnimeDetailResponse
 import com.example.animeexplorer.data.remote.dto.AnimeResponseDto
-import com.example.animeexplorer.data.remote.dto.EpisodeResponseDto
 import com.example.animeexplorer.data.remote.dto.GenresResponseDto
 import retrofit2.http.GET
 import retrofit2.http.Path
@@ -28,11 +27,6 @@ interface AnimeApiService {
         @Path("id") malId: Int
     ): AnimeDetailResponse
 
-    @GET("anime/{id}/episodes")
-    suspend fun getAnimeEpisodes(
-        @Path("id") malId: Int,
-        @Query("page") page: Int = 1
-    ): EpisodeResponseDto
 
     @GET("top/anime")
     suspend fun getTopAnime(

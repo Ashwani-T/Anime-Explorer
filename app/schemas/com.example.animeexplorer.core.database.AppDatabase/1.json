@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "df5b69dafde459af65d69f43a9741cfc",
+    "identityHash": "ad683be7b351a23178b6d363fa739f34",
     "entities": [
       {
         "tableName": "anime_details",
@@ -131,42 +131,6 @@
         }
       },
       {
-        "tableName": "episodes",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`malId` INTEGER NOT NULL, `episodeNumber` INTEGER NOT NULL, `title` TEXT, `isCompleted` INTEGER NOT NULL, PRIMARY KEY(`malId`, `episodeNumber`))",
-        "fields": [
-          {
-            "fieldPath": "malId",
-            "columnName": "malId",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "episodeNumber",
-            "columnName": "episodeNumber",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "title",
-            "columnName": "title",
-            "affinity": "TEXT"
-          },
-          {
-            "fieldPath": "isCompleted",
-            "columnName": "isCompleted",
-            "affinity": "INTEGER",
-            "notNull": true
-          }
-        ],
-        "primaryKey": {
-          "autoGenerate": false,
-          "columnNames": [
-            "malId",
-            "episodeNumber"
-          ]
-        }
-      },
-      {
         "tableName": "anime_cache",
         "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `title` TEXT NOT NULL, `imageUrl` TEXT NOT NULL, `description` TEXT NOT NULL, `score` REAL NOT NULL, `category` TEXT NOT NULL, `timeStamp` INTEGER NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
@@ -223,7 +187,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'df5b69dafde459af65d69f43a9741cfc')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'ad683be7b351a23178b6d363fa739f34')"
     ]
   }
 }

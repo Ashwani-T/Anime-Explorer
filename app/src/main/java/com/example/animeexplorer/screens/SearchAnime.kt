@@ -44,12 +44,10 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.SearchOff
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.VideoLibrary
-import androidx.compose.material.icons.outlined.FilterList
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ElevatedFilterChip
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -61,14 +59,12 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -80,10 +76,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.ProcessLifecycleOwner
-import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.animeexplorer.core.components.AnimeItem
 import com.example.animeexplorer.core.components.ArcLoader
@@ -112,41 +104,9 @@ fun SearchAnime(
     val viewModel: SearchViewModel = hiltViewModel()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-
-
-//    val lifecycle = ProcessLifecycleOwner.get().lifecycle
-//    var wasInBackground by remember{mutableStateOf(false)}
-//
-//    DisposableEffect(lifecycle) {
-//        val observer = LifecycleEventObserver{_,event ->
-//            Log.d("TAG", "EVENT TRIGGERRED: ${event.name}")
-//            when(event){
-//                Lifecycle.Event.ON_STOP -> {
-//                    wasInBackground = true
-//                }
-//
-//                Lifecycle.Event.ON_START ->{
-//                    if(wasInBackground){
-//                        //viewModel.resetAndReloadAnime()
-//                        wasInBackground=false
-//                    }
-//                }
-//                else -> Unit
-//            }
-//        }
-//
-//        lifecycle.addObserver(observer)
-//
-//        onDispose {
-//            //lifecycle.removeObserver(observer)
-//        }
-//    }
-
     // Bottom Sheet
     var showMainFilterSheet by remember { mutableStateOf(false) }
     var activeSubSheet by remember { mutableStateOf<SubSheetType?>(null) }
-
-
 
     // Managing FAB Functionality
     val lazyGridState = rememberLazyGridState()
@@ -237,6 +197,16 @@ fun SearchAnime(
                 )
             }
         }
+
+        ActiveFilterChips(
+            uiState = uiState,
+            onRemoveSort = { viewModel.onSortTypeChange(null) },
+            onRemoveFormat = { viewModel.onFormatChange(null) },
+            onRemoveStatus = { viewModel.onStatusChange(null) },
+            onRemoveRating = { viewModel.onRatingChange(null) },
+            onRemoveGenre = { viewModel.removeGenre(it) },
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
 
         if (uiState.animeList.isEmpty() && uiState.isLoading) {
             Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
@@ -343,6 +313,104 @@ fun SearchAnime(
             }
     }
 
+}
+
+@Composable
+fun ActiveFilterChips(
+    uiState: SearchUiState,
+    onRemoveSort: () -> Unit,
+    onRemoveFormat: () -> Unit,
+    onRemoveStatus: () -> Unit,
+    onRemoveRating: () -> Unit,
+    onRemoveGenre: (GenreModel) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val hasActiveFilters = uiState.selectedSort != null ||
+            uiState.selectedFormat != null ||
+            uiState.selectedStatus != null ||
+            uiState.selectedRating != null ||
+            uiState.selectedGenres.isNotEmpty()
+
+    if (hasActiveFilters) {
+        LazyRow(
+            modifier = modifier.fillMaxWidth(),
+            contentPadding = PaddingValues(horizontal = 4.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            uiState.selectedSort?.let {
+                item {
+                    AppliedFilterChip(
+                        label = "Sort: ${it.displayName}",
+                        onRemove = onRemoveSort
+                    )
+                }
+            }
+            uiState.selectedFormat?.let {
+                item {
+                    AppliedFilterChip(
+                        label = "Format: ${it.displayName}",
+                        onRemove = onRemoveFormat
+                    )
+                }
+            }
+            uiState.selectedStatus?.let {
+                item {
+                    AppliedFilterChip(
+                        label = "Status: ${it.displayName}",
+                        onRemove = onRemoveStatus
+                    )
+                }
+            }
+            uiState.selectedRating?.let {
+                item {
+                    AppliedFilterChip(
+                        label = "Rating: ${it.displayName}",
+                        onRemove = onRemoveRating
+                    )
+                }
+            }
+            items(uiState.selectedGenres.toList()) { genre ->
+                AppliedFilterChip(
+                    label = genre.name,
+                    onRemove = { onRemoveGenre(genre) }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun AppliedFilterChip(
+    label: String,
+    onRemove: () -> Unit
+) {
+    Surface(
+        shape = RoundedCornerShape(16.dp),
+        color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.7f),
+        modifier = Modifier.padding(vertical = 4.dp)
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
+        ) {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSecondaryContainer,
+                fontWeight = FontWeight.Medium
+            )
+            Spacer(modifier = Modifier.width(4.dp))
+            Icon(
+                imageVector = Icons.Default.Clear,
+                contentDescription = "Remove filter",
+                modifier = Modifier
+                    .size(14.dp)
+                    .clickable { onRemove() },
+                tint = MaterialTheme.colorScheme.onSecondaryContainer
+            )
+        }
+    }
 }
 
 enum class SubSheetType { SORT, FORMAT, STATUS, RATING }

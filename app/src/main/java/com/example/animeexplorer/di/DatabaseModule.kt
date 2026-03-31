@@ -6,7 +6,6 @@ import com.example.animeexplorer.core.database.AppDatabase
 import com.example.animeexplorer.data.local.dao.AnimeCachedDao
 import com.example.animeexplorer.data.local.dao.AnimeCollectionDao
 import com.example.animeexplorer.data.local.dao.AnimeDetailsDao
-import com.example.animeexplorer.data.local.dao.AnimeEpisodeDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -45,13 +44,6 @@ object DatabaseModule {
         database: AppDatabase
     ): AnimeCollectionDao{
         return database.animeCollectionDao()
-    }
-
-    @Provides
-    fun provideEpisodeDao(
-        database: AppDatabase
-    ): AnimeEpisodeDao{
-        return database.animeEpisodeDao()
     }
 
     @Provides

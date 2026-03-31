@@ -11,18 +11,11 @@ import com.example.animeexplorer.domain.enums.SortType
 import com.example.animeexplorer.domain.enums.StatusType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onStart
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -39,6 +32,8 @@ class SearchViewModel @Inject constructor(
 
     private val _searchQueryState = MutableStateFlow("")
 
+    private var searchJob: Job? = null
+
 
     init {
         observeSearchQuery()
@@ -50,10 +45,7 @@ class SearchViewModel @Inject constructor(
             _searchQueryState
                 .debounce(300)
                 .collect {
-                    _uiState.update { state->
-                        state.copy(animeList = emptyList(), pageNumber = 1, isLoading = true)
-                    }
-                    loadAnime()
+                    onApplyFilter()
                 }
         }
     }
@@ -62,28 +54,32 @@ class SearchViewModel @Inject constructor(
         _searchQueryState.value = query
     }
 
-    fun onSortTypeChange(sortType: SortType) {
+    fun onSortTypeChange(sortType: SortType?) {
         _uiState.update { it.copy(selectedSort = sortType) }
-    }
-
-    fun toggleSortOrder() {
-        _uiState.update {
-            it.copy(sortOrder = if (it.sortOrder == SortOrder.ASC) SortOrder.DESC else SortOrder.ASC)
-        }
         onApplyFilter()
-
     }
 
     fun onFormatChange(format: FormatType?) {
         _uiState.update { it.copy(selectedFormat = format) }
+        onApplyFilter()
     }
 
     fun onStatusChange(status: StatusType?) {
         _uiState.update { it.copy(selectedStatus = status) }
+        onApplyFilter()
     }
 
     fun onRatingChange(rating: RatingType?) {
         _uiState.update { it.copy(selectedRating = rating) }
+        onApplyFilter()
+    }
+
+    fun removeGenre(genre: GenreModel) {
+        _uiState.update { state ->
+            val newGenres = state.selectedGenres.filterNot { it.malId == genre.malId }.toSet()
+            state.copy(selectedGenres = newGenres)
+        }
+        onApplyFilter()
     }
 
     fun toggleGenre(genre: GenreModel) {
@@ -96,6 +92,13 @@ class SearchViewModel @Inject constructor(
             }
             state.copy(selectedGenres = newGenres)
         }
+    }
+    fun toggleSortOrder() {
+        _uiState.update {
+            it.copy(sortOrder = if (it.sortOrder == SortOrder.ASC) SortOrder.DESC else SortOrder.ASC)
+        }
+        onApplyFilter()
+
     }
 
 
@@ -110,15 +113,22 @@ class SearchViewModel @Inject constructor(
                 selectedGenres = emptySet()
             )
         }
+        onApplyFilter()
     }
 
     fun loadAnime() {
-        viewModelScope.launch {
+        searchJob?.cancel().also {
+            _uiState.update { state ->
+                state.copy(isLoading = true)
+            }
+        }
+        searchJob = viewModelScope.launch {
             val currentState = uiState.value
-            Log.d("Ashwani", "ui state =  ${uiState.value.animeList.size}")
+            val requestedPage = currentState.pageNumber
+            
             val result = animeRepository.getFilteredAnime(
                 query = currentState.searchQuery,
-                page = currentState.pageNumber,
+                page = requestedPage,
                 orderBy = currentState.selectedSort,
                 sortOrder = currentState.sortOrder,
                 format = currentState.selectedFormat,
@@ -128,52 +138,49 @@ class SearchViewModel @Inject constructor(
             )
 
             result.onSuccess { response ->
-                Log.d("TAG", "loadAnime: ${response.pagination}")
-                val filteredList = (uiState.value.animeList + response.data).distinctBy { it.id }
-                _uiState.update {
-                    it.copy(
-                        animeList = filteredList,
+                _uiState.update { state ->
+                    val newList = if (requestedPage == 1) {
+                        response.data
+                    } else {
+                        state.animeList + response.data
+                    }
+                    state.copy(
+                        animeList = newList.distinctBy { it.id },
                         hasNextPage = response.pagination.hasNextPage,
                         isLoading = false
                     )
                 }
 
             }.onFailure { error ->
-                _uiState.update { it.copy(isLoading = false, pageNumber = it.pageNumber - 1) }
+                _uiState.update { 
+                    it.copy(
+                        isLoading = false, 
+                        pageNumber = if (it.pageNumber > 1) it.pageNumber - 1 else 1 
+                    ) 
+                }
                 Log.d("ANIME EXPLORER", "${error.message}")
             }
 
         }
     }
 
-    fun onApplyFilter(){
+    fun onApplyFilter() {
         _uiState.update { state ->
-            state.copy(animeList = emptyList(), isLoading = true)
+            state.copy(animeList = emptyList(), pageNumber = 1, isLoading = true)
         }
-
         loadAnime()
     }
 
     fun onLoadMore() {
-        Log.d("ANIME EXPLORER", "laoding entered: ")
-
-
         if (!(uiState.value.isLoading) && uiState.value.hasNextPage) {
             _uiState.update { it.copy(isLoading = true, pageNumber = it.pageNumber + 1) }
             loadAnime()
-        } else {
-            Log.d("TAG", "onLoadMore: REACHED END OF LIST")
         }
-
-    }
-
-    fun resetAndReloadAnime(){
-        _uiState.value = SearchUiState(searchQuery = _searchQueryState.value, isLoading = true)
-        loadAnime()
     }
 
     override fun onCleared() {
         super.onCleared()
+        searchJob?.cancel()
         Log.d("TAG", "VIEWMODEL DESTROYED: SearchViewModel")
     }
 
