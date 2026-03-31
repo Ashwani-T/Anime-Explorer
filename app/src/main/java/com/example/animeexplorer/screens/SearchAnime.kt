@@ -112,31 +112,7 @@ fun SearchAnime(
     val viewModel: SearchViewModel = hiltViewModel()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    //Handling Activity Lifecycle and Triggering Refresh
-    var wasInBackground by rememberSaveable{mutableStateOf(false)}
 
-
-    LifecycleEventEffect(
-        event = Lifecycle.Event.ON_STOP,
-        lifecycleOwner = ProcessLifecycleOwner.get()
-    ) {
-        Log.d("TAG", "App went to background")
-        wasInBackground = true
-    }
-
-    LifecycleEventEffect(
-        event = Lifecycle.Event.ON_START,
-        lifecycleOwner = ProcessLifecycleOwner.get()
-    ) {
-        // To avoid the initial trigger when the screen first loads,
-        // you can check the 'currentState' or use a 'LaunchedEffect' with a flag
-        if (wasInBackground){
-            Log.d("TAG", "App returned to foreground")
-            viewModel.resetAndReloadAnime()
-        }
-        wasInBackground = false
-//
-    }
 
 //    val lifecycle = ProcessLifecycleOwner.get().lifecycle
 //    var wasInBackground by remember{mutableStateOf(false)}

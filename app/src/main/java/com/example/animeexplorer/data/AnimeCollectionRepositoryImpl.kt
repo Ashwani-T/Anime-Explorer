@@ -47,6 +47,7 @@ class AnimeCollectionRepositoryImpl @Inject constructor(
     private suspend fun fetchAndSaveEpisodes(malId: Int, page: Int): Int {
         return try {
             val response = apiService.getAnimeEpisodes(malId, page)
+            Log.d(TAG, "fetchAndSaveEpisodes: $response")
             if (response.data.isNotEmpty()) {
                 val episodeEntities = response.data.toEpisodeEntityList(malId)
                 animeEpisodeDao.insertEpisodes(episodeEntities)

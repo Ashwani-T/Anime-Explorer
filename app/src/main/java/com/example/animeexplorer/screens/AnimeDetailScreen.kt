@@ -373,8 +373,16 @@ fun AnimeDetailBottomSheetContent(
     onRemoveFromCollection: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var lazyEpisodeRowStatus by remember {mutableStateOf(false)}
+
     val lazyLibraryRowState = rememberLazyListState()
+    var lazyEpisodeRowStatus = remember(currentStatus){
+        when(currentStatus){
+            LibraryStatus.UNLISTED,
+            LibraryStatus.COMPLETED,
+            LibraryStatus.ON_Hold -> false
+            else -> true
+        }
+    }
 
     Column(
         modifier = modifier

@@ -6,6 +6,8 @@ import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.snapping.SnapPosition
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.foundation.interaction.collectIsPressedAsState
@@ -28,6 +30,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -35,8 +38,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.animeexplorer.domain.AnimeUiModel
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 
 @OptIn(ExperimentalSharedTransitionApi::class)
@@ -51,12 +59,18 @@ fun AutoAdvancePager(
 
 
     val pagerState = rememberPagerState(pageCount = { animeList.size })
+
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val lifecycleState by lifecycleOwner.lifecycle.currentStateFlow.collectAsStateWithLifecycle()
+
     val pagerIsDragged by pagerState.interactionSource.collectIsDraggedAsState()
 
     val pageInteractionSource = remember { MutableInteractionSource() }
     val pageIsPressed by pageInteractionSource.collectIsPressedAsState()
 
-    val autoAdvance = !pagerIsDragged && !pageIsPressed
+    val autoAdvance = !pagerIsDragged && !pageIsPressed && lifecycleState == Lifecycle.State.RESUMED
+
+    val scope = rememberCoroutineScope()
 
     if (autoAdvance) {
         LaunchedEffect(pagerState, pageInteractionSource) {
@@ -96,6 +110,18 @@ fun AutoAdvancePager(
         DotsIndicator(
             totalDots = animeList.size,
             selectedIndex = pagerState.currentPage,
+            onDotClick = { index: Int ->
+                scope.launch {
+                    pagerState.animateScrollToPage(
+                        page = index,
+                        animationSpec = spring(
+                            dampingRatio = Spring.DampingRatioLowBouncy,
+                            stiffness = Spring.StiffnessLow
+                        )
+                    )
+                }
+
+            }
         )
     }
 
@@ -137,7 +163,7 @@ fun AnimeHeroCard(
                 modifier = modifier.weight(1f)
             )
             IconButton(
-                onClick = {},
+                onClick = {onAnimeClick(anime.id)},
             ) {
                 Icon(imageVector = Icons.Default.Info, contentDescription = "Get Detailed Synopsis")
             }
@@ -148,9 +174,12 @@ fun AnimeHeroCard(
 }
 
 @Composable
-fun DotsIndicator(totalDots: Int, selectedIndex: Int) {
+fun DotsIndicator(totalDots: Int, selectedIndex: Int, onDotClick: (Int) -> Unit) {
 
-    Row(horizontalArrangement = Arrangement.Center) {
+    Row(
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
         repeat(totalDots) {
             val color = if (it == selectedIndex) Color.White else Color.Gray
 
@@ -159,6 +188,7 @@ fun DotsIndicator(totalDots: Int, selectedIndex: Int) {
                     .padding(8.dp)
                     .size(if (it == selectedIndex) 9.dp else 7.dp)
                     .clip(CircleShape)
+                    .clickable(onClick = { onDotClick(it) })
                     .background(color)
             )
         }

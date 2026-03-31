@@ -12,11 +12,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 
 @HiltViewModel
 class AnimeLibraryViewModel @Inject constructor(
@@ -24,56 +22,55 @@ class AnimeLibraryViewModel @Inject constructor(
 ): ViewModel() {
 
     private val _uiState = MutableStateFlow(AnimeLibraryUiState())
+    private val _query = MutableStateFlow("")
+    val query: StateFlow<String> = _query.asStateFlow()
+
     val uiState: StateFlow<AnimeLibraryUiState> = combine(
         collectionRepository.getAllLibraryCollections(),
-        _uiState
-    ){ data, state ->
-        val filteredList = applyCurrentFilter(data,state.selectedFilter)
+        _uiState,
+        _query
+    ){ data, state, searchQuery ->
+        val filteredList = applyFilters(data, state.selectedFilter, searchQuery)
         state.copy(allCollections = data, collections = filteredList)
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = AnimeLibraryUiState(isLoading = true)
     )
-    private val _query = MutableStateFlow("")
-    val query: StateFlow<String> = _query.asStateFlow()
+
+    fun onSearchQueryChange(newQuery: String) {
+        _query.value = newQuery
+    }
 
     fun filterByStatus(status: LibraryStatus) {
         _uiState.update { state ->
-            val filtered = applyCurrentFilter(state.allCollections, status)
             state.copy(
                 selectedFilter = status,
-                collections = filtered,
                 selectedPreset = status.name.replace("_", " ")
                     .lowercase()
                     .replaceFirstChar { it.uppercase() }
             )
         }
-        Log.d("AnimeLibraryVM", "Filtered by status: $status, found ${uiState.value.collections.size} items")
     }
 
     fun clearFilter() {
         _uiState.update { state ->
             state.copy(
                 selectedFilter = null,
-                collections = state.allCollections,
-                selectedPreset = "Default"
+                selectedPreset = "collections"
             )
         }
-        Log.d("AnimeLibraryVM", "Cleared filter, showing all ${uiState.value.collections.size} collections")
     }
 
-
-
-
-    private fun applyCurrentFilter(
+    private fun applyFilters(
         collections: List<AnimeCollectionUiModel>,
-        selectedFilter: LibraryStatus?
+        selectedFilter: LibraryStatus?,
+        searchQuery: String
     ): List<AnimeCollectionUiModel> {
-        return if (selectedFilter != null) {
-            collections.filter { it.status == selectedFilter }
-        } else {
-            collections
+        return collections.filter { item ->
+            val matchesStatus = selectedFilter == null || item.status == selectedFilter
+            val matchesQuery = searchQuery.isEmpty() || item.title.contains(searchQuery, ignoreCase = true)
+            matchesStatus && matchesQuery
         }
     }
 }

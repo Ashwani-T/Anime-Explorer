@@ -1,6 +1,7 @@
 package com.example.animeexplorer.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,14 +13,22 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDownward
+import androidx.compose.material.icons.filled.ArrowUpward
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.FilterList
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.rounded.Block
 import androidx.compose.material.icons.rounded.Schedule
 import androidx.compose.material3.AssistChip
@@ -29,13 +38,20 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -46,6 +62,7 @@ import com.example.animeexplorer.core.components.ArcLoader
 import com.example.animeexplorer.core.components.LinearProgressCustom
 import com.example.animeexplorer.data.local.entity.LibraryStatus
 import com.example.animeexplorer.domain.AnimeCollectionUiModel
+import com.example.animeexplorer.domain.enums.SortOrder
 import com.example.animeexplorer.ui.theme.AppTheme
 
 
@@ -55,7 +72,10 @@ fun AnimeLibrary(
     viewModel: AnimeLibraryViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val searchQuery by viewModel.query.collectAsState()
     val listState = rememberLazyGridState()
+    
+    var visibleLibraryFilterRow by remember{ mutableStateOf(true) }
 
     Box(modifier = Modifier.padding(6.dp)) {
         when {
@@ -107,12 +127,38 @@ fun AnimeLibrary(
                     modifier = Modifier.fillMaxSize()
                 ) {
                     item(span = { GridItemSpan(maxLineSpan) }) {
-                        LibraryFilterRow(
-                            selectedStatus = uiState.selectedFilter,
-                            onStatusSelected = { status -> viewModel.filterByStatus(status) },
-                            onClearFilter = { viewModel.clearFilter() },
-                            modifier = Modifier.fillMaxWidth()
-                        )
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(MaterialTheme.colorScheme.surfaceVariant),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            if(visibleLibraryFilterRow){
+                                IconButton(onClick = {visibleLibraryFilterRow = false}) {
+                                    Icon(
+                                        imageVector = Icons.Outlined.Search,
+                                        contentDescription = "Search in Library"
+                                    )
+                                }
+                                LibraryFilterRow(
+                                    selectedStatus = uiState.selectedFilter,
+                                    onStatusSelected = { status -> viewModel.filterByStatus(status) },
+                                    onClearFilter = { viewModel.clearFilter() },
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                            }else{
+                                SearchBar(
+                                    query = searchQuery,
+                                    onQueryChange = { viewModel.onSearchQueryChange(it) },
+                                    selectedPreset = uiState.selectedPreset,
+                                    onClear = {
+                                        viewModel.onSearchQueryChange("")
+                                        visibleLibraryFilterRow = true
+                                    }
+                                )
+                            }
+                        }
                     }
 
                     if (uiState.collections.isEmpty()) {
@@ -154,10 +200,39 @@ fun AnimeLibrary(
             }
         }
     }
-
-
 }
 
+@Composable
+fun SearchBar(
+    query: String,
+    onQueryChange: (String) -> Unit,
+    selectedPreset: String,
+    onClear: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    OutlinedTextField(
+        value = query,
+        onValueChange = onQueryChange,
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(4.dp),
+        placeholder = { Text("Search in ${selectedPreset}...") },
+        leadingIcon = {
+            Icon(imageVector = Icons.Default.Search, contentDescription = null)
+        },
+        trailingIcon = {
+            IconButton(onClick = onClear) {
+                Icon(imageVector = Icons.Default.Clear, contentDescription = "Clear search")
+            }
+        },
+        singleLine = true,
+        shape = RoundedCornerShape(12.dp),
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedBorderColor = Color.Transparent,
+            unfocusedBorderColor = Color.Transparent,
+        )
+    )
+}
 
 @Composable
 fun LibraryFilterRow(
@@ -166,44 +241,38 @@ fun LibraryFilterRow(
     onClearFilter: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Column(modifier = modifier.fillMaxWidth()) {
-        LazyRow(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(12.dp))
-                .background(MaterialTheme.colorScheme.surfaceVariant)
-                .padding(4.dp),
-            horizontalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            item {
+    LazyRow(
+        modifier = modifier
+            .clip(RoundedCornerShape(12.dp))
+            .padding(4.dp),
+        horizontalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        item {
+            FilterChip(
+                selected = selectedStatus == null,
+                onClick = { onClearFilter() },
+                label = { Text("All") },
+                leadingIcon = null,
+            )
+        }
+        items(LibraryStatus.entries.size) { index ->
+            val status = LibraryStatus.entries[index]
+            if (status != LibraryStatus.UNLISTED) {
+                val statusLabel = status.name.replace("_", " ")
+                    .lowercase()
+                    .replaceFirstChar { it.uppercase() }
+
                 FilterChip(
-                    selected = selectedStatus == null,
-                    onClick = { onClearFilter() },
-                    label = { Text("All") },
+                    selected = selectedStatus == status,
+                    onClick = { onStatusSelected(status) },
+                    label = { Text(statusLabel) },
                     leadingIcon = null,
-                    modifier = Modifier.weight(1f)
                 )
             }
-            items(LibraryStatus.entries.size) { index ->
-                val status = LibraryStatus.entries[index]
-                if (status != LibraryStatus.UNLISTED) {
-                    val statusLabel = status.name.replace("_", " ")
-                        .lowercase()
-                        .replaceFirstChar { it.uppercase() }
 
-                    FilterChip(
-                        selected = selectedStatus == status,
-                        onClick = { onStatusSelected(status) },
-                        label = { Text(statusLabel) },
-                        leadingIcon = null,
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-
-            }
         }
-        Spacer(Modifier.height(12.dp))
     }
+
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

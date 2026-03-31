@@ -5,11 +5,18 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -30,6 +37,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ScaffoldDefaults.contentWindowInsets
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -50,6 +58,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
@@ -58,6 +67,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navigation
+import androidx.navigation.serialization.generateHashCode
 import com.example.animeexplorer.data.ConnectivityObserver
 import com.example.animeexplorer.screens.AnimeDetailScreen
 import com.example.animeexplorer.screens.AnimeLibrary
@@ -111,13 +121,23 @@ private fun AppScaffold(
 
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentDestination = navBackStackEntry?.destination
 
-    val isAnimeList = navBackStackEntry?.destination?.hasRoute<HomeDestination.AnimeList>() ?: false
+    val isAnimeList = currentDestination?.hasRoute<HomeDestination.AnimeList>() ?: false
     val isAnimeDetail =
-        navBackStackEntry?.destination?.hasRoute<HomeDestination.AnimeDetail>() ?: false
+        currentDestination?.hasRoute<HomeDestination.AnimeDetail>() ?: false
     val isMyCollection =
-        navBackStackEntry?.destination?.hasRoute<AppDestination.MyCollection>() ?: false
-    val isSearch = navBackStackEntry?.destination?.hasRoute<AppDestination.Search>() ?: false
+        currentDestination?.hasRoute<AppDestination.MyCollection>() ?: false
+    val isSearch = currentDestination?.hasRoute<AppDestination.Search>() ?: false
+
+    val bottomBarVisibleRoutes: List<AppDestination> = listOf(
+        HomeDestination.AnimeList,
+        AppDestination.Search,
+        AppDestination.MyCollection
+    )
+    val showBottomBar = bottomBarVisibleRoutes.any { route ->
+        currentDestination?.hasRoute(route::class) == true
+    }
 
 
     var showFab by rememberSaveable { mutableStateOf(false) }
@@ -173,16 +193,6 @@ private fun AppScaffold(
                                 )
                             }
                         },
-                        actions = {
-                            IconButton(onClick = {
-                                navController.navigate(AppDestination.Search)
-                            }) {
-                                Icon(
-                                    imageVector = Icons.Filled.Search,
-                                    contentDescription = "Search In Collection"
-                                )
-                            }
-                        }
                     )
                 }
 
@@ -202,7 +212,13 @@ private fun AppScaffold(
             }
         },
         bottomBar = {
-            BottomNavigationBar(navController = navController)
+            AnimatedVisibility(
+                visible = showBottomBar,
+                enter = slideInVertically() + fadeIn(),
+                exit = slideOutVertically() + fadeOut()
+            ) {
+                BottomNavigationBar(navController)
+            }
         },
         snackbarHost = {
             SnackbarHost(snackbarHostState)
@@ -233,9 +249,9 @@ private fun AppScaffold(
                     )
                 }
             }
-        }
+        },
     ) { innerPadding ->
-        Column(modifier = Modifier.padding(innerPadding)) {
+        Column(modifier = Modifier.padding(innerPadding).animateContentSize()) {
             if (!isConnected) {
                 OfflineBanner()
             }
@@ -252,7 +268,9 @@ private fun AppScaffold(
                                 animatedContentScope = this@composable,
                                 modifier = Modifier,
                                 onAnimeClick = { malId ->
-                                    navController.navigate(HomeDestination.AnimeDetail(malId))
+                                    navController.navigate(HomeDestination.AnimeDetail(malId)) {
+                                        launchSingleTop = true
+                                    }
                                 },
                             )
                         }
@@ -320,7 +338,7 @@ fun BottomNavigationBar(
 
     val topLevelDestination = listOf(
         TopLevelDestination(
-            route = AppDestination.Home,
+            route = HomeDestination.AnimeList,
             selectedIcon = Icons.Filled.Home,
             unSelectedIcon = Icons.Outlined.Home,
             label = "Home"
@@ -358,7 +376,7 @@ fun BottomNavigationBar(
             NavigationBarItem(
                 selected = selected,
                 onClick = {
-                    navController.navigate(destination.route){
+                    navController.navigate(destination.route) {
                         popUpTo(navController.graph.findStartDestination().id) {
                             saveState = true
                         }

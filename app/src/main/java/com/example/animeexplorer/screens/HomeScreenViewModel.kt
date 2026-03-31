@@ -68,22 +68,30 @@ class HomeScreenViewModel @Inject constructor(
                     isConnected.value = status
 
                     if (status) {
-                       loadAnimePage()
+                       loadAnimePage(false)
                     }
                 }
         }
     }
 
-    private fun loadAnimePage(){
+    private fun loadAnimePage(forceRefresh: Boolean){
         viewModelScope.launch {
             try {
                 Log.d("TAG", ": running loadanimepage function ")
-                homeRepository.refreshHomeData(false)
+                homeRepository.refreshHomeData(forceRefresh)
             } catch (e: Exception) {
                 // Handle error
             } finally {
                 HomeUiState(isRefreshing = false)
             }
+        }
+    }
+
+    fun refresh(){
+        if(uiState.value.isRefreshing){
+            return
+        }else{
+            loadAnimePage(true)
         }
     }
 }

@@ -9,6 +9,6 @@ data class AnimeLibraryUiState(
     val collections: List<AnimeCollectionUiModel> = emptyList(),
     val error: String? = null,
     val selectedFilter: LibraryStatus? = null,
-    val selectedPreset: String = "Default"
+    val selectedPreset: String = "collections"
 )
 
