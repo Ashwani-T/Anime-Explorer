@@ -1,7 +1,7 @@
 package com.example.animeexplorer.di
 
-import com.example.animeexplorer.data.ConnectivityObserver
-import com.example.animeexplorer.data.NetworkConnectivityObserver
+import com.example.animeexplorer.core.data.connectivity.ConnectivityObserver
+import com.example.animeexplorer.core.data.connectivity.NetworkConnectivityObserver
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -13,13 +13,10 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 abstract class NetworkModule{
 
-
-
     @Binds
     @Singleton
     abstract fun bindConnectivityObserver(
         impl: NetworkConnectivityObserver
     ): ConnectivityObserver
-
 
 }

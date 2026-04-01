@@ -12,12 +12,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
@@ -29,19 +27,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.tooling.preview.PreviewParameter
-import androidx.compose.ui.tooling.preview.datasource.LoremIpsum
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.example.animeexplorer.R
-import com.example.animeexplorer.domain.AnimeUiModel
+import com.example.animeexplorer.core.domain.AnimeUiModel
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
@@ -145,30 +138,4 @@ fun RatingBadge(
 @Composable
 fun RatingBadgePreview(modifier: Modifier = Modifier) {
     RatingBadge(rating = 8.5)
-}
-
-@Preview(showBackground = true)
-@Composable
-fun AnimeItemPreview() {
-    Box(modifier = Modifier
-        .fillMaxWidth()
-        .padding(16.dp)) {
-        SharedTransitionLayout {
-            AnimatedContent(targetState = true, label = "preview") { _ ->
-                AnimeItem(
-                    anime = AnimeUiModel(
-                        id = 1,
-                        title = "Sample Anime Title",
-                        description = "Sample Description",
-                        imageUrl = "",
-                        score = 9.2,
-                        duration = "24m"
-                    ),
-                    sharedTransitionScope = this@SharedTransitionLayout,
-                    animatedContentScope = this,
-                    onClick = {}
-                )
-            }
-        }
-    }
 }

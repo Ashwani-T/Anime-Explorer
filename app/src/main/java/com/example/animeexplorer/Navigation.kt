@@ -10,6 +10,7 @@ data class TopLevelDestination(
     val label: String
 )
 
+@Serializable
 sealed interface AppDestination {
     @Serializable data object Home: AppDestination
     @Serializable data object Search: AppDestination

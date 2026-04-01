@@ -2,12 +2,12 @@ package com.example.animeexplorer.core.database
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
-import com.example.animeexplorer.data.local.dao.AnimeCollectionDao
-import com.example.animeexplorer.data.local.dao.AnimeDetailsDao
-import com.example.animeexplorer.data.local.dao.AnimeCachedDao
-import com.example.animeexplorer.data.local.entity.AnimeCacheEntity
-import com.example.animeexplorer.data.local.entity.AnimeCollectionsEntity
-import com.example.animeexplorer.data.local.entity.AnimeDetailsEntity
+import com.example.animeexplorer.features.collection.data.local.dao.AnimeCollectionDao
+import com.example.animeexplorer.features.detail.data.local.dao.AnimeDetailsDao
+import com.example.animeexplorer.features.home.data.local.dao.AnimeCachedDao
+import com.example.animeexplorer.features.home.data.local.entity.AnimeCacheEntity
+import com.example.animeexplorer.features.collection.data.local.entity.AnimeCollectionsEntity
+import com.example.animeexplorer.features.detail.data.local.entity.AnimeDetailsEntity
 
 @Database(
     entities = [AnimeDetailsEntity::class, AnimeCollectionsEntity::class,

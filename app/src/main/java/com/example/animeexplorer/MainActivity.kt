@@ -1,7 +1,10 @@
 package com.example.animeexplorer
 
+import android.animation.ObjectAnimator
 import android.os.Bundle
 import android.util.Log
+import android.view.View
+import android.view.animation.OvershootInterpolator
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -16,7 +19,6 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -37,7 +39,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.ScaffoldDefaults.contentWindowInsets
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -58,7 +59,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavDestination
+import androidx.core.animation.doOnEnd
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.core.util.remove
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
@@ -67,12 +70,11 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navigation
-import androidx.navigation.serialization.generateHashCode
-import com.example.animeexplorer.data.ConnectivityObserver
-import com.example.animeexplorer.screens.AnimeDetailScreen
-import com.example.animeexplorer.screens.AnimeLibrary
-import com.example.animeexplorer.screens.HomeScreen
-import com.example.animeexplorer.screens.SearchAnime
+import com.example.animeexplorer.core.data.connectivity.ConnectivityObserver
+import com.example.animeexplorer.features.collection.ui.AnimeLibrary
+import com.example.animeexplorer.features.detail.ui.AnimeDetailScreen
+import com.example.animeexplorer.features.home.ui.HomeScreen
+import com.example.animeexplorer.features.search.ui.SearchAnime
 import com.example.animeexplorer.ui.theme.AppTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -85,7 +87,10 @@ class MainActivity : ComponentActivity() {
     lateinit var connectivityObserver: ConnectivityObserver
 
     override fun onCreate(savedInstanceState: Bundle?) {
+
         super.onCreate(savedInstanceState)
+
+        installSplashScreen()
         enableEdgeToEdge()
         setContent {
             AppTheme {
@@ -109,11 +114,9 @@ private fun AppScaffold(
 
     LaunchedEffect(isConnected) {
         if (!isConnected) {
-            scope.launch {
-                snackbarHostState.showSnackbar(
-                    message = "Connection Lost"
-                )
-            }
+            snackbarHostState.showSnackbar(
+                message = "Connection Lost"
+            )
         }
     }
     Log.d("TAG", "AppScaffold: $isConnected")
@@ -251,7 +254,9 @@ private fun AppScaffold(
             }
         },
     ) { innerPadding ->
-        Column(modifier = Modifier.padding(innerPadding).animateContentSize()) {
+        Column(modifier = Modifier
+            .padding(innerPadding)
+            .animateContentSize()) {
             if (!isConnected) {
                 OfflineBanner()
             }

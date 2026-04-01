@@ -1,16 +1,18 @@
 package com.example.animeexplorer.di
 
-import com.example.animeexplorer.data.AnimeCollectionRepositoryImpl
-import com.example.animeexplorer.data.AnimeRepositoryImpl
-import com.example.animeexplorer.data.HomeRepositoryImpl
-import com.example.animeexplorer.domain.AnimeCollectionRepository
-import com.example.animeexplorer.domain.AnimeRepository
-import com.example.animeexplorer.domain.HomeRepository
+import com.example.animeexplorer.features.collection.data.AnimeCollectionRepositoryImpl
+import com.example.animeexplorer.features.collection.domain.AnimeCollectionRepository
+import com.example.animeexplorer.features.detail.data.DetailRepositoryImpl
+import com.example.animeexplorer.features.detail.domain.DetailRepository
+import com.example.animeexplorer.features.home.data.HomeRepositoryImpl
+import com.example.animeexplorer.features.home.domain.HomeRepository
+import com.example.animeexplorer.features.search.data.SearchRepositoryImpl
+import com.example.animeexplorer.features.search.domain.SearchRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import jakarta.inject.Singleton
+import javax.inject.Singleton
 
 
 @Module
@@ -18,9 +20,15 @@ import jakarta.inject.Singleton
 abstract class RepositoryModule {
     @Binds
     @Singleton
-    abstract fun bindAnimeRepository(
-        animeRepositoryImpl: AnimeRepositoryImpl
-    ): AnimeRepository
+    abstract fun bindSearchRepository(
+        searchRepositoryImpl: SearchRepositoryImpl
+    ): SearchRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindDetailRepository(
+        detailRepositoryImpl: DetailRepositoryImpl
+    ): DetailRepository
 
     @Binds
     @Singleton
@@ -30,7 +38,7 @@ abstract class RepositoryModule {
 
     @Binds
     @Singleton
-    abstract fun bindHomeRepositoryImpl(
+    abstract fun bindHomeRepository(
         homeRepositoryImpl: HomeRepositoryImpl
     ): HomeRepository
 }

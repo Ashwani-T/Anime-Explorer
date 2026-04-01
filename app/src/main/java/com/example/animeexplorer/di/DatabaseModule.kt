@@ -3,9 +3,9 @@ package com.example.animeexplorer.di
 import android.content.Context
 import androidx.room.Room
 import com.example.animeexplorer.core.database.AppDatabase
-import com.example.animeexplorer.data.local.dao.AnimeCachedDao
-import com.example.animeexplorer.data.local.dao.AnimeCollectionDao
-import com.example.animeexplorer.data.local.dao.AnimeDetailsDao
+import com.example.animeexplorer.features.home.data.local.dao.AnimeCachedDao
+import com.example.animeexplorer.features.collection.data.local.dao.AnimeCollectionDao
+import com.example.animeexplorer.features.detail.data.local.dao.AnimeDetailsDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
