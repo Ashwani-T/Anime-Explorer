@@ -20,5 +20,6 @@ sealed interface AppDestination {
 @Serializable
 sealed interface HomeDestination : AppDestination {
     @Serializable data object AnimeList : HomeDestination
-     @Serializable data class AnimeDetail(val malId: Int) : HomeDestination
+    @Serializable data class AnimeDetail(val malId: Int) : HomeDestination
+    @Serializable data class Explorer(val category: String) : HomeDestination
 }

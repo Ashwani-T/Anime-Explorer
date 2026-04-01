@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -21,6 +22,10 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -49,7 +54,8 @@ fun HomeScreen(
     sharedTransitionScope: SharedTransitionScope,
     animatedContentScope: AnimatedContentScope,
     modifier: Modifier = Modifier,
-    onAnimeClick: (Int) -> Unit
+    onAnimeClick: (Int) -> Unit,
+    onExploreCategory: (String) -> Unit = {}
 
 ) {
     val viewModel: HomeScreenViewModel = hiltViewModel()
@@ -87,6 +93,7 @@ fun HomeScreen(
         favorite = state.favorites.items,
         listState = listState,
         onAnimeClick = onAnimeClick,
+        onExploreCategory = onExploreCategory,
         sharedTransitionScope = sharedTransitionScope,
         animatedContentScope = animatedContentScope
     )
@@ -103,6 +110,7 @@ fun AnimeList(
     favorite: List<AnimeUiModel>,
     listState: LazyListState,
     onAnimeClick: (Int) -> Unit,
+    onExploreCategory: (String) -> Unit = {},
     sharedTransitionScope: SharedTransitionScope,
     animatedContentScope: AnimatedContentScope
 ) {
@@ -128,7 +136,7 @@ fun AnimeList(
             }
 
             item(key = "header_season") {
-                SectionHeader("This Season")
+                SectionHeader("This Season", onExploreClick = { onExploreCategory("SEASON") })
             }
 
             item(key = "list_season") {
@@ -140,7 +148,7 @@ fun AnimeList(
                 )
             }
             item(key = "header_favorite") {
-                SectionHeader("Favourite Anime")
+                SectionHeader("Favourite Anime", onExploreClick = { onExploreCategory("FAVORITE") })
             }
 
             item(key = "list_favorite") {
@@ -153,7 +161,7 @@ fun AnimeList(
             }
 
             item(key = "header_top") {
-                SectionHeader("Top Anime")
+                SectionHeader("Top Anime", onExploreClick = { onExploreCategory("TOP") })
             }
 
             item(key = "list_top") {
@@ -166,7 +174,7 @@ fun AnimeList(
             }
 
             item(key = "header_trending") {
-                SectionHeader("Trending Anime")
+                SectionHeader("Trending Anime", onExploreClick = { onExploreCategory("TRENDING") })
             }
 
             item(key = "list_trending") {
@@ -179,7 +187,7 @@ fun AnimeList(
             }
 
             item(key = "header_upcoming") {
-                SectionHeader("Upcoming Anime")
+                SectionHeader("Upcoming Anime", onExploreClick = { onExploreCategory("UPCOMING") })
             }
 
             item(key = "list_upcoming") {
@@ -237,16 +245,32 @@ fun AnimeList(
 @Composable
 fun SectionHeader(
     title: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onExploreClick: () -> Unit = {}
 ) {
-    Text(
-        text = title,
-        style = MaterialTheme.typography.headlineSmall,
-        color = MaterialTheme.colorScheme.onSurface,
+    Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 12.dp)
-    )
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.headlineSmall,
+            color = MaterialTheme.colorScheme.onSurface,
+        )
+        IconButton(
+            onClick = onExploreClick,
+            modifier = Modifier.width(40.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.ChevronRight,
+                contentDescription = "Explore $title",
+                tint = MaterialTheme.colorScheme.onSurface
+            )
+        }
+    }
 }
 
 @OptIn(ExperimentalSharedTransitionApi::class)

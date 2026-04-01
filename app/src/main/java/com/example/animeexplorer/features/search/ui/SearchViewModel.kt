@@ -1,6 +1,7 @@
 package com.example.animeexplorer.features.search.ui
 
 import android.util.Log
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.animeexplorer.features.search.domain.SearchRepository
@@ -20,22 +21,29 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+private const val SEARCH_QUERY_KEY = "search_query"
 
 @HiltViewModel
 class SearchViewModel @Inject constructor(
-    private val searchRepository: SearchRepository
+    private val searchRepository: SearchRepository,
+    private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SearchUiState())
     val uiState: StateFlow<SearchUiState> = _uiState.asStateFlow()
 
-
     private val _searchQueryState = MutableStateFlow("")
 
     private var searchJob: Job? = null
 
-
     init {
+        // Restore saved search query on initialization
+        val savedQuery = savedStateHandle.get<String>(SEARCH_QUERY_KEY) ?: ""
+        Log.d("SearchViewModel", "Restored search query: '$savedQuery'")
+
+        _uiState.update { it.copy(searchQuery = savedQuery) }
+        _searchQueryState.value = savedQuery
+
         observeSearchQuery()
     }
 
@@ -49,9 +57,13 @@ class SearchViewModel @Inject constructor(
                 }
         }
     }
+
     fun onSearchQueryChange(query: String) {
         _uiState.update { it.copy(searchQuery = query) }
         _searchQueryState.value = query
+        // Save query to SavedStateHandle whenever it changes
+        savedStateHandle[SEARCH_QUERY_KEY] = query
+        Log.d("SearchViewModel", "Saved search query: '$query'")
     }
 
     fun onSortTypeChange(sortType: SortType?) {
