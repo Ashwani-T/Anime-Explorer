@@ -37,7 +37,7 @@ class SearchViewModel @Inject constructor(
     private var searchJob: Job? = null
 
     init {
-        // Restore saved search query on initialization
+        // Restoring saved search query
         val savedQuery = savedStateHandle.get<String>(SEARCH_QUERY_KEY) ?: ""
         Log.d("SearchViewModel", "Restored search query: '$savedQuery'")
 
@@ -61,7 +61,6 @@ class SearchViewModel @Inject constructor(
     fun onSearchQueryChange(query: String) {
         _uiState.update { it.copy(searchQuery = query) }
         _searchQueryState.value = query
-        // Save query to SavedStateHandle whenever it changes
         savedStateHandle[SEARCH_QUERY_KEY] = query
         Log.d("SearchViewModel", "Saved search query: '$query'")
     }

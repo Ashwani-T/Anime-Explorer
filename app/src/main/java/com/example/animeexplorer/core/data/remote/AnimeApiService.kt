@@ -2,6 +2,7 @@ package com.example.animeexplorer.core.data.remote
 
 import com.example.animeexplorer.core.data.remote.dto.AnimeDetailResponse
 import com.example.animeexplorer.core.data.remote.dto.AnimeResponseDto
+import com.example.animeexplorer.core.data.remote.dto.EpisodeResponseDto
 import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query
@@ -37,5 +38,10 @@ interface AnimeApiService {
 
     @GET("seasons/now")
     suspend fun getThisSeasonAnime(): AnimeResponseDto
+
+    @GET("anime/{id}/episodes")
+    suspend fun getAnimeEpisodes(
+        @Path("id") malId: Int
+    ): EpisodeResponseDto
 
 }

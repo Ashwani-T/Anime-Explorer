@@ -1,5 +1,7 @@
 package com.example.animeexplorer.features.detail.ui
 
+import android.content.Intent
+import android.util.Log
 import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
@@ -14,16 +16,22 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ElevatedFilterChip
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SheetState
@@ -41,13 +49,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import coil.compose.AsyncImage
 import com.example.animeexplorer.core.components.ArcLoader
-import com.example.animeexplorer.features.collection.data.local.entity.LibraryStatus
 import com.example.animeexplorer.core.domain.AnimeDetailUiModel
+import com.example.animeexplorer.features.collection.data.local.entity.LibraryStatus
 
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
@@ -58,23 +69,22 @@ fun AnimeDetailScreen(
     showSheet: Boolean = false,
     onDismissSheet: () -> Unit = {},
     sharedTransitionScope: SharedTransitionScope,
-    animatedContentScope: AnimatedContentScope
+    animatedContentScope: AnimatedContentScope,
+    onNavigateToEpisodes: (Int) -> Unit = {}
 ) {
     val uiState by animeDetailViewModel.uiState.collectAsState()
     val collectionState by animeDetailViewModel.collectionState.collectAsState()
 
-    // Local state for bottom sheet selections
+    // Temp state for bottom sheet selections
     var tempStatus: LibraryStatus by rememberSaveable { mutableStateOf(LibraryStatus.UNLISTED) }
     var tempEpisodesCompleted by rememberSaveable { mutableIntStateOf(0) }
 
-    // Initialize/Reset temp state based on collectionState
+    // Initialize temp state from collectionState
     LaunchedEffect(collectionState) {
         if (collectionState != null) {
-            // If in collection: use DB values
             tempStatus = collectionState!!.status
             tempEpisodesCompleted = collectionState!!.episodesCompleted
         } else {
-            // If not in collection: reset to defaults
             tempStatus = LibraryStatus.UNLISTED
             tempEpisodesCompleted = 0
         }
@@ -96,7 +106,7 @@ fun AnimeDetailScreen(
                     onStatusSelected = { tempStatus = it },
                     onEpisodeSelected = { tempEpisodesCompleted = it },
                     onAddToCollection = {
-                        // If already in collection, use update method; otherwise use add method
+                        // Update if already in collection, otherwise add
                         if (collectionState != null) {
                             animeDetailViewModel.updateCollection(tempStatus, tempEpisodesCompleted)
                         } else {
@@ -130,13 +140,14 @@ fun AnimeDetailScreen(
                 anime = state.anime,
                 modifier = Modifier,
                 sharedTransitionScope = sharedTransitionScope,
-                animatedContentScope = animatedContentScope
+                animatedContentScope = animatedContentScope,
+                onNavigateToEpisodes = onNavigateToEpisodes
             )
         }
 
         is AnimeDetailUiState.Error -> {
             AnimeDetailErrorScreen(
-                message = state.message,
+                message = "Unable to load Anime Details",
                 onRetry = { animeDetailViewModel.retry() }
             )
         }
@@ -149,8 +160,20 @@ fun AnimeDetailContent(
     anime: AnimeDetailUiModel,
     modifier: Modifier = Modifier,
     sharedTransitionScope: SharedTransitionScope,
-    animatedContentScope: AnimatedContentScope
+    animatedContentScope: AnimatedContentScope,
+    onNavigateToEpisodes: (Int) -> Unit = {}
 ) {
+    val context = LocalContext.current
+    var isLaunchingYoutube by remember { mutableStateOf(false) }
+
+    LifecycleResumeEffect(isLaunchingYoutube) {
+        isLaunchingYoutube = false
+        Log.d("TAG", "Running : ")
+        onPauseOrDispose {
+            isLaunchingYoutube = true
+        }
+    }
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -271,6 +294,104 @@ fun AnimeDetailContent(
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        if (anime.trailerUrl.isNotBlank()) {
+            val url = anime.trailerUrl.toUri()
+            val videoIntent = Intent(Intent.ACTION_VIEW, url)
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Button(
+                    onClick = {
+                        try{
+                            videoIntent.setPackage("com.google.android.youtube")
+                            context.startActivity(videoIntent)
+                        }catch(e: Exception){
+                            videoIntent.setPackage(null)
+                            context.startActivity(videoIntent)
+                        }
+                    },
+                    shape = RoundedCornerShape(16.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    ),
+                    enabled = !isLaunchingYoutube,
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(48.dp)
+                )
+                {
+                    Icon(
+                        imageVector = Icons.Default.PlayArrow,
+                        contentDescription = null,
+                        modifier = Modifier.padding(end = 8.dp)
+                    )
+                    Text(
+                        text = "Watch Trailer",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+                if(anime.episodes>0){
+                    Button(
+                        onClick = { onNavigateToEpisodes(anime.id) },
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(48.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                        )
+                    )
+                    {
+                        Icon(
+                            imageVector = Icons.Default.PlayArrow,
+                            contentDescription = null,
+                            modifier = Modifier.padding(end = 8.dp)
+                        )
+                        Text(
+                            text = "Episodes",
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+            }
+        } else if(anime.episodes>0){
+            Button(
+                onClick = { onNavigateToEpisodes(anime.id) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp),
+                shape = RoundedCornerShape(16.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                )
+            )
+            {
+                Icon(
+                    imageVector = Icons.Default.PlayArrow,
+                    contentDescription = null,
+                    modifier = Modifier.padding(end = 8.dp)
+                )
+                Text(
+                    text = "View Episodes (${anime.episodes})",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
+
+
+
+
         Column(
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -336,8 +457,7 @@ fun AnimeDetailErrorScreen(
         Text(
             text = "Error",
             style = MaterialTheme.typography.headlineMedium,
-            color = MaterialTheme.colorScheme.error,
-            fontWeight = FontWeight.Bold
+            color = MaterialTheme.colorScheme.error
         )
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -372,11 +492,12 @@ fun AnimeDetailBottomSheetContent(
 ) {
 
     val lazyLibraryRowState = rememberLazyListState()
-    var lazyEpisodeRowStatus = remember(currentStatus){
-        when(currentStatus){
+    var lazyEpisodeRowStatus = remember(currentStatus) {
+        when (currentStatus) {
             LibraryStatus.UNLISTED,
             LibraryStatus.COMPLETED,
             LibraryStatus.ON_Hold -> false
+
             else -> true
         }
     }
@@ -388,7 +509,7 @@ fun AnimeDetailBottomSheetContent(
             .padding(bottom = 32.dp),
         horizontalAlignment = Alignment.Start
     ) {
-        // Show "Add to Collection" if not in DB, otherwise show the current status
+        // Show collection status or add button
         Text(
             text = if (isInCollection) {
                 currentStatus.name.replace("_", " ")
@@ -413,7 +534,7 @@ fun AnimeDetailBottomSheetContent(
         Spacer(modifier = Modifier.height(8.dp))
 
         LazyRow(
-            state= lazyLibraryRowState,
+            state = lazyLibraryRowState,
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
@@ -427,13 +548,16 @@ fun AnimeDetailBottomSheetContent(
                                 lazyEpisodeRowStatus = false
                                 onEpisodeSelected(0)
                             }
+
                             LibraryStatus.COMPLETED -> {
                                 lazyEpisodeRowStatus = false
                                 onEpisodeSelected(totalEpisodes)
                             }
+
                             LibraryStatus.ON_Hold -> {
                                 lazyEpisodeRowStatus = false
                             }
+
                             else -> {
                                 onEpisodeSelected(0)
                                 lazyEpisodeRowStatus = true
@@ -463,26 +587,45 @@ fun AnimeDetailBottomSheetContent(
         Spacer(modifier = Modifier.height(8.dp))
 
         LazyRow(
-
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier.fillMaxWidth()
         ) {
-            val maxEpisodes = if (totalEpisodes > 0) totalEpisodes else 100
-            items(maxEpisodes + 1) { episode ->
+            val maxEpisodes = if (totalEpisodes > 0) totalEpisodes else 0
+
+            val startEpisode = if (episodesCompleted > 0) 1 else 0
+
+            items(count = (maxEpisodes - startEpisode) + 1) { index ->
+                val episode = index + startEpisode
+                val isCompleted = episode <= episodesCompleted && episode != 0
+                val isSelectedState = (episode == episodesCompleted)
+
                 FilterChip(
-                    selected = episodesCompleted == episode,
+                    selected = isSelectedState,
                     enabled = lazyEpisodeRowStatus,
                     onClick = { onEpisodeSelected(episode) },
-                    label = { Text(episode.toString()) }
+                    label = {
+                        Text(
+                            text = episode.toString(),
+                            fontWeight = if (isSelectedState) FontWeight.Bold else FontWeight.Normal
+                        )
+                    },
+                    leadingIcon = if (isCompleted) {
+                        {
+                            Icon(
+                                imageVector = Icons.Default.Check,
+                                contentDescription = null,
+                                modifier = Modifier.size(FilterChipDefaults.IconSize)
+                            )
+                        }
+                    } else null,
+                    shape = RoundedCornerShape(8.dp)
                 )
             }
         }
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // Show different buttons based on whether it's in collection
         if (isInCollection) {
-            // Already in collection - show both Update and Remove buttons side by side
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -506,7 +649,6 @@ fun AnimeDetailBottomSheetContent(
                 }
             }
         } else {
-            // Not in collection - show only Add button
             Button(
                 onClick = { onAddToCollection() },
                 enabled = currentStatus != LibraryStatus.UNLISTED,

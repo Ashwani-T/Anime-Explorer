@@ -278,7 +278,7 @@ fun AnimeCollectionCard(
             .aspectRatio(0.72f)
     ) {
         Column(Modifier.fillMaxSize()) {
-            // Image
+            // Card image section
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -306,7 +306,7 @@ fun AnimeCollectionCard(
                 )
             }
 
-            // Title + progress
+            // Title and progress info
             Column(
                 modifier = Modifier
                     .fillMaxWidth()

@@ -2,8 +2,8 @@ package com.example.animeexplorer.features.home.data
 
 import android.util.Log
 import com.example.animeexplorer.features.home.data.local.dao.AnimeCachedDao
-import com.example.animeexplorer.features.home.data.mapper.toAnimeCacheEntity
-import com.example.animeexplorer.features.home.data.mapper.toUiModel
+import com.example.animeexplorer.features.home.domain.mapper.toAnimeCacheEntity
+import com.example.animeexplorer.features.home.domain.mapper.toUiModel
 import com.example.animeexplorer.core.data.remote.AnimeApiService
 import com.example.animeexplorer.core.domain.AnimeUiModel
 import com.example.animeexplorer.features.home.domain.HomeRepository
@@ -36,19 +36,19 @@ class HomeRepositoryImpl @Inject constructor(
                     Log.d("TAG", "refreshHomeData: CLEARED CACHED TABLE")
                     val trendingAnime = apiService.getTopAnime(filter = AnimeFilter.BY_POPULARITY.filter, type = null, rating = null).data
 
-                    delay(150)
+                    delay(200)
 
                     val upcomingAnime = apiService.getTopAnime(filter = AnimeFilter.UPCOMING.filter,type = null, rating = null).data
 
-                    delay(150)
+                    delay(200)
 
                     val favoriteAnime = apiService.getTopAnime(filter = AnimeFilter.FAVORITE.filter,type = null, rating = null).data
 
-                    delay(150)
+                    delay(200)
 
                     val topAnime = apiService.getTopAnime(filter = null,type = null, rating = null).data
 
-                    delay(150)
+                    delay(200)
 
                     val seasonAnime = apiService.getThisSeasonAnime().data
 

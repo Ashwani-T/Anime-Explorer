@@ -28,6 +28,7 @@ data class AnimeDetailUiModel(
     val title: String,
     val synopsis: String,
     val imageUrl: String,
+    val trailerUrl: String,
     val score: Double,
     val status: String,
     val type: String,

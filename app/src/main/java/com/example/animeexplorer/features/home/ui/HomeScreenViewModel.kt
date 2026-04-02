@@ -8,6 +8,7 @@ import com.example.animeexplorer.features.home.domain.HomeRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.collectLatest
@@ -15,6 +16,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 @HiltViewModel
@@ -24,16 +26,21 @@ class HomeScreenViewModel @Inject constructor(
 ) : ViewModel() {
     private val isConnected = MutableStateFlow(false)
 
-
-    private val _uiState = MutableStateFlow(HomeUiState())
-    val uiState = combine(
+    private val animeDataFlow = combine(
         homeRepository.getTrendingAnime(),
         homeRepository.getUpcomingAnime(),
         homeRepository.getTopAnime(),
         homeRepository.getSeasonAnime(),
         homeRepository.getFavoriteAnime()
-    ){
-        trending, upcoming, top, season, favorites ->
+    ) { trending, upcoming, top, season, favorites ->
+        listOf(trending, upcoming, top, season, favorites)
+    }
+
+    private val _uiState = MutableStateFlow(HomeUiState())
+    val uiState = combine(
+        animeDataFlow, _uiState
+    ) { data, state ->
+        val (trending, upcoming, top, season, favorites) = data
         HomeUiState(
             horizontalPager = top,
             trending = HomeSection(items = trending),
@@ -41,7 +48,7 @@ class HomeScreenViewModel @Inject constructor(
             top = HomeSection(items = top),
             currentSeason = HomeSection(items = season),
             favorites = HomeSection(items = favorites),
-            isRefreshing = false
+            isRefreshing = state.isRefreshing
         )
     }.stateIn(
         scope = viewModelScope,
@@ -54,6 +61,7 @@ class HomeScreenViewModel @Inject constructor(
         Log.d("HomeViewModel", "INIT CALLED")
         observeNetworkStatus()
     }
+
     @OptIn(FlowPreview::class)
     private fun observeNetworkStatus() {
         viewModelScope.launch {
@@ -64,28 +72,38 @@ class HomeScreenViewModel @Inject constructor(
                     isConnected.value = status
 
                     if (status) {
-                       loadAnimePage()
+                        loadAnimePage(false)
                     }
                 }
         }
     }
 
-    private fun loadAnimePage(){
+    private fun loadAnimePage(forceRefresh: Boolean) {
         viewModelScope.launch {
+            _uiState.update { it.copy(isRefreshing = true) }
             try {
                 Log.d("TAG", ": running loadanimepage function ")
-                homeRepository.refreshHomeData(false)
+                homeRepository.refreshHomeData(forceRefresh)
             } catch (e: Exception) {
-
+                Log.e("HomeViewModel", "Error refreshing data", e)
+            } finally {
+                _uiState.update { it.copy(isRefreshing = false) }
             }
         }
     }
 
-    fun refresh(){
-        if(uiState.value.isRefreshing){
+    fun refresh() {
+        if (uiState.value.isRefreshing) {
             return
-        }else{
-            loadAnimePage()
+        } else {
+            loadAnimePage(false)
+        }
+    }
+    fun forceRefresh(forceRefresh: Boolean){
+        if (uiState.value.isRefreshing) {
+            return
+        } else {
+            loadAnimePage(forceRefresh)
         }
     }
 }

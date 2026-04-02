@@ -23,6 +23,9 @@ data class AnimeDetailDto(
     @SerialName("images")
     val images: Image,
 
+    @SerialName("trailer")
+    val trailer: Trailer? = null,
+
     @SerialName("score")
     val score: Double? = null,
 
@@ -37,4 +40,11 @@ data class AnimeDetailDto(
 
     @SerialName("year")
     val year: Int? = null
+)
+
+
+@Serializable
+data class Trailer(
+    @SerialName("embed_url")
+    val url: String? = null,
 )

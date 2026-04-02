@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "ad683be7b351a23178b6d363fa739f34",
+    "identityHash": "c151b01455cd2cf62cfaebfe2b43d60a",
     "entities": [
       {
         "tableName": "anime_details",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`malId` INTEGER NOT NULL, `title` TEXT NOT NULL, `year` INTEGER NOT NULL, `imageUrl` TEXT NOT NULL, `synopsis` TEXT NOT NULL, `score` REAL NOT NULL, `status` TEXT NOT NULL, `episodes` INTEGER NOT NULL, `type` TEXT NOT NULL, PRIMARY KEY(`malId`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`malId` INTEGER NOT NULL, `title` TEXT NOT NULL, `year` INTEGER NOT NULL, `imageUrl` TEXT NOT NULL, `trailerUrl` TEXT NOT NULL, `synopsis` TEXT NOT NULL, `score` REAL NOT NULL, `status` TEXT NOT NULL, `episodes` INTEGER NOT NULL, `type` TEXT NOT NULL, PRIMARY KEY(`malId`))",
         "fields": [
           {
             "fieldPath": "malId",
@@ -29,6 +29,12 @@
           {
             "fieldPath": "imageUrl",
             "columnName": "imageUrl",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "trailerUrl",
+            "columnName": "trailerUrl",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -187,7 +193,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'ad683be7b351a23178b6d363fa739f34')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'c151b01455cd2cf62cfaebfe2b43d60a')"
     ]
   }
 }

@@ -3,8 +3,8 @@ package com.example.animeexplorer.features.detail.data
 import android.util.Log
 import com.example.animeexplorer.core.data.remote.AnimeApiService
 import com.example.animeexplorer.features.detail.data.local.dao.AnimeDetailsDao
-import com.example.animeexplorer.features.detail.data.mapper.toDomain
-import com.example.animeexplorer.features.detail.data.mapper.toEntity
+import com.example.animeexplorer.features.detail.domain.mapper.toDomain
+import com.example.animeexplorer.features.detail.domain.mapper.toEntity
 import com.example.animeexplorer.features.detail.domain.AnimeDetail
 import com.example.animeexplorer.features.detail.domain.DetailRepository
 import javax.inject.Inject

@@ -1,4 +1,4 @@
-package com.example.animeexplorer.features.search.data.mapper
+package com.example.animeexplorer.features.search.domain.mapper
 
 import com.example.animeexplorer.core.data.remote.dto.AnimeDto
 import com.example.animeexplorer.core.data.remote.dto.Pagination

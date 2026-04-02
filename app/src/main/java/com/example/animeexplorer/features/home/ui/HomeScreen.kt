@@ -5,6 +5,7 @@ import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,10 +25,13 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -43,12 +47,13 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.lifecycle.compose.LifecycleEventEffect
 import com.example.animeexplorer.core.components.AnimeItem
+import com.example.animeexplorer.core.components.ArcLoader
 import com.example.animeexplorer.core.components.AutoAdvancePager
 import com.example.animeexplorer.core.domain.AnimeUiModel
 import com.valentinilk.shimmer.shimmer
 import kotlinx.coroutines.FlowPreview
 
-@OptIn(ExperimentalSharedTransitionApi::class)
+@OptIn(ExperimentalSharedTransitionApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     sharedTransitionScope: SharedTransitionScope,
@@ -83,20 +88,32 @@ fun HomeScreen(
     }
 
     val listState = rememberLazyListState()
+    val refreshState = rememberPullToRefreshState()
 
-    AnimeList(
-        horizontalPagerList = state.horizontalPager,
-        trending = state.trending.items,
-        seasonAnime = state.currentSeason.items,
-        top = state.top.items,
-        upcoming = state.upcoming.items,
-        favorite = state.favorites.items,
-        listState = listState,
-        onAnimeClick = onAnimeClick,
-        onExploreCategory = onExploreCategory,
-        sharedTransitionScope = sharedTransitionScope,
-        animatedContentScope = animatedContentScope
-    )
+
+    PullToRefreshBox(
+        isRefreshing = state.isRefreshing,
+        onRefresh = { viewModel.forceRefresh(true) },
+        modifier = modifier.fillMaxSize(),
+        state = refreshState
+
+    ) {
+        Log.d("TAG", "HomeScreen: ${state.isRefreshing} ")
+        AnimeList(
+            horizontalPagerList = state.horizontalPager,
+            trending = state.trending.items,
+            seasonAnime = state.currentSeason.items,
+            top = state.top.items,
+            upcoming = state.upcoming.items,
+            favorite = state.favorites.items,
+            listState = listState,
+            isRefreshing = state.isRefreshing,
+            onAnimeClick = onAnimeClick,
+            onExploreCategory = onExploreCategory,
+            sharedTransitionScope = sharedTransitionScope,
+            animatedContentScope = animatedContentScope
+        )
+    }
 }
 
 @OptIn(FlowPreview::class, ExperimentalSharedTransitionApi::class)
@@ -109,18 +126,59 @@ fun AnimeList(
     upcoming: List<AnimeUiModel>,
     favorite: List<AnimeUiModel>,
     listState: LazyListState,
+    isRefreshing: Boolean,
     onAnimeClick: (Int) -> Unit,
     onExploreCategory: (String) -> Unit = {},
     sharedTransitionScope: SharedTransitionScope,
     animatedContentScope: AnimatedContentScope
 ) {
 
+    Log.d("TAG", "AnimeList: $isRefreshing")
     LazyColumn(
         state = listState,
         modifier = Modifier.fillMaxSize()
     ) {
-        if (horizontalPagerList.isNotEmpty() && trending.isNotEmpty() && top.isNotEmpty() && upcoming.isNotEmpty()) {
-
+        if (isRefreshing) {
+            item(key = "shimmer_pager") {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(250.dp)
+                        .padding(16.dp)
+                        .shimmer()
+                        .background(
+                            MaterialTheme.colorScheme.surfaceVariant,
+                            RoundedCornerShape(16.dp)
+                        )
+                )
+            }
+            repeat(3) { index ->
+                item(key = "shimmer_header_$index") {
+                    Box(
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp, vertical = 12.dp)
+                            .width(150.dp)
+                            .height(24.dp)
+                            .shimmer()
+                            .background(
+                                MaterialTheme.colorScheme.surfaceVariant,
+                                RoundedCornerShape(4.dp)
+                            )
+                    )
+                }
+                item(key = "shimmer_list_$index") {
+                    LazyRow(
+                        contentPadding = PaddingValues(horizontal = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        items(5) {
+                            AnimeItemShimmer()
+                        }
+                    }
+                }
+            }
+        }else{
             item(key = "pager") {
                 AutoAdvancePager(
                     animeList = remember(horizontalPagerList) {
@@ -197,46 +255,6 @@ fun AnimeList(
                     sharedTransitionScope = sharedTransitionScope,
                     animatedContentScope = animatedContentScope
                 )
-            }
-        } else {
-            item(key = "shimmer_pager") {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(250.dp)
-                        .padding(16.dp)
-                        .shimmer()
-                        .background(
-                            MaterialTheme.colorScheme.surfaceVariant,
-                            RoundedCornerShape(16.dp)
-                        )
-                )
-            }
-            repeat(3) { index ->
-                item(key = "shimmer_header_$index") {
-                    Box(
-                        modifier = Modifier
-                            .padding(horizontal = 16.dp, vertical = 12.dp)
-                            .width(150.dp)
-                            .height(24.dp)
-                            .shimmer()
-                            .background(
-                                MaterialTheme.colorScheme.surfaceVariant,
-                                RoundedCornerShape(4.dp)
-                            )
-                    )
-                }
-                item(key = "shimmer_list_$index") {
-                    LazyRow(
-                        contentPadding = PaddingValues(horizontal = 16.dp),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        items(5) {
-                            AnimeItemShimmer()
-                        }
-                    }
-                }
             }
         }
     }

@@ -4,6 +4,8 @@ import com.example.animeexplorer.features.collection.data.AnimeCollectionReposit
 import com.example.animeexplorer.features.collection.domain.AnimeCollectionRepository
 import com.example.animeexplorer.features.detail.data.DetailRepositoryImpl
 import com.example.animeexplorer.features.detail.domain.DetailRepository
+import com.example.animeexplorer.features.episodes.data.EpisodeRepositoryImpl
+import com.example.animeexplorer.features.episodes.domain.EpisodeRepository
 import com.example.animeexplorer.features.explorer.data.ExplorerRepositoryImpl
 import com.example.animeexplorer.features.explorer.domain.ExplorerRepository
 import com.example.animeexplorer.features.home.data.HomeRepositoryImpl
@@ -49,4 +51,11 @@ abstract class RepositoryModule {
     abstract fun bindExplorerRepository(
         explorerRepositoryImpl: ExplorerRepositoryImpl
     ): ExplorerRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindEpisodeRepository(
+        episodeRepositoryImpl: EpisodeRepositoryImpl
+    ): EpisodeRepository
 }
+

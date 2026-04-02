@@ -14,8 +14,8 @@ import com.example.animeexplorer.core.domain.enums.SortType
 import com.example.animeexplorer.core.domain.enums.StatusType
 import com.example.animeexplorer.features.detail.data.local.dao.AnimeDetailsDao
 import com.example.animeexplorer.features.detail.data.local.dao.toUiModel
-import com.example.animeexplorer.features.search.data.mapper.toPageInfo
-import com.example.animeexplorer.features.search.data.mapper.toUiModel
+import com.example.animeexplorer.features.search.domain.mapper.toPageInfo
+import com.example.animeexplorer.features.search.domain.mapper.toUiModel
 import com.example.animeexplorer.features.search.domain.SearchRepository
 import com.example.animeexplorer.features.search.ui.GenreModel
 import javax.inject.Inject

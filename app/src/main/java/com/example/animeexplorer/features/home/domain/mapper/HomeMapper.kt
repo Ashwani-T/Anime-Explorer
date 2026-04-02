@@ -1,4 +1,4 @@
-package com.example.animeexplorer.features.home.data.mapper
+package com.example.animeexplorer.features.home.domain.mapper
 
 import com.example.animeexplorer.core.data.remote.dto.AnimeDto
 import com.example.animeexplorer.features.home.data.local.entity.AnimeCacheEntity

@@ -7,7 +7,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.example.animeexplorer.HomeDestination
 import com.example.animeexplorer.features.collection.data.local.entity.LibraryStatus
-import com.example.animeexplorer.features.detail.data.mapper.toUiModel
+import com.example.animeexplorer.features.detail.domain.mapper.toUiModel
 import com.example.animeexplorer.features.collection.domain.AnimeCollectionRepository
 import com.example.animeexplorer.core.domain.AnimeCollectionUiModel
 import com.example.animeexplorer.features.detail.domain.DetailRepository

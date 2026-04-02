@@ -5,7 +5,7 @@ import com.example.animeexplorer.core.domain.AnimeCollectionUiModel
 import com.example.animeexplorer.features.collection.data.local.dao.AnimeCollectionDao
 import com.example.animeexplorer.features.collection.data.local.entity.AnimeCollectionsEntity
 import com.example.animeexplorer.features.collection.data.local.entity.LibraryStatus
-import com.example.animeexplorer.features.collection.data.mapper.toAnimeCollectionUiModel
+import com.example.animeexplorer.features.collection.domain.mapper.toAnimeCollectionUiModel
 import com.example.animeexplorer.features.collection.domain.AnimeCollectionRepository
 import com.example.animeexplorer.features.detail.data.local.dao.AnimeDetailsDao
 import kotlinx.coroutines.Dispatchers

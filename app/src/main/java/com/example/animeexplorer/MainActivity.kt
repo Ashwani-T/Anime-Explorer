@@ -74,6 +74,7 @@ import androidx.navigation.toRoute
 import com.example.animeexplorer.core.data.connectivity.ConnectivityObserver
 import com.example.animeexplorer.features.collection.ui.AnimeLibrary
 import com.example.animeexplorer.features.detail.ui.AnimeDetailScreen
+import com.example.animeexplorer.features.episodes.ui.AnimeEpisodeListScreen
 import com.example.animeexplorer.features.explorer.domain.ExplorerCategory
 import com.example.animeexplorer.features.explorer.ui.ExplorerScreen
 import com.example.animeexplorer.features.home.ui.HomeScreen
@@ -111,6 +112,8 @@ private fun AppScaffold(
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
 
+
+    // Checking the connectivity status
     val isConnected by connectivityObserver
         .observer()
         .collectAsState(true)
@@ -134,6 +137,8 @@ private fun AppScaffold(
     val isAnimeList = currentDestination?.hasRoute<HomeDestination.AnimeList>() ?: false
     val isAnimeDetail =
         currentDestination?.hasRoute<HomeDestination.AnimeDetail>() ?: false
+    val isAnimeEpisodes =
+        currentDestination?.hasRoute<HomeDestination.AnimeEpisodes>() ?: false
      val isMyCollection =
         currentDestination?.hasRoute<AppDestination.MyCollection>() ?: false
     val isSearch = currentDestination?.hasRoute<AppDestination.Search>() ?: false
@@ -173,6 +178,20 @@ private fun AppScaffold(
                 isAnimeDetail -> {
                     TopAppBar(
                         title = { Text("Anime Details") },
+                        navigationIcon = {
+                            IconButton(onClick = { navController.popBackStack() }) {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                    contentDescription = "Back"
+                                )
+                            }
+                        }
+                    )
+                }
+
+                isAnimeEpisodes -> {
+                    TopAppBar(
+                        title = { Text("Episodes") },
                         navigationIcon = {
                             IconButton(onClick = { navController.popBackStack() }) {
                                 Icon(
@@ -295,8 +314,16 @@ private fun AppScaffold(
                                 animatedContentScope = this@composable,
                                 sheetState = sheetState,
                                 showSheet = showSheet,
-                                onDismissSheet = { showSheet = false }
+                                onDismissSheet = { showSheet = false },
+                                onNavigateToEpisodes = { malId ->
+                                    navController.navigate(HomeDestination.AnimeEpisodes(malId)) {
+                                        launchSingleTop = true
+                                    }
+                                }
                             )
+                        }
+                        composable<HomeDestination.AnimeEpisodes> {
+                            AnimeEpisodeListScreen()
                         }
                         composable<HomeDestination.Explorer> { backStackEntry ->
                             val explorer: HomeDestination.Explorer = backStackEntry.toRoute()

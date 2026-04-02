@@ -104,11 +104,10 @@ fun SearchAnime(
     val viewModel: SearchViewModel = hiltViewModel()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    // Bottom Sheet
     var showMainFilterSheet by remember { mutableStateOf(false) }
     var activeSubSheet by remember { mutableStateOf<SubSheetType?>(null) }
 
-    // Managing FAB Functionality
+    // FAB visibility based on scroll position
     val lazyGridState = rememberLazyGridState()
     val scope = rememberCoroutineScope()
 
@@ -131,7 +130,7 @@ fun SearchAnime(
             .fillMaxSize()
             .padding(horizontal = 12.dp)
     ) {
-        // Search Bar
+        // Search input and sort controls
         Row(
             modifier = Modifier.padding(horizontal = 4.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -214,7 +213,6 @@ fun SearchAnime(
             }
         }
 
-        // Anime Grid
         LazyVerticalGrid(
             state = lazyGridState,
             columns = GridCells.Fixed(2),
@@ -243,7 +241,7 @@ fun SearchAnime(
         }
 
 
-        // Main Filter Bottom Sheet
+        // Filter bottom sheet
         if (showMainFilterSheet) {
             ModalBottomSheet(
                 onDismissRequest = { showMainFilterSheet = false },
@@ -262,7 +260,7 @@ fun SearchAnime(
             }
         }
 
-        // Sub-bottom sheets
+        // Filter options bottom sheets
         activeSubSheet?.let { type ->
             ModalBottomSheet(
                 onDismissRequest = { activeSubSheet = null },

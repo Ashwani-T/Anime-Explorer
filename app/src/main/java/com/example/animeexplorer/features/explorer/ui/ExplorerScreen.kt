@@ -39,6 +39,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.animeexplorer.core.components.AnimeItem
 import com.example.animeexplorer.core.components.ArcLoader
 import com.example.animeexplorer.features.explorer.domain.ExplorerCategory
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
 
 @OptIn(ExperimentalSharedTransitionApi::class)
@@ -54,14 +55,14 @@ fun ExplorerScreen(
     val viewModel: ExplorerViewModel = hiltViewModel()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    // Initialize with category
+    // Load category
     LaunchedEffect(category) {
         viewModel.initializeCategory(category)
     }
 
     val gridState = rememberLazyGridState()
 
-    // Pagination trigger: load next page when scrolled to 60% of the grid
+    // Load next page when scrolled 60% through items
     LaunchedEffect(gridState) {
         snapshotFlow { gridState.firstVisibleItemIndex }
             .distinctUntilChanged()
@@ -69,8 +70,7 @@ fun ExplorerScreen(
                 val totalItems = uiState.animeList.size
                 val visibleItemIndex = gridState.firstVisibleItemIndex
 
-                // Trigger when user has scrolled through 60% of items
-                if (totalItems > 0 && visibleItemIndex > (totalItems * 0.6).toInt() && uiState.hasNextPage) {
+                if (totalItems > 0 && visibleItemIndex > (totalItems - 10) && uiState.hasNextPage) {
                     Log.d("ExplorerScreen", "Loading next page. Current index: $visibleItemIndex, Total: $totalItems")
                     viewModel.loadNextPage()
                 }
@@ -80,7 +80,7 @@ fun ExplorerScreen(
     Column(
         modifier = modifier.fillMaxSize()
     ) {
-        // Top Bar
+        // Header with back button and title
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -113,7 +113,7 @@ fun ExplorerScreen(
         uiState.error?.let { error ->
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Text(
-                    text = "Error: $error",
+                    text = "Unable to fetch anime",
                     color = MaterialTheme.colorScheme.error
                 )
             }
