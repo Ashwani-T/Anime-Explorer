@@ -23,6 +23,7 @@ class AnimeEpisodeListViewModel @Inject constructor(
 
     private val malId: Int = savedStateHandle.toRoute<HomeDestination.AnimeEpisodes>().malId
 
+
     private val _uiState = MutableStateFlow<AnimeEpisodeListUiState>(AnimeEpisodeListUiState.Loading)
     val uiState: StateFlow<AnimeEpisodeListUiState> = _uiState.asStateFlow()
 
@@ -38,9 +39,8 @@ class AnimeEpisodeListViewModel @Inject constructor(
 
             response.fold(
                 onSuccess = { episodeResponse ->
-                    val episodeUiModels = episodeResponse.data.map { it.toUiModel() }
-                    _uiState.value = AnimeEpisodeListUiState.Success(episodes = episodeUiModels)
-                    Log.d("AnimeEpisodeVM", "Episodes loaded: ${episodeUiModels.size}")
+                    _uiState.value = AnimeEpisodeListUiState.Success(episodes = episodeResponse)
+                    Log.d("AnimeEpisodeVM", "Episodes loaded: ${episodeResponse.size}")
                 },
                 onFailure = { exception ->
                     _uiState.value = AnimeEpisodeListUiState.Error(exception.message!!)

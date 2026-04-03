@@ -41,7 +41,9 @@ interface AnimeApiService {
 
     @GET("anime/{id}/episodes")
     suspend fun getAnimeEpisodes(
-        @Path("id") malId: Int
+        @Path("id") malId: Int,
+        @Query("page") page: Int = 1
+
     ): EpisodeResponseDto
 
 }

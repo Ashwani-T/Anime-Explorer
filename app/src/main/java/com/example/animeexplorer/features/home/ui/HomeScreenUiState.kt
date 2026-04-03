@@ -16,6 +16,5 @@ data class HomeUiState(
     val top: HomeSection = HomeSection(),
     val upcoming: HomeSection = HomeSection(),
     val favorites: HomeSection = HomeSection(),
-
     val isRefreshing: Boolean = false
 )
