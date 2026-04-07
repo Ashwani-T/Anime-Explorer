@@ -2,6 +2,8 @@ package com.example.animeexplorer.features.collection.domain.mapper
 
 import com.example.animeexplorer.features.collection.data.local.entity.AnimeCollectionsEntity
 import com.example.animeexplorer.core.domain.AnimeCollectionUiModel
+import com.example.animeexplorer.features.collection.data.local.entity.LibraryStatus
+import com.example.animeexplorer.features.detail.data.local.entity.AnimeDetailsEntity
 
 
 fun AnimeCollectionsEntity.toAnimeCollectionUiModel(): AnimeCollectionUiModel{

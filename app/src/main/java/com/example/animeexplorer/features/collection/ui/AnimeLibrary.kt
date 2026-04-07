@@ -51,7 +51,9 @@ import coil.compose.AsyncImage
 import com.example.animeexplorer.core.components.ArcLoader
 import com.example.animeexplorer.core.domain.AnimeCollectionUiModel
 import com.example.animeexplorer.core.components.LinearProgressCustom
+import com.example.animeexplorer.core.domain.enums.SortOrder
 import com.example.animeexplorer.features.collection.data.local.entity.LibraryStatus
+import com.example.animeexplorer.features.search.ui.SearchBar
 import com.example.animeexplorer.ui.theme.AppTheme
 
 
@@ -61,7 +63,6 @@ fun AnimeLibrary(
     viewModel: AnimeLibraryViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val searchQuery by viewModel.query.collectAsState()
     val listState = rememberLazyGridState()
     
     var visibleLibraryFilterRow by remember{ mutableStateOf(true) }
@@ -116,37 +117,25 @@ fun AnimeLibrary(
                     modifier = Modifier.fillMaxSize()
                 ) {
                     item(span = { GridItemSpan(maxLineSpan) }) {
-                        Row(
+                        Column (
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(MaterialTheme.colorScheme.surfaceVariant),
-                            verticalAlignment = Alignment.CenterVertically,
+                                .clip(RoundedCornerShape(12.dp)),
+                            horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            if(visibleLibraryFilterRow){
-                                IconButton(onClick = {visibleLibraryFilterRow = false}) {
-                                    Icon(
-                                        imageVector = Icons.Outlined.Search,
-                                        contentDescription = "Search in Library"
-                                    )
-                                }
-                                LibraryFilterRow(
-                                    selectedStatus = uiState.selectedFilter,
-                                    onStatusSelected = { status -> viewModel.filterByStatus(status) },
-                                    onClearFilter = { viewModel.clearFilter() },
-                                    modifier = Modifier.fillMaxWidth()
-                                )
-                            }else{
-                                SearchBar(
-                                    query = searchQuery,
-                                    onQueryChange = { viewModel.onSearchQueryChange(it) },
-                                    selectedPreset = uiState.selectedPreset,
-                                    onClear = {
-                                        viewModel.onSearchQueryChange("")
-                                        visibleLibraryFilterRow = true
-                                    }
-                                )
-                            }
+                            SearchBar(
+                                searchQuery = uiState.searchQuery,
+                                onSearchQueryChange = {viewModel.onSearchQueryChange(it)},
+                                sortOrder = SortOrder.ASC,
+                                toggleSortOrder = {  },
+                                showMainFilterSheet = {},
+                            )
+                            LibraryFilterRow(
+                                selectedStatus = uiState.selectedFilter,
+                                onStatusSelected = { status -> viewModel.filterByStatus(status) },
+                                onClearFilter = { viewModel.clearFilter() },
+                                modifier = Modifier.fillMaxWidth()
+                            )
                         }
                     }
 
@@ -190,38 +179,38 @@ fun AnimeLibrary(
         }
     }
 }
-
-@Composable
-fun SearchBar(
-    query: String,
-    onQueryChange: (String) -> Unit,
-    selectedPreset: String,
-    onClear: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    OutlinedTextField(
-        value = query,
-        onValueChange = onQueryChange,
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(4.dp),
-        placeholder = { Text("Search in ${selectedPreset}...") },
-        leadingIcon = {
-            Icon(imageVector = Icons.Default.Search, contentDescription = null)
-        },
-        trailingIcon = {
-            IconButton(onClick = onClear) {
-                Icon(imageVector = Icons.Default.Clear, contentDescription = "Clear search")
-            }
-        },
-        singleLine = true,
-        shape = RoundedCornerShape(12.dp),
-        colors = OutlinedTextFieldDefaults.colors(
-            focusedBorderColor = Color.Transparent,
-            unfocusedBorderColor = Color.Transparent,
-        )
-    )
-}
+//
+//@Composable
+//fun SearchBar(
+//    query: String,
+//    onQueryChange: (String) -> Unit,
+//    selectedPreset: String,
+//    onClear: () -> Unit,
+//    modifier: Modifier = Modifier
+//) {
+//    OutlinedTextField(
+//        value = query,
+//        onValueChange = onQueryChange,
+//        modifier = modifier
+//            .fillMaxWidth()
+//            .padding(4.dp),
+//        placeholder = { Text("Search in ${selectedPreset}...") },
+//        leadingIcon = {
+//            Icon(imageVector = Icons.Default.Search, contentDescription = null)
+//        },
+//        trailingIcon = {
+//            IconButton(onClick = onClear) {
+//                Icon(imageVector = Icons.Default.Clear, contentDescription = "Clear search")
+//            }
+//        },
+//        singleLine = true,
+//        shape = RoundedCornerShape(12.dp),
+//        colors = OutlinedTextFieldDefaults.colors(
+//            focusedBorderColor = Color.Transparent,
+//            unfocusedBorderColor = Color.Transparent,
+//        )
+//    )
+//}
 
 @Composable
 fun LibraryFilterRow(

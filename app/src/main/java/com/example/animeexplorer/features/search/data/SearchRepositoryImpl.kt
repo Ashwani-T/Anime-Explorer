@@ -12,10 +12,9 @@ import com.example.animeexplorer.core.domain.enums.RatingType
 import com.example.animeexplorer.core.domain.enums.SortOrder
 import com.example.animeexplorer.core.domain.enums.SortType
 import com.example.animeexplorer.core.domain.enums.StatusType
+import com.example.animeexplorer.core.domain.mapper.toAnimeUiModel
+import com.example.animeexplorer.core.domain.mapper.toPageInfo
 import com.example.animeexplorer.features.detail.data.local.dao.AnimeDetailsDao
-import com.example.animeexplorer.features.detail.data.local.dao.toUiModel
-import com.example.animeexplorer.features.search.domain.mapper.toPageInfo
-import com.example.animeexplorer.features.search.domain.mapper.toUiModel
 import com.example.animeexplorer.features.search.domain.SearchRepository
 import com.example.animeexplorer.features.search.ui.GenreModel
 import javax.inject.Inject
@@ -39,13 +38,13 @@ class SearchRepositoryImpl @Inject constructor(
             )
         }.onFailure { exception ->
             animeList = if (query.isBlank()) {
-                animeDetailsDao.getAnimeList().map { it.toUiModel() }
+                animeDetailsDao.getAnimeList().map { it.toAnimeUiModel() }
             } else {
-                animeDetailsDao.getSearchedAnimeList(query).map { it.toUiModel() }
+                animeDetailsDao.getSearchedAnimeList(query).map { it.toAnimeUiModel() }
             }
             Log.d("SearchRepoException", "${exception.message}")
         }.onSuccess { response ->
-            animeList = response.data.map { it.toUiModel() }
+            animeList = response.data.map { it.toAnimeUiModel() }
             pageInfo = response.pagination.toPageInfo()
         }
 
@@ -66,7 +65,7 @@ class SearchRepositoryImpl @Inject constructor(
                 filter = filter?.filter,
                 rating = rating?.name?.lowercase()
             )
-            val domainList = response.data.map { it.toUiModel() }
+            val domainList = response.data.map { it.toAnimeUiModel() }
             Result.success(domainList)
         } catch (e: Exception) {
             Result.failure(e)
@@ -94,7 +93,7 @@ class SearchRepositoryImpl @Inject constructor(
                 orderBy = orderBy?.apiName,
                 sortOrder = sortOrder?.apiName,
             )
-            val animeList = searchedResult.data.map { it.toUiModel() }
+            val animeList = searchedResult.data.map { it.toAnimeUiModel() }
             val pageInfo = searchedResult.pagination.toPageInfo()
             Result.success(
                 AnimeResponseModel(
@@ -109,7 +108,7 @@ class SearchRepositoryImpl @Inject constructor(
 
     override suspend fun getThisSeasonAnime(): Result<List<AnimeUiModel>> {
         return try {
-            val result = apiService.getThisSeasonAnime().data.map { it.toUiModel() }
+            val result = apiService.getThisSeasonAnime().data.map { it.toAnimeUiModel() }
             Result.success(result)
         } catch (e: Exception) {
             Result.failure(e)

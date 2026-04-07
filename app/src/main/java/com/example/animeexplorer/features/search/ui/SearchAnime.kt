@@ -132,71 +132,13 @@ fun SearchAnime(
             .padding(horizontal = 12.dp)
     ) {
         // Search input and sort controls
-        Row(
-            modifier = Modifier.padding(horizontal = 4.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            OutlinedTextField(
-                value = uiState.searchQuery,
-                onValueChange = { viewModel.onSearchQueryChange(it) },
-                modifier = Modifier.weight(1f),
-                placeholder = { Text("Search anime...") },
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Default.Search,
-                        contentDescription = "Search Icon"
-                    )
-                },
-                trailingIcon = {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(end = 4.dp)
-                    ) {
-                        if (uiState.searchQuery.isNotEmpty()) {
-                            IconButton(
-                                onClick = {
-                                    viewModel.onSearchQueryChange("")
-                                },
-                                modifier = Modifier.size(40.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Clear,
-                                    contentDescription = "Clear search",
-                                    modifier = Modifier.size(20.dp)
-                                )
-                            }
-                        }
-                        IconButton(onClick = { showMainFilterSheet = true }) {
-                            Icon(
-                                imageVector = Icons.Default.FilterList,
-                                contentDescription = "Filter Icon"
-                            )
-                        }
-                    }
-                },
-                shape = RoundedCornerShape(28.dp),
-                singleLine = true
-            )
-            IconButton(
-                onClick = viewModel::toggleSortOrder,
-                modifier = Modifier
-                    .border(
-                        width = 1.dp,
-                        color = Color.Gray,
-                        shape = CircleShape
-                    )
-            ) {
-                Icon(
-                    imageVector = if (uiState.sortOrder == SortOrder.ASC)
-                        Icons.Default.ArrowUpward
-                    else
-                        Icons.Default.ArrowDownward,
-                    contentDescription = null,
-                    modifier = Modifier.size(14.dp)
-                )
-            }
-        }
+        SearchBar(
+            searchQuery = uiState.searchQuery,
+            onSearchQueryChange = { viewModel.onSearchQueryChange(it) },
+            sortOrder = uiState.sortOrder,
+            toggleSortOrder = { viewModel.toggleSortOrder() },
+            showMainFilterSheet = { showMainFilterSheet = true }
+        )
 
         ActiveFilterChips(
             uiState = uiState,
@@ -315,6 +257,81 @@ fun SearchAnime(
 
 }
 
+@Composable
+fun SearchBar(
+    searchQuery: String,
+    onSearchQueryChange: (String) -> Unit,
+    sortOrder: SortOrder,
+    toggleSortOrder: () -> Unit,
+    showMainFilterSheet: ()-> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = Modifier.padding(horizontal = 4.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        OutlinedTextField(
+            value = searchQuery,
+            onValueChange = { onSearchQueryChange(it) },
+            modifier = Modifier.weight(1f),
+            placeholder = { Text("Search anime...") },
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.Default.Search,
+                    contentDescription = "Search Icon"
+                )
+            },
+            trailingIcon = {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(end = 4.dp)
+                ) {
+                    if (searchQuery.isNotEmpty()) {
+                        IconButton(
+                            onClick = {
+                                onSearchQueryChange("")
+                            },
+                            modifier = Modifier.size(40.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Clear,
+                                contentDescription = "Clear search",
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                    }
+                    IconButton(onClick = {showMainFilterSheet()} ) {
+                        Icon(
+                            imageVector = Icons.Default.FilterList,
+                            contentDescription = "Filter Icon"
+                        )
+                    }
+                }
+            },
+            shape = RoundedCornerShape(28.dp),
+            singleLine = true
+        )
+        IconButton(
+            onClick = toggleSortOrder,
+            modifier = Modifier
+                .border(
+                    width = 1.dp,
+                    color = Color.Gray,
+                    shape = CircleShape
+                )
+        ) {
+            Icon(
+                imageVector = if (sortOrder == SortOrder.ASC)
+                    Icons.Default.ArrowUpward
+                else
+                    Icons.Default.ArrowDownward,
+                contentDescription = null,
+                modifier = Modifier.size(14.dp)
+            )
+        }
+    }
+}
 @Composable
 fun ActiveFilterChips(
     uiState: SearchUiState,

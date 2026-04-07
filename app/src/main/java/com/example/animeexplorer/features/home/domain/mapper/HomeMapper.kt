@@ -1,11 +1,11 @@
 package com.example.animeexplorer.features.home.domain.mapper
 
 import com.example.animeexplorer.core.data.remote.dto.AnimeDto
-import com.example.animeexplorer.features.home.data.local.entity.AnimeCacheEntity
+import com.example.animeexplorer.features.home.data.local.entity.HomeCacheEntity
 import com.example.animeexplorer.core.domain.AnimeUiModel
 
-fun AnimeDto.toAnimeCacheEntity(category: String): AnimeCacheEntity {
-    return AnimeCacheEntity(
+fun AnimeDto.toHomeCacheEntity(category: String): HomeCacheEntity {
+    return HomeCacheEntity(
         id = id,
         title = title ?: "No Title",
         description = description ?: "No description",
@@ -15,7 +15,7 @@ fun AnimeDto.toAnimeCacheEntity(category: String): AnimeCacheEntity {
     )
 }
 
-fun AnimeCacheEntity.toUiModel(): AnimeUiModel {
+fun HomeCacheEntity.toAnimeUiModel(): AnimeUiModel {
     return AnimeUiModel(
         id = id,
         title = title,

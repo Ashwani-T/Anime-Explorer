@@ -2,11 +2,11 @@ package com.example.animeexplorer.features.collection.data
 
 import android.util.Log
 import com.example.animeexplorer.core.domain.AnimeCollectionUiModel
+import com.example.animeexplorer.core.domain.mapper.toAnimeCollectionEntity
 import com.example.animeexplorer.features.collection.data.local.dao.AnimeCollectionDao
-import com.example.animeexplorer.features.collection.data.local.entity.AnimeCollectionsEntity
 import com.example.animeexplorer.features.collection.data.local.entity.LibraryStatus
-import com.example.animeexplorer.features.collection.domain.mapper.toAnimeCollectionUiModel
 import com.example.animeexplorer.features.collection.domain.AnimeCollectionRepository
+import com.example.animeexplorer.features.collection.domain.mapper.toAnimeCollectionUiModel
 import com.example.animeexplorer.features.detail.data.local.dao.AnimeDetailsDao
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -38,17 +38,7 @@ class AnimeCollectionRepositoryImpl @Inject constructor(
             val animeDetail = animeDetailsDao.getAnimeDetails(malId)
                 ?: throw Exception("Anime details not found in local database")
 
-            val collectionEntity = AnimeCollectionsEntity(
-                malId = malId,
-                title = animeDetail.title,
-                imageUrl = animeDetail.imageUrl,
-                type = animeDetail.type,
-                status = status,
-                episodesCompleted = 0,
-                totalEpisodes = animeDetail.episodes
-            )
-
-            animeCollectionDao.addToLibrary(collectionEntity)
+            animeCollectionDao.addToLibrary(animeDetail.toAnimeCollectionEntity(status))
             Log.d(TAG, "Added anime $malId to library with status $status")
         }
 

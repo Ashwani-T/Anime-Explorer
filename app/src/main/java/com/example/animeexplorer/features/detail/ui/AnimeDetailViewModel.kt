@@ -6,17 +6,16 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.example.animeexplorer.HomeDestination
-import com.example.animeexplorer.features.collection.data.local.entity.LibraryStatus
-import com.example.animeexplorer.features.detail.domain.mapper.toUiModel
-import com.example.animeexplorer.features.collection.domain.AnimeCollectionRepository
 import com.example.animeexplorer.core.domain.AnimeCollectionUiModel
+import com.example.animeexplorer.features.collection.data.local.entity.LibraryStatus
+import com.example.animeexplorer.features.collection.domain.AnimeCollectionRepository
 import com.example.animeexplorer.features.detail.domain.DetailRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 @HiltViewModel
 class AnimeDetailViewModel @Inject constructor(
@@ -47,7 +46,7 @@ class AnimeDetailViewModel @Inject constructor(
             response.fold(
                 onSuccess = { detailResponse ->
                     _uiState.value = AnimeDetailUiState.Success(
-                        anime = detailResponse.toUiModel()
+                        anime = detailResponse
                     )
                 },
                 onFailure = { exception ->

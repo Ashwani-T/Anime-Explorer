@@ -3,7 +3,7 @@ package com.example.animeexplorer.di
 import android.content.Context
 import androidx.room.Room
 import com.example.animeexplorer.core.database.AppDatabase
-import com.example.animeexplorer.features.home.data.local.dao.AnimeCachedDao
+import com.example.animeexplorer.features.home.data.local.dao.HomeCachedDao
 import com.example.animeexplorer.features.collection.data.local.dao.AnimeCollectionDao
 import com.example.animeexplorer.features.detail.data.local.dao.AnimeDetailsDao
 import dagger.Module
@@ -49,7 +49,7 @@ object DatabaseModule {
     @Provides
     fun provideAnimeCachedDao(
         database: AppDatabase
-    ): AnimeCachedDao{
-        return database.animeCachedDao()
+    ): HomeCachedDao{
+        return database.homeCachedDao()
     }
 }

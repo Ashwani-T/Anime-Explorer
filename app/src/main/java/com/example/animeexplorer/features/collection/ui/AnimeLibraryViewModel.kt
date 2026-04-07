@@ -21,15 +21,12 @@ class AnimeLibraryViewModel @Inject constructor(
 ): ViewModel() {
 
     private val _uiState = MutableStateFlow(AnimeLibraryUiState())
-    private val _query = MutableStateFlow("")
-    val query: StateFlow<String> = _query.asStateFlow()
 
     val uiState: StateFlow<AnimeLibraryUiState> = combine(
         collectionRepository.getAllLibraryCollections(),
         _uiState,
-        _query
-    ){ data, state, searchQuery ->
-        val filteredList = applyFilters(data, state.selectedFilter, searchQuery)
+    ){ data, state ->
+        val filteredList = applyFilters(data, state.selectedFilter, state.searchQuery)
         state.copy(allCollections = data, collections = filteredList)
     }.stateIn(
         scope = viewModelScope,
@@ -38,7 +35,11 @@ class AnimeLibraryViewModel @Inject constructor(
     )
 
     fun onSearchQueryChange(newQuery: String) {
-        _query.value = newQuery
+        _uiState.update { state ->
+            state.copy(
+                searchQuery = newQuery
+            )
+        }
     }
 
     fun filterByStatus(status: LibraryStatus) {

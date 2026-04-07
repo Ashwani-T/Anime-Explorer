@@ -1,9 +1,9 @@
 package com.example.animeexplorer.features.home.data
 
 import android.util.Log
-import com.example.animeexplorer.features.home.data.local.dao.AnimeCachedDao
-import com.example.animeexplorer.features.home.domain.mapper.toAnimeCacheEntity
-import com.example.animeexplorer.features.home.domain.mapper.toUiModel
+import com.example.animeexplorer.features.home.data.local.dao.HomeCachedDao
+import com.example.animeexplorer.features.home.domain.mapper.toHomeCacheEntity
+import com.example.animeexplorer.features.home.domain.mapper.toAnimeUiModel
 import com.example.animeexplorer.core.data.remote.AnimeApiService
 import com.example.animeexplorer.core.domain.AnimeUiModel
 import com.example.animeexplorer.features.home.domain.HomeRepository
@@ -17,13 +17,13 @@ import kotlinx.coroutines.flow.map
 
 class HomeRepositoryImpl @Inject constructor(
     private val apiService: AnimeApiService,
-    private val animeCachedDao: AnimeCachedDao,
+    private val homeCachedDao: HomeCachedDao,
 ) : HomeRepository {
 
     private val cacheRefreshTimeout: Long = 6 * 60  * 60  * 1000
 
     override suspend fun refreshHomeData(forceRefresh: Boolean) {
-        val lastSyncTime = animeCachedDao.getLastSyncTime() ?: 0L
+        val lastSyncTime = homeCachedDao.getLastSyncTime() ?: 0L
         val shouldRefresh: Boolean =
             System.currentTimeMillis() - lastSyncTime > cacheRefreshTimeout || forceRefresh
 
@@ -32,7 +32,7 @@ class HomeRepositoryImpl @Inject constructor(
 
             coroutineScope {
                 try{
-                    //animeCachedDao.clearAnimeCacheTable()
+                    //homeCachedDao.clearAnimeCacheTable()
                     Log.d("TAG", "refreshHomeData: CLEARED CACHED TABLE")
                     val trendingAnime = apiService.getTopAnime(filter = AnimeFilter.BY_POPULARITY.filter, type = null, rating = null).data
 
@@ -52,20 +52,20 @@ class HomeRepositoryImpl @Inject constructor(
 
                     val seasonAnime = apiService.getThisSeasonAnime().data
 
-                    animeCachedDao.insertAnimeEntity(trendingAnime.map {
-                        it.toAnimeCacheEntity(category = "Trending")
+                    homeCachedDao.insertAnimeEntity(trendingAnime.map {
+                        it.toHomeCacheEntity(category = "Trending")
                     })
-                    animeCachedDao.insertAnimeEntity(upcomingAnime.map {
-                        it.toAnimeCacheEntity(category = "Upcoming")
+                    homeCachedDao.insertAnimeEntity(upcomingAnime.map {
+                        it.toHomeCacheEntity(category = "Upcoming")
                     })
-                    animeCachedDao.insertAnimeEntity(favoriteAnime.map {
-                        it.toAnimeCacheEntity(category = "Favorite")
+                    homeCachedDao.insertAnimeEntity(favoriteAnime.map {
+                        it.toHomeCacheEntity(category = "Favorite")
                     })
-                    animeCachedDao.insertAnimeEntity(topAnime.map {
-                        it.toAnimeCacheEntity(category = "Top")
+                    homeCachedDao.insertAnimeEntity(topAnime.map {
+                        it.toHomeCacheEntity(category = "Top")
                     })
-                    animeCachedDao.insertAnimeEntity(seasonAnime.map {
-                        it.toAnimeCacheEntity(category = "Season")
+                    homeCachedDao.insertAnimeEntity(seasonAnime.map {
+                        it.toHomeCacheEntity(category = "Season")
                     })
 
                     Log.d("COMPLETED FETCHING", "refreshHomeData: ${trendingAnime.size} ${upcomingAnime.size} ${seasonAnime.size}")
@@ -77,41 +77,41 @@ class HomeRepositoryImpl @Inject constructor(
     }
 
     override fun getTrendingAnime(): Flow<List<AnimeUiModel>> {
-        return animeCachedDao.getAnimeByCategory("Trending").map { cachedAnimeList ->
+        return homeCachedDao.getAnimeByCategory("Trending").map { cachedAnimeList ->
             cachedAnimeList.map { cachedAnime ->
-                cachedAnime.toUiModel()
+                cachedAnime.toAnimeUiModel()
             }
         }
     }
 
     override fun getUpcomingAnime(): Flow<List<AnimeUiModel>> {
-        return animeCachedDao.getAnimeByCategory("Upcoming").map { cachedAnimeList ->
+        return homeCachedDao.getAnimeByCategory("Upcoming").map { cachedAnimeList ->
             cachedAnimeList.map { cachedAnime ->
-                cachedAnime.toUiModel()
+                cachedAnime.toAnimeUiModel()
             }
         }
     }
 
     override fun getTopAnime(): Flow<List<AnimeUiModel>> {
-        return animeCachedDao.getAnimeByCategory("Top").map { cachedAnimeList ->
+        return homeCachedDao.getAnimeByCategory("Top").map { cachedAnimeList ->
             cachedAnimeList.map { cachedAnime ->
-                cachedAnime.toUiModel()
+                cachedAnime.toAnimeUiModel()
             }
         }
     }
 
     override fun getSeasonAnime(): Flow<List<AnimeUiModel>> {
-        return animeCachedDao.getAnimeByCategory("Season").map { cachedAnimeList ->
+        return homeCachedDao.getAnimeByCategory("Season").map { cachedAnimeList ->
             cachedAnimeList.map { cachedAnime ->
-                cachedAnime.toUiModel()
+                cachedAnime.toAnimeUiModel()
             }
         }
     }
 
     override fun getFavoriteAnime(): Flow<List<AnimeUiModel>> {
-        return animeCachedDao.getAnimeByCategory("Favorite").map { cachedAnimeList ->
+        return homeCachedDao.getAnimeByCategory("Favorite").map { cachedAnimeList ->
             cachedAnimeList.map {
-                it.toUiModel()
+                it.toAnimeUiModel()
             }
         }
     }

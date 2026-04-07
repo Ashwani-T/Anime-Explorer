@@ -3,8 +3,8 @@ package com.example.animeexplorer.features.explorer.data
 import android.util.Log
 import com.example.animeexplorer.core.data.remote.AnimeApiService
 import com.example.animeexplorer.core.domain.AnimeResponseModel
-import com.example.animeexplorer.features.explorer.domain.mapper.toPageInfo
-import com.example.animeexplorer.features.explorer.domain.mapper.toUiModel
+import com.example.animeexplorer.core.domain.mapper.toAnimeUiModel
+import com.example.animeexplorer.core.domain.mapper.toPageInfo
 import com.example.animeexplorer.features.explorer.domain.ExplorerCategory
 import com.example.animeexplorer.features.explorer.domain.ExplorerRepository
 import javax.inject.Inject
@@ -56,7 +56,7 @@ class ExplorerRepositoryImpl @Inject constructor(
                 }
             }
 
-            val animeList = response.data.map { it.toUiModel() }
+            val animeList = response.data.map { it.toAnimeUiModel() }
             val pageInfo = response.pagination.toPageInfo()
 
             Result.success(

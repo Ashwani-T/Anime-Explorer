@@ -5,7 +5,7 @@ import androidx.room.PrimaryKey
 
 
 @Entity(tableName = "anime_cache")
-data class AnimeCacheEntity(
+data class HomeCacheEntity(
     @PrimaryKey
     val id: Int,
     val title: String,
