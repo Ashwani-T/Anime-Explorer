@@ -14,8 +14,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
@@ -44,6 +46,8 @@ fun AnimeItem(
     sharedTransitionScope: SharedTransitionScope,
     animatedContentScope: AnimatedContentScope,
     onClick: (Int) -> Unit = {},
+    contentScale: ContentScale = ContentScale.Fit,
+    isHorizontalPage : Boolean = false
 ) {
     ElevatedCard(
         modifier = modifier
@@ -58,14 +62,17 @@ fun AnimeItem(
                     AsyncImage(
                         model = anime.imageUrl,
                         contentDescription = anime.title,
-                        contentScale = ContentScale.Crop,
+                        contentScale = contentScale,
                         modifier = Modifier
                             .sharedElement(
                                 rememberSharedContentState(key = "image/${anime.id}"),
                                 animatedVisibilityScope = animatedContentScope
                             )
                             .fillMaxWidth()
-                            .height(180.dp)
+                            .then(
+                                if (isHorizontalPage) Modifier.heightIn(max = 360.dp).wrapContentHeight()
+                                else Modifier.heightIn(max = 180.dp).wrapContentHeight()
+                            )
                     )
 
 

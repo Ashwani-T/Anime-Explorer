@@ -93,9 +93,7 @@ class HomeScreenViewModel @Inject constructor(
     }
 
     fun refresh() {
-        if (uiState.value.isRefreshing) {
-            return
-        } else {
+        if (!uiState.value.isRefreshing) {
             loadAnimePage(false)
         }
     }

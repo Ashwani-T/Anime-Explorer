@@ -15,8 +15,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
@@ -24,6 +26,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -34,12 +37,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil.compose.AsyncImage
 import com.example.animeexplorer.core.domain.AnimeUiModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -143,7 +148,9 @@ fun AnimeHeroCard(
             anime = anime,
             onClick = onAnimeClick,
             sharedTransitionScope = sharedTransitionScope,
-            animatedContentScope = animatedContentScope
+            animatedContentScope = animatedContentScope,
+            contentScale = ContentScale.FillBounds,
+            isHorizontalPage = true
         )
         Row(
             modifier = Modifier
@@ -154,7 +161,7 @@ fun AnimeHeroCard(
 
             Text(
                 text = anime.description,
-                color = Color(0xCCFFFFFF),
+                color = MaterialTheme.colorScheme.onSurface,
                 fontSize = 12.sp,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
