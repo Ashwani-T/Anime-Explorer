@@ -65,7 +65,6 @@ import com.example.animeexplorer.features.collection.data.local.entity.LibrarySt
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
 @Composable
 fun AnimeDetailScreen(
-    animeDetailViewModel: AnimeDetailViewModel = hiltViewModel(),
     sheetState: SheetState? = null,
     showSheet: Boolean = false,
     onDismissSheet: () -> Unit = {},
@@ -73,6 +72,7 @@ fun AnimeDetailScreen(
     animatedContentScope: AnimatedContentScope,
     onNavigateToEpisodes: (Int) -> Unit = {}
 ) {
+    val animeDetailViewModel: AnimeDetailViewModel = hiltViewModel()
     val uiState by animeDetailViewModel.uiState.collectAsState()
     val collectionState by animeDetailViewModel.collectionState.collectAsState()
 

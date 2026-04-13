@@ -89,4 +89,10 @@ dependencies {
     implementation(libs.compose.shimmer)
     implementation(libs.androidx.work.runtime.ktx)
 
+    androidTestImplementation( libs.androidx.ui.test.junit4)
+
+    // For writing assertions
+    androidTestImplementation( libs.androidx.junit.v113)
+    androidTestImplementation (libs.androidx.espresso.core.v340)
+    androidTestImplementation(libs.mockito.kotlin)
 }

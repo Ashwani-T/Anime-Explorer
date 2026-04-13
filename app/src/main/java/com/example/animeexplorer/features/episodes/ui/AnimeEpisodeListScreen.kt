@@ -37,9 +37,9 @@ import com.example.animeexplorer.features.episodes.domain.AnimeEpisodeUiModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AnimeEpisodeListScreen(
-    viewModel: AnimeEpisodeListViewModel = hiltViewModel(),
-) {
+fun AnimeEpisodeListScreen() {
+
+    val viewModel: AnimeEpisodeListViewModel = hiltViewModel()
     val uiState by viewModel.uiState.collectAsState()
 
     when (val state = uiState) {
