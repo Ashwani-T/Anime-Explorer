@@ -38,6 +38,7 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -70,7 +71,8 @@ fun AnimeDetailScreen(
     onDismissSheet: () -> Unit = {},
     sharedTransitionScope: SharedTransitionScope,
     animatedContentScope: AnimatedContentScope,
-    onNavigateToEpisodes: (Int) -> Unit = {}
+    onNavigateToEpisodes: (Int) -> Unit = {},
+    registerShareAction: ((() -> Unit)?) -> Unit = {}
 ) {
     val animeDetailViewModel: AnimeDetailViewModel = hiltViewModel()
     val uiState by animeDetailViewModel.uiState.collectAsState()
@@ -137,8 +139,14 @@ fun AnimeDetailScreen(
         }
 
         is AnimeDetailUiState.Success -> {
+            val context = LocalContext.current
+            val anime = state.anime
+            DisposableEffect(anime) {
+                registerShareAction { ShareAnimeUtil.shareAnime(context, anime) }
+                onDispose { registerShareAction(null) }
+            }
             AnimeDetailContent(
-                anime = state.anime,
+                anime = anime,
                 modifier = Modifier,
                 sharedTransitionScope = sharedTransitionScope,
                 animatedContentScope = animatedContentScope,

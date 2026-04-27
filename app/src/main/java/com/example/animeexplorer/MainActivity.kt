@@ -1,10 +1,7 @@
 package com.example.animeexplorer
 
-import android.animation.ObjectAnimator
 import android.os.Bundle
 import android.util.Log
-import android.view.View
-import android.view.animation.OvershootInterpolator
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -28,6 +25,7 @@ import androidx.compose.material.icons.filled.Collections
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.outlined.Collections
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Search
@@ -59,9 +57,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.core.animation.doOnEnd
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import androidx.core.util.remove
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
@@ -69,6 +65,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navDeepLink
 import androidx.navigation.navigation
 import androidx.navigation.toRoute
 import com.example.animeexplorer.core.data.connectivity.ConnectivityObserver
@@ -155,6 +152,7 @@ private fun AppScaffold(
 
     var showFab by rememberSaveable { mutableStateOf(false) }
     var scrollToTop by remember { mutableStateOf<(() -> Unit)?>(null) }
+    var shareAction by remember { mutableStateOf<(() -> Unit)?>(null) }
 
     val sheetState = rememberModalBottomSheetState()
     var showSheet by rememberSaveable { mutableStateOf(false) }
@@ -184,6 +182,16 @@ private fun AppScaffold(
                                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                                     contentDescription = "Back"
                                 )
+                            }
+                        },
+                        actions = {
+                            shareAction?.let { action ->
+                                IconButton(onClick = action) {
+                                    Icon(
+                                        imageVector = Icons.Default.Share,
+                                        contentDescription = "Share Anime"
+                                    )
+                                }
                             }
                         }
                     )
@@ -308,7 +316,13 @@ private fun AppScaffold(
                                 }
                             )
                         }
-                        composable<HomeDestination.AnimeDetail> {
+                        composable<HomeDestination.AnimeDetail>(
+                            deepLinks = listOf(
+                                navDeepLink{
+                                    uriPattern = "animeexplorer://animedetail?malId={malId}"
+                                }
+                            )
+                        ) { backStackEntry ->
                             AnimeDetailScreen(
                                 sharedTransitionScope = this@SharedTransitionLayout,
                                 animatedContentScope = this@composable,
@@ -319,7 +333,8 @@ private fun AppScaffold(
                                     navController.navigate(HomeDestination.AnimeEpisodes(malId)) {
                                         launchSingleTop = true
                                     }
-                                }
+                                },
+                                registerShareAction = { action -> shareAction = action }
                             )
                         }
                         composable<HomeDestination.AnimeEpisodes> {
