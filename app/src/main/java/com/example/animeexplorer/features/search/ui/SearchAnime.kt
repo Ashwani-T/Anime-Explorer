@@ -301,35 +301,11 @@ fun SearchBar(
                             )
                         }
                     }
-                    IconButton(onClick = {showMainFilterSheet()} ) {
-                        Icon(
-                            imageVector = Icons.Default.FilterList,
-                            contentDescription = "Filter Icon"
-                        )
-                    }
                 }
             },
             shape = RoundedCornerShape(28.dp),
             singleLine = true
         )
-        IconButton(
-            onClick = toggleSortOrder,
-            modifier = Modifier
-                .border(
-                    width = 1.dp,
-                    color = Color.Gray,
-                    shape = CircleShape
-                )
-        ) {
-            Icon(
-                imageVector = if (sortOrder == SortOrder.ASC)
-                    Icons.Default.ArrowUpward
-                else
-                    Icons.Default.ArrowDownward,
-                contentDescription = null,
-                modifier = Modifier.size(14.dp)
-            )
-        }
     }
 }
 @Composable

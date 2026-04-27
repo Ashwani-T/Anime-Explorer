@@ -127,7 +127,7 @@ fun AnimeLibrary(
                                 searchQuery = uiState.searchQuery,
                                 onSearchQueryChange = {viewModel.onSearchQueryChange(it)},
                                 sortOrder = SortOrder.ASC,
-                                toggleSortOrder = {  },
+                                toggleSortOrder = {},
                                 showMainFilterSheet = {},
                             )
                             LibraryFilterRow(
