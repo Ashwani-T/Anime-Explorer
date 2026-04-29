@@ -320,6 +320,9 @@ private fun AppScaffold(
                             deepLinks = listOf(
                                 navDeepLink{
                                     uriPattern = "animeexplorer://animedetail?malId={malId}"
+                                },
+                                navDeepLink{
+                                    uriPattern = "https://ashwani-t.github.io/animedetail/anime/?malId={malId}"
                                 }
                             )
                         ) { backStackEntry ->

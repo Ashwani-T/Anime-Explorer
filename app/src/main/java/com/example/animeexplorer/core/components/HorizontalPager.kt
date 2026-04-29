@@ -71,7 +71,7 @@ fun AutoAdvancePager(
     val pageInteractionSource = remember { MutableInteractionSource() }
     val pageIsPressed by pageInteractionSource.collectIsPressedAsState()
 
-    val autoAdvance = !pagerIsDragged && !pageIsPressed && lifecycleState == Lifecycle.State.RESUMED
+    val autoAdvance = animeList.isNotEmpty() && !pagerIsDragged && !pageIsPressed && lifecycleState == Lifecycle.State.RESUMED
 
     val scope = rememberCoroutineScope()
 
