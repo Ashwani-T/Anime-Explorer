@@ -2,6 +2,7 @@ package com.example.animeexplorer.features.search.data
 
 import android.util.Log
 import com.example.animeexplorer.core.data.remote.AnimeApiService
+import com.example.animeexplorer.core.data.remote.Filters
 import com.example.animeexplorer.core.domain.AnimeResponseModel
 import com.example.animeexplorer.core.domain.AnimeUiModel
 import com.example.animeexplorer.core.domain.PageInfo
@@ -83,16 +84,22 @@ class SearchRepositoryImpl @Inject constructor(
         genres: Set<GenreModel>?
     ): Result<AnimeResponseModel> {
         return try {
-            val searchedResult = apiService.getAnimeList(
-                query = query.takeIf { query.isNotBlank() },
-                page = page,
+
+            val filtersMap = Filters(
                 genres = genres?.joinToString(separator = ",") { it.malId.toString() },
                 type = format?.apiName,
                 status = status?.apiName,
                 rating = rating?.apiName,
                 orderBy = orderBy?.apiName,
-                sortOrder = sortOrder?.apiName,
+                sort = sortOrder?.apiName
+            ).toQueryMap()
+
+            val searchedResult = apiService.getAnimeList(
+                query = query.takeIf { query.isNotBlank() },
+                page = page,
+                filters = filtersMap
             )
+
             val animeList = searchedResult.data.map { it.toAnimeUiModel() }
             val pageInfo = searchedResult.pagination.toPageInfo()
             Result.success(

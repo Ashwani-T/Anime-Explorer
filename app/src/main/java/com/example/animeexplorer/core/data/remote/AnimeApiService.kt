@@ -3,21 +3,18 @@ package com.example.animeexplorer.core.data.remote
 import com.example.animeexplorer.core.data.remote.dto.AnimeDetailResponse
 import com.example.animeexplorer.core.data.remote.dto.AnimeResponseDto
 import com.example.animeexplorer.core.data.remote.dto.EpisodeResponseDto
+import com.example.animeexplorer.core.domain.enums.AnimeFilter
 import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query
+import retrofit2.http.QueryMap
 
 interface AnimeApiService {
 
     @GET("anime")
     suspend fun getAnimeList(
         @Query("q") query: String?,
-        @Query("genres") genres: String? = null,
-        @Query("type") type: String? = null,
-        @Query("status") status: String? = null,
-        @Query("rating") rating: String? = null,
-        @Query("order_by") orderBy: String? = null,
-        @Query("sort") sortOrder: String? = null,
+        @QueryMap filters: Map<String, String>? = emptyMap(),
         @Query("page") page: Int? = 1,
         @Query("limit") limit: Int = 25
     ): AnimeResponseDto
