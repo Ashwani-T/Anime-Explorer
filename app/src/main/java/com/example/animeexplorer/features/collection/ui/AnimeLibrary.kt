@@ -129,6 +129,8 @@ fun AnimeLibrary(
                                 sortOrder = SortOrder.ASC,
                                 toggleSortOrder = {},
                                 showMainFilterSheet = {},
+                                enableSortOrder = false,
+                                enableFilterSheet = false
                             )
                             LibraryFilterRow(
                                 selectedStatus = uiState.selectedFilter,

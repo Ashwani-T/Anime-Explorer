@@ -1,5 +1,6 @@
 package com.example.animeexplorer.features.detail.ui
 
+import android.content.Context
 import android.content.Intent
 import android.util.Log
 import androidx.compose.animation.AnimatedContentScope
@@ -37,6 +38,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -54,6 +56,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.net.toUri
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.LifecycleResumeEffect
@@ -61,6 +64,7 @@ import coil.compose.AsyncImage
 import com.example.animeexplorer.core.components.ArcLoader
 import com.example.animeexplorer.core.domain.AnimeDetailUiModel
 import com.example.animeexplorer.features.collection.data.local.entity.LibraryStatus
+import com.example.animeexplorer.notifications.NotificationHelper
 
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
@@ -399,7 +403,22 @@ fun AnimeDetailContent(
         }
 
 
-
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp),
+            horizontalArrangement = Arrangement.Center.also { Arrangement.spacedBy(8.dp) }
+        ){
+            TextButton(onClick = {
+                testNotification(context.applicationContext)
+            }) {
+                Text(
+                    text = "Trigger Notification",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+        }
 
         Column(
             modifier = Modifier.fillMaxWidth()
@@ -421,6 +440,18 @@ fun AnimeDetailContent(
         }
 
         Spacer(modifier = Modifier.height(32.dp))
+    }
+}
+
+private fun testNotification(context: Context){
+    val notification = NotificationHelper.buildNotification(
+        context = context,
+        animeId = "123",
+        notificationId = 1
+    )
+
+    if(NotificationManagerCompat.from(context).areNotificationsEnabled()){
+        NotificationManagerCompat.from(context).notify(1, notification)
     }
 }
 
