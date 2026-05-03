@@ -5,7 +5,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
-import com.example.animeexplorer.HomeDestination
+import com.example.animeexplorer.navigation.HomeDestination
 import com.example.animeexplorer.core.domain.AnimeCollectionUiModel
 import com.example.animeexplorer.features.collection.data.local.entity.LibraryStatus
 import com.example.animeexplorer.features.collection.domain.AnimeCollectionRepository

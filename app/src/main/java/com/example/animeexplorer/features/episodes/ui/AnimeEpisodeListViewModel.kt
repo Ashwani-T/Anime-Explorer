@@ -5,9 +5,8 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
-import com.example.animeexplorer.HomeDestination
+import com.example.animeexplorer.navigation.HomeDestination
 import com.example.animeexplorer.features.episodes.domain.EpisodeRepository
-import com.example.animeexplorer.features.episodes.domain.toUiModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
