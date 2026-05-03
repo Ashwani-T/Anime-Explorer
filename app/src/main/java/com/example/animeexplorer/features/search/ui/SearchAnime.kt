@@ -262,9 +262,10 @@ fun SearchBar(
     searchQuery: String,
     onSearchQueryChange: (String) -> Unit,
     sortOrder: SortOrder,
+    enableSortOrder: Boolean = true,
     toggleSortOrder: () -> Unit,
-    showMainFilterSheet: ()-> Unit,
-    modifier: Modifier = Modifier
+    showMainFilterSheet: () -> Unit,
+    enableFilterSheet: Boolean = true,
 ) {
     Row(
         modifier = Modifier.padding(horizontal = 4.dp, vertical = 12.dp),
@@ -283,56 +284,84 @@ fun SearchBar(
                 )
             },
             trailingIcon = {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(end = 4.dp)
-                ) {
-                    if (searchQuery.isNotEmpty()) {
-                        IconButton(
-                            onClick = {
-                                onSearchQueryChange("")
-                            },
-                            modifier = Modifier.size(40.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Clear,
-                                contentDescription = "Clear search",
-                                modifier = Modifier.size(20.dp)
-                            )
-                        }
-
-                    }
-                    IconButton(onClick = {showMainFilterSheet()} ) {
-                        Icon(
-                            imageVector = Icons.Default.FilterList,
-                            contentDescription = "Filter Icon"
-                        )
-                    }
-                }
+                SearchBarTrailingActions(
+                    searchQuery = searchQuery,
+                    onClear = { onSearchQueryChange("") },
+                    enableFilterSheet = enableFilterSheet,
+                    onOpenFilter = showMainFilterSheet
+                )
             },
             shape = RoundedCornerShape(28.dp),
             singleLine = true
         )
-        IconButton(
-            onClick = toggleSortOrder,
-            modifier = Modifier
-                .border(
-                    width = 1.dp,
-                    color = Color.Gray,
-                    shape = CircleShape
-                )
-        ) {
-            Icon(
-                imageVector = if (sortOrder == SortOrder.ASC)
-                    Icons.Default.ArrowUpward
-                else
-                    Icons.Default.ArrowDownward,
-                contentDescription = null,
-                modifier = Modifier.size(14.dp)
+        if (enableSortOrder) {
+            SortOrderButton(
+                sortOrder = sortOrder,
+                onToggle = toggleSortOrder
             )
         }
     }
 }
+
+@Composable
+fun SortOrderButton(sortOrder: SortOrder, onToggle: () -> Unit) {
+    IconButton(
+        onClick = { onToggle() },
+        modifier = Modifier
+            .border(
+                width = 1.dp,
+                color = Color.Gray,
+                shape = CircleShape
+            )
+    ) {
+        Icon(
+            imageVector = if (sortOrder == SortOrder.ASC)
+                Icons.Default.ArrowUpward
+            else
+                Icons.Default.ArrowDownward,
+            contentDescription = null,
+            modifier = Modifier.size(14.dp)
+        )
+    }
+}
+
+@Composable
+fun SearchBarTrailingActions(
+    searchQuery: String,
+    onClear: () -> Unit,
+    enableFilterSheet: Boolean,
+    onOpenFilter: () -> Unit
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.padding(end = 4.dp)
+    ) {
+        if (searchQuery.isNotEmpty()) {
+            IconButton(
+                onClick = {
+                    onClear()
+                },
+                modifier = Modifier.size(40.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Clear,
+                    contentDescription = "Clear search",
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+
+        }
+        if(enableFilterSheet){
+            IconButton(onClick = {onOpenFilter()} ) {
+                Icon(
+                    imageVector = Icons.Default.FilterList,
+                    contentDescription = "Filter Icon"
+                )
+            }
+        }
+    }
+}
+
 @Composable
 fun ActiveFilterChips(
     uiState: SearchUiState,
