@@ -8,6 +8,7 @@ import com.example.animeexplorer.core.data.remote.AnimeApiService
 import com.example.animeexplorer.core.domain.AnimeUiModel
 import com.example.animeexplorer.features.home.domain.HomeRepository
 import com.example.animeexplorer.core.domain.enums.AnimeFilter
+import com.example.animeexplorer.core.utils.safeApiCall
 import javax.inject.Inject
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
@@ -32,43 +33,55 @@ class HomeRepositoryImpl @Inject constructor(
 
             coroutineScope {
                 try{
-                    //homeCachedDao.clearAnimeCacheTable()
-                    Log.d("TAG", "refreshHomeData: CLEARED CACHED TABLE")
-                    val trendingAnime = apiService.getTopAnime(filter = AnimeFilter.BY_POPULARITY.filter, type = null, rating = null).data
+                    safeApiCall {
+                        val trendingAnime = apiService
+                            .getTopAnime(filter = AnimeFilter.BY_POPULARITY.filter, type = null, rating = null).data
+                        homeCachedDao.insertAnimeEntity(trendingAnime.map {
+                            it.toHomeCacheEntity(category = "Trending")
+                        })
+                    }
 
                     delay(200)
 
-                    val upcomingAnime = apiService.getTopAnime(filter = AnimeFilter.UPCOMING.filter,type = null, rating = null).data
+                    safeApiCall {
+                        val upcomingAnime = apiService
+                            .getTopAnime(filter = AnimeFilter.UPCOMING.filter,type = null, rating = null).data
+                        homeCachedDao.insertAnimeEntity(upcomingAnime.map {
+                            it.toHomeCacheEntity(category = "Upcoming")
+                        })
+                    }
 
                     delay(200)
 
-                    val favoriteAnime = apiService.getTopAnime(filter = AnimeFilter.FAVORITE.filter,type = null, rating = null).data
+                    safeApiCall {
+                        val favoriteAnime = apiService
+                            .getTopAnime(filter = AnimeFilter.FAVORITE.filter,type = null, rating = null).data
+                        homeCachedDao.insertAnimeEntity(favoriteAnime.map {
+                            it.toHomeCacheEntity(category = "Favorite")
+                        })
+                    }
 
                     delay(200)
 
-                    val topAnime = apiService.getTopAnime(filter = null,type = null, rating = null).data
+                    safeApiCall {
+                        val topAnime = apiService
+                            .getTopAnime(filter = null,type = null, rating = null).data
+                        homeCachedDao.insertAnimeEntity(topAnime.map {
+                            it.toHomeCacheEntity(category = "Top")
+                        })
+                    }
 
                     delay(200)
 
-                    val seasonAnime = apiService.getThisSeasonAnime().data
+                    safeApiCall {
+                        val seasonAnime = apiService.getThisSeasonAnime().data
 
-                    homeCachedDao.insertAnimeEntity(trendingAnime.map {
-                        it.toHomeCacheEntity(category = "Trending")
-                    })
-                    homeCachedDao.insertAnimeEntity(upcomingAnime.map {
-                        it.toHomeCacheEntity(category = "Upcoming")
-                    })
-                    homeCachedDao.insertAnimeEntity(favoriteAnime.map {
-                        it.toHomeCacheEntity(category = "Favorite")
-                    })
-                    homeCachedDao.insertAnimeEntity(topAnime.map {
-                        it.toHomeCacheEntity(category = "Top")
-                    })
-                    homeCachedDao.insertAnimeEntity(seasonAnime.map {
-                        it.toHomeCacheEntity(category = "Season")
-                    })
+                        homeCachedDao.insertAnimeEntity(seasonAnime.map {
+                            it.toHomeCacheEntity(category = "Season")
+                        })
+                    }
 
-                    Log.d("COMPLETED FETCHING", "refreshHomeData: ${trendingAnime.size} ${upcomingAnime.size} ${seasonAnime.size}")
+                    Log.d("COMPLETED FETCHING", "Data wrote and completed fetching")
                 }catch (e: Exception){
                     Log.d("Home Repo Impl","${e.message}")
                 }
