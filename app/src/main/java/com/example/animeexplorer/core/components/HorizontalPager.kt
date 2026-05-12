@@ -39,6 +39,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
@@ -46,6 +48,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.example.animeexplorer.core.domain.AnimeUiModel
+import com.example.animeexplorer.ui.theme.AppTheme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -71,7 +74,9 @@ fun AutoAdvancePager(
     val pageInteractionSource = remember { MutableInteractionSource() }
     val pageIsPressed by pageInteractionSource.collectIsPressedAsState()
 
-    val autoAdvance = animeList.isNotEmpty() && !pagerIsDragged && !pageIsPressed && lifecycleState == Lifecycle.State.RESUMED
+    val autoAdvance = animeList.isNotEmpty()
+            && !pagerIsDragged && !pageIsPressed
+            && lifecycleState == Lifecycle.State.RESUMED
 
     val scope = rememberCoroutineScope()
 
@@ -107,7 +112,6 @@ fun AutoAdvancePager(
                 onAnimeClick = onAnimeClick,
                 sharedTransitionScope = sharedTransitionScope,
                 animatedContentScope = animatedContentScope,
-                index = index
             )
         }
         DotsIndicator(
@@ -138,8 +142,7 @@ fun AnimeHeroCard(
     anime: AnimeUiModel,
     onAnimeClick: (Int) -> Unit,
     sharedTransitionScope: SharedTransitionScope,
-    animatedContentScope: AnimatedContentScope,
-    index: Int
+    animatedContentScope: AnimatedContentScope
 ) {
     Column(
         modifier = Modifier.fillMaxWidth()
@@ -200,12 +203,52 @@ fun DotsIndicator(totalDots: Int, selectedIndex: Int, onDotClick: (Int) -> Unit)
     }
 }
 
-//
-//@Preview(showBackground = true)
-//@Composable
-//fun AnimeHeroCardPreview(modifier: Modifier = Modifier) {
-//    AnimeHeroCard(
-//        anime = sampleAnimeList[0],
-//        index = 0
-//    )
-//}
+
+@PreviewLightDark
+@Composable
+fun AnimeHeroCardPreview(modifier: Modifier = Modifier) {
+    AppTheme {
+        PreviewSharedTransitionContainer {
+            AutoAdvancePager(
+                animeList = listOf(
+                    AnimeUiModel(
+                        id = 1,
+                        title = "Attack on Titan",
+                        description = "Sample Description",
+                        imageUrl = "https://myanimelist.net/images/anime/4/19644l.webp",
+                        score = 3.0,
+                        duration = "0"
+                    ),
+                    AnimeUiModel(
+                        id = 1,
+                        title = "Attack on Titan",
+                        description = "Sample Description",
+                        imageUrl = "https://myanimelist.net/images/anime/4/19644l.webp",
+                        score = 3.0,
+                        duration = "0"
+                    ),
+                    AnimeUiModel(
+                        id = 1,
+                        title = "Attack on Titan",
+                        description = "Sample Description",
+                        imageUrl = "https://myanimelist.net/images/anime/4/19644l.webp",
+                        score = 3.0,
+                        duration = "0"
+                    ),
+                    AnimeUiModel(
+                        id = 1,
+                        title = "Attack on Titan",
+                        description = "Sample Description",
+                        imageUrl = "https://myanimelist.net/images/anime/4/19644l.webp",
+                        score = 3.0,
+                        duration = "0"
+                    )
+
+                ),
+                onAnimeClick = {},
+                sharedTransitionScope = this,
+                animatedContentScope = it
+            )
+        }
+    }
+}

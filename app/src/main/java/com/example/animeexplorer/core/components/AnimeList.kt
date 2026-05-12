@@ -1,9 +1,7 @@
 package com.example.animeexplorer.core.components
 
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
-import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -76,7 +74,6 @@ fun AnimeItem(
                             )
                     )
 
-
                     RatingBadge(anime.score)
                 }
 
@@ -146,4 +143,25 @@ fun RatingBadge(
 @Composable
 fun RatingBadgePreview(modifier: Modifier = Modifier) {
     RatingBadge(rating = 8.5)
+}
+
+@Preview(showBackground = true)
+@Composable
+fun AnimeItemPreview() {
+    val sampleAnime = AnimeUiModel(
+        id = 1,
+        title = "Attack on Titan",
+        imageUrl = "https://myanimelist.net/images/anime/4/19644l.jpg",
+        score = 9.0,
+        description = "Sample Description",
+        duration = "0"
+    )
+    PreviewSharedTransitionContainer { animatedContentScope ->
+        AnimeItem(
+            anime = sampleAnime,
+            sharedTransitionScope = this,
+            animatedContentScope = animatedContentScope,
+            onClick = {}
+        )
+    }
 }
