@@ -30,10 +30,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.animeexplorer.core.components.ArcLoader
 import com.example.animeexplorer.features.episodes.domain.AnimeEpisodeUiModel
+import com.example.animeexplorer.ui.theme.AppTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -184,3 +186,19 @@ private fun ErrorScreen(
     }
 }
 
+@PreviewLightDark
+@Composable
+fun EpisodeListContentPreview(modifier: Modifier = Modifier) {
+    AppTheme {
+        EpisodeListContent(
+            episodes = listOf(
+                AnimeEpisodeUiModel(
+                    id = 1,
+                    title = "Sample Episode 1",
+                    score = 8.0
+                )
+            ),
+            modifier = modifier
+        )
+    }
+}
