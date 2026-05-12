@@ -67,12 +67,10 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navDeepLink
 import androidx.navigation.navigation
-import androidx.navigation.toRoute
 import com.example.animeexplorer.core.data.connectivity.ConnectivityObserver
 import com.example.animeexplorer.features.collection.ui.AnimeLibrary
 import com.example.animeexplorer.features.detail.ui.AnimeDetailScreen
 import com.example.animeexplorer.features.episodes.ui.AnimeEpisodeListScreen
-import com.example.animeexplorer.features.explorer.domain.ExplorerCategory
 import com.example.animeexplorer.features.explorer.ui.ExplorerScreen
 import com.example.animeexplorer.features.home.ui.HomeScreen
 import com.example.animeexplorer.features.search.ui.SearchAnime
@@ -343,15 +341,8 @@ private fun AppScaffold(
                         composable<HomeDestination.AnimeEpisodes> {
                             AnimeEpisodeListScreen()
                         }
-                        composable<HomeDestination.Explorer> { backStackEntry ->
-                            val explorer: HomeDestination.Explorer = backStackEntry.toRoute()
-                            val category = try {
-                                ExplorerCategory.valueOf(explorer.category)
-                            } catch (e: Exception) {
-                                ExplorerCategory.TRENDING
-                            }
+                        composable<HomeDestination.Explorer> {
                             ExplorerScreen(
-                                category = category,
                                 sharedTransitionScope = this@SharedTransitionLayout,
                                 animatedContentScope = this@composable,
                                 onAnimeClick = { malId ->

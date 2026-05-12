@@ -1,8 +1,11 @@
 package com.example.animeexplorer.features.explorer.ui
 
 import android.util.Log
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.toRoute
+import com.example.animeexplorer.HomeDestination
 import com.example.animeexplorer.features.explorer.domain.ExplorerCategory
 import com.example.animeexplorer.features.explorer.domain.ExplorerRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -15,13 +18,22 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ExplorerViewModel @Inject constructor(
-    private val explorerRepository: ExplorerRepository
+    private val explorerRepository: ExplorerRepository,
+    savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ExplorerUiState())
     val uiState: StateFlow<ExplorerUiState> = _uiState.asStateFlow()
 
-    fun initializeCategory(category: ExplorerCategory) {
+    init {
+        val category = runCatching {
+            ExplorerCategory.valueOf(savedStateHandle.toRoute<HomeDestination.Explorer>().category)
+        }.getOrDefault(ExplorerCategory.TRENDING)
+
+        initializeCategory(category)
+    }
+
+    private fun initializeCategory(category: ExplorerCategory) {
         _uiState.update {
             it.copy(
                 category = category,
@@ -81,4 +93,3 @@ class ExplorerViewModel @Inject constructor(
         loadAnime()
     }
 }
-
