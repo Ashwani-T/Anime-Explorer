@@ -235,62 +235,60 @@ annotation class PreviewLightDarkWithBackground
 @PreviewLightDarkWithBackground
 @Composable
 fun ExplorerContentPreview(modifier: Modifier = Modifier) {
-    AppTheme {
-        PreviewSharedTransitionContainer {
-            ExplorerContent(
-                categoryName = "Trending",
-                contentState = ExplorerContentState.Content(
-                    animeList = listOf(
-                        AnimeUiModel(
-                            id = 1,
-                            title = "Attack on Titan",
-                            description = "Sample Description",
-                            imageUrl = "https://myanimelist.net/images/anime/4/19644l.jpg",
-                            score = 3.0,
-                            duration = "0"
-                        ),
-                        AnimeUiModel(
-                            id = 2,
-                            title = "Attack on Titan",
-                            description = "Sample Description",
-                            imageUrl = "https://myanimelist.net/images/anime/4/19644l.jpg",
-                            score = 3.0,
-                            duration = "0"
-                        ),
-                        AnimeUiModel(
-                            id = 3,
-                            title = "Attack on Titan",
-                            description = "Sample Description",
-                            imageUrl = "https://myanimelist.net/images/anime/4/19644l.jpg",
-                            score = 3.0,
-                            duration = "0"
-                        ),AnimeUiModel(
-                            id = 4,
-                            title = "Attack on Titan",
-                            description = "Sample Description",
-                            imageUrl = "https://myanimelist.net/images/anime/4/19644l.jpg",
-                            score = 3.0,
-                            duration = "0"
-                        ),
-                        AnimeUiModel(
-                            id = 5,
-                            title = "Attack on Titan",
-                            description = "Sample Description",
-                            imageUrl = "https://myanimelist.net/images/anime/4/19644l.jpg",
-                            score = 3.0,
-                            duration = "0"
-                        )
-
+    PreviewSharedTransitionContainer {
+        ExplorerContent(
+            categoryName = "Trending",
+            contentState = ExplorerContentState.Content(
+                animeList = listOf(
+                    AnimeUiModel(
+                        id = 1,
+                        title = "Attack on Titan",
+                        description = "Sample Description",
+                        imageUrl = "https://myanimelist.net/images/anime/4/19644l.jpg",
+                        score = 3.0,
+                        duration = "0"
                     ),
-                    isLoadingNextPage = false
+                    AnimeUiModel(
+                        id = 2,
+                        title = "Attack on Titan",
+                        description = "Sample Description",
+                        imageUrl = "https://myanimelist.net/images/anime/4/19644l.jpg",
+                        score = 3.0,
+                        duration = "0"
+                    ),
+                    AnimeUiModel(
+                        id = 3,
+                        title = "Attack on Titan",
+                        description = "Sample Description",
+                        imageUrl = "https://myanimelist.net/images/anime/4/19644l.jpg",
+                        score = 3.0,
+                        duration = "0"
+                    ),AnimeUiModel(
+                        id = 4,
+                        title = "Attack on Titan",
+                        description = "Sample Description",
+                        imageUrl = "https://myanimelist.net/images/anime/4/19644l.jpg",
+                        score = 3.0,
+                        duration = "0"
+                    ),
+                    AnimeUiModel(
+                        id = 5,
+                        title = "Attack on Titan",
+                        description = "Sample Description",
+                        imageUrl = "https://myanimelist.net/images/anime/4/19644l.jpg",
+                        score = 3.0,
+                        duration = "0"
+                    )
+
                 ),
-                gridState = rememberLazyGridState(),
-                sharedTransitionScope = this,
-                animatedContentScope = it,
-                modifier = modifier,
-                onAnimeClick = {},
-                onBackClick = {}
-            )
-        }
+                isLoadingNextPage = false
+            ),
+            gridState = rememberLazyGridState(),
+            sharedTransitionScope = this,
+            animatedContentScope = it,
+            modifier = modifier,
+            onAnimeClick = {},
+            onBackClick = {}
+        )
     }
 }

@@ -6,7 +6,6 @@ import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -30,11 +29,11 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -42,15 +41,20 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.lifecycle.compose.LifecycleEventEffect
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.animeexplorer.core.components.AnimeItem
-import com.example.animeexplorer.core.components.ArcLoader
 import com.example.animeexplorer.core.components.AutoAdvancePager
+import com.example.animeexplorer.core.components.PreviewSharedTransitionContainer
 import com.example.animeexplorer.core.domain.AnimeUiModel
+import com.example.animeexplorer.features.explorer.ui.PreviewLightDarkWithBackground
+import com.example.animeexplorer.ui.theme.AppTheme
 import com.valentinilk.shimmer.shimmer
 import kotlinx.coroutines.FlowPreview
 
@@ -65,8 +69,23 @@ fun HomeScreen(
 
 ) {
     val viewModel: HomeScreenViewModel = hiltViewModel()
-    val state by viewModel.uiState.collectAsState()
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
     //Handling Activity Lifecycle and Triggering Refresh
+    HomeLifecycleRefresh(onRefresh = viewModel::refresh)
+
+    HomeScreenContent(
+        uiState = state,
+        onRefresh = { viewModel.forceRefresh(true) },
+        modifier = modifier,
+        onAnimeClick = onAnimeClick,
+        onExploreCategory = onExploreCategory,
+        sharedTransitionScope = sharedTransitionScope,
+        animatedContentScope = animatedContentScope
+    )
+}
+
+@Composable
+private fun HomeLifecycleRefresh(onRefresh: () -> Unit) {
     var wasInBackground by rememberSaveable { mutableStateOf(false) }
 
     LifecycleEventEffect(
@@ -83,32 +102,46 @@ fun HomeScreen(
     ) {
         if (wasInBackground) {
             Log.d("TAG", "App returned to foreground")
-            viewModel.refresh()
+            onRefresh()
         }
         wasInBackground = false
     }
+}
 
-    val listState = rememberLazyListState()
+@OptIn(ExperimentalSharedTransitionApi::class, ExperimentalMaterial3Api::class)
+@Composable
+fun HomeScreenContent(
+    uiState: HomeUiState,
+    onRefresh: () -> Unit,
+    sharedTransitionScope: SharedTransitionScope,
+    animatedContentScope: AnimatedContentScope,
+    modifier: Modifier = Modifier,
+    listState: LazyListState = rememberLazyListState(),
+    onAnimeClick: (Int) -> Unit,
+    onExploreCategory: (String) -> Unit = {}
+) {
     val refreshState = rememberPullToRefreshState()
 
 
     PullToRefreshBox(
-        isRefreshing = state.isRefreshing,
-        onRefresh = { viewModel.forceRefresh(true) },
-        modifier = modifier.fillMaxSize(),
+        isRefreshing = uiState.isRefreshing,
+        onRefresh = onRefresh,
+        modifier = modifier
+            .fillMaxSize()
+            .testTag("home_screen"),
         state = refreshState
 
     ) {
-        Log.d("TAG", "HomeScreen: ${state.isRefreshing} ")
+        Log.d("TAG", "HomeScreen: ${uiState.isRefreshing} ")
         AnimeList(
-            horizontalPagerList = state.horizontalPager,
-            trending = state.trending.items,
-            seasonAnime = state.currentSeason.items,
-            top = state.top.items,
-            upcoming = state.upcoming.items,
-            favorite = state.favorites.items,
+            horizontalPagerList = uiState.horizontalPager,
+            trending = uiState.trending.items,
+            seasonAnime = uiState.currentSeason.items,
+            top = uiState.top.items,
+            upcoming = uiState.upcoming.items,
+            favorite = uiState.favorites.items,
             listState = listState,
-            isRefreshing = state.isRefreshing,
+            isRefreshing = uiState.isRefreshing,
             onAnimeClick = onAnimeClick,
             onExploreCategory = onExploreCategory,
             sharedTransitionScope = sharedTransitionScope,
@@ -131,13 +164,16 @@ fun AnimeList(
     onAnimeClick: (Int) -> Unit,
     onExploreCategory: (String) -> Unit = {},
     sharedTransitionScope: SharedTransitionScope,
-    animatedContentScope: AnimatedContentScope
+    animatedContentScope: AnimatedContentScope,
+    modifier: Modifier = Modifier
 ) {
 
     Log.d("TAG", "AnimeList: $isRefreshing")
     LazyColumn(
         state = listState,
-        modifier = Modifier.fillMaxSize()
+        modifier = modifier
+            .fillMaxSize()
+            .testTag("home_anime_list")
     ) {
         if (isRefreshing) {
             item(key = "shimmer_pager") {
@@ -146,6 +182,7 @@ fun AnimeList(
                         .fillMaxWidth()
                         .height(250.dp)
                         .padding(16.dp)
+                        .testTag("home_shimmer_pager")
                         .shimmer()
                         .background(
                             MaterialTheme.colorScheme.surfaceVariant,
@@ -160,6 +197,7 @@ fun AnimeList(
                             .padding(horizontal = 16.dp, vertical = 12.dp)
                             .width(150.dp)
                             .height(24.dp)
+                            .testTag("home_shimmer_header_$index")
                             .shimmer()
                             .background(
                                 MaterialTheme.colorScheme.surfaceVariant,
@@ -171,7 +209,9 @@ fun AnimeList(
                     LazyRow(
                         contentPadding = PaddingValues(horizontal = 16.dp),
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag("home_shimmer_list_$index")
                     ) {
                         items(5) {
                             AnimeItemShimmer()
@@ -190,12 +230,17 @@ fun AnimeList(
                     },
                     onAnimeClick = onAnimeClick,
                     sharedTransitionScope = sharedTransitionScope,
-                    animatedContentScope = animatedContentScope
+                    animatedContentScope = animatedContentScope,
+                    modifier = Modifier.testTag("home_hero_pager")
                 )
             }
 
             item(key = "header_season") {
-                SectionHeader("This Season", onExploreClick = { onExploreCategory("SEASON") })
+                SectionHeader(
+                    title = "This Season",
+                    testTag = "home_section_season_header",
+                    onExploreClick = { onExploreCategory("SEASON") }
+                )
             }
 
             item(key = "list_season") {
@@ -203,11 +248,16 @@ fun AnimeList(
                     animeList = seasonAnime,
                     onAnimeClick = onAnimeClick,
                     sharedTransitionScope = sharedTransitionScope,
-                    animatedContentScope = animatedContentScope
+                    animatedContentScope = animatedContentScope,
+                    testTag = "home_section_season_list"
                 )
             }
             item(key = "header_favorite") {
-                SectionHeader("Favourite Anime", onExploreClick = { onExploreCategory("FAVORITE") })
+                SectionHeader(
+                    title = "Favourite Anime",
+                    testTag = "home_section_favorite_header",
+                    onExploreClick = { onExploreCategory("FAVORITE") }
+                )
             }
 
             item(key = "list_favorite") {
@@ -215,12 +265,17 @@ fun AnimeList(
                     animeList = remember(favorite) { favorite.take(10) },
                     onAnimeClick = onAnimeClick,
                     sharedTransitionScope = sharedTransitionScope,
-                    animatedContentScope = animatedContentScope
+                    animatedContentScope = animatedContentScope,
+                    testTag = "home_section_favorite_list"
                 )
             }
 
             item(key = "header_top") {
-                SectionHeader("Top Anime", onExploreClick = { onExploreCategory("TOP") })
+                SectionHeader(
+                    title = "Top Anime",
+                    testTag = "home_section_top_header",
+                    onExploreClick = { onExploreCategory("TOP") }
+                )
             }
 
             item(key = "list_top") {
@@ -228,12 +283,17 @@ fun AnimeList(
                     animeList = remember(top) { top.take(10) },
                     onAnimeClick = onAnimeClick,
                     sharedTransitionScope = sharedTransitionScope,
-                    animatedContentScope = animatedContentScope
+                    animatedContentScope = animatedContentScope,
+                    testTag = "home_section_top_list"
                 )
             }
 
             item(key = "header_trending") {
-                SectionHeader("Trending Anime", onExploreClick = { onExploreCategory("TRENDING") })
+                SectionHeader(
+                    title = "Trending Anime",
+                    testTag = "home_section_trending_header",
+                    onExploreClick = { onExploreCategory("TRENDING") }
+                )
             }
 
             item(key = "list_trending") {
@@ -241,12 +301,17 @@ fun AnimeList(
                     animeList = remember(trending) { trending.take(10) },
                     onAnimeClick = onAnimeClick,
                     sharedTransitionScope = sharedTransitionScope,
-                    animatedContentScope = animatedContentScope
+                    animatedContentScope = animatedContentScope,
+                    testTag = "home_section_trending_list"
                 )
             }
 
             item(key = "header_upcoming") {
-                SectionHeader("Upcoming Anime", onExploreClick = { onExploreCategory("UPCOMING") })
+                SectionHeader(
+                    title = "Upcoming Anime",
+                    testTag = "home_section_upcoming_header",
+                    onExploreClick = { onExploreCategory("UPCOMING") }
+                )
             }
 
             item(key = "list_upcoming") {
@@ -254,7 +319,8 @@ fun AnimeList(
                     animeList = remember(upcoming) { upcoming.take(6) },
                     onAnimeClick = onAnimeClick,
                     sharedTransitionScope = sharedTransitionScope,
-                    animatedContentScope = animatedContentScope
+                    animatedContentScope = animatedContentScope,
+                    testTag = "home_section_upcoming_list"
                 )
             }
         }
@@ -265,11 +331,13 @@ fun AnimeList(
 fun SectionHeader(
     title: String,
     modifier: Modifier = Modifier,
+    testTag: String = "section_header",
     onExploreClick: () -> Unit = {}
 ) {
     Row(
         modifier = modifier
             .fillMaxWidth()
+            .testTag(testTag)
             .clickable(onClick = onExploreClick)
             .padding(horizontal = 16.dp, vertical = 12.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -282,7 +350,9 @@ fun SectionHeader(
         )
         IconButton(
             onClick = onExploreClick,
-            modifier = Modifier.width(40.dp)
+            modifier = Modifier
+                .width(40.dp)
+                .testTag("${testTag}_button")
         ) {
             Icon(
                 imageVector = Icons.Default.ChevronRight,
@@ -300,14 +370,17 @@ fun HorizontalAnimeList(
     onAnimeClick: (Int) -> Unit,
     sharedTransitionScope: SharedTransitionScope,
     animatedContentScope: AnimatedContentScope,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    testTag: String = "horizontal_anime_list"
 ) {
 
     val listState = rememberLazyListState()
 
     LazyRow(
         state = listState,
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .testTag(testTag),
         contentPadding = PaddingValues(start = 16.dp, end = 16.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -319,7 +392,9 @@ fun HorizontalAnimeList(
             AnimeItem(
                 anime = anime,
                 onClick = { onAnimeClick(anime.id) },
-                modifier = Modifier.width(150.dp),
+                modifier = Modifier
+                    .width(150.dp)
+                    .testTag("${testTag}_item_${anime.id}"),
                 sharedTransitionScope = sharedTransitionScope,
                 animatedContentScope = animatedContentScope
             )
@@ -357,3 +432,76 @@ fun AnimeItemShimmer(modifier: Modifier = Modifier) {
         )
     }
 }
+
+@PreviewLightDarkWithBackground
+@Composable
+private fun HomeScreenContentFullPreview() {
+    PreviewSharedTransitionContainer { animatedContentScope ->
+        HomeScreenContent(
+            uiState = HomeUiState(
+                horizontalPager = previewAnime,
+                currentSeason = HomeSection(items = previewAnime),
+                favorites = HomeSection(items = previewAnime.take(4)),
+                top = HomeSection(items = previewAnime),
+                trending = HomeSection(items = previewAnime),
+                upcoming = HomeSection(items = previewAnime.take(6))
+            ),
+            onRefresh = {},
+            sharedTransitionScope = this,
+            animatedContentScope = animatedContentScope,
+            onAnimeClick = {},
+            onExploreCategory = {}
+        )
+    }
+}
+
+private val previewAnime = listOf(
+    AnimeUiModel(
+        id = 1,
+        title = "Attack on Titan",
+        description = "Humanity fights for survival behind towering walls.",
+        duration = "24 min",
+        imageUrl = "https://cdn.myanimelist.net/images/anime/10/47347l.jpg",
+        score = 9.1
+    ),
+    AnimeUiModel(
+        id = 2,
+        title = "Frieren: Beyond Journey's End",
+        description = "An elf mage reflects on time, friendship, and adventure.",
+        duration = "24 min",
+        imageUrl = "https://cdn.myanimelist.net/images/anime/1015/138006l.jpg",
+        score = 9.3
+    ),
+    AnimeUiModel(
+        id = 3,
+        title = "Fullmetal Alchemist: Brotherhood",
+        description = "Two brothers search for the Philosopher's Stone.",
+        duration = "24 min",
+        imageUrl = "https://cdn.myanimelist.net/images/anime/1223/96541l.jpg",
+        score = 9.1
+    ),
+    AnimeUiModel(
+        id = 4,
+        title = "Demon Slayer",
+        description = "A kindhearted boy becomes a demon slayer.",
+        duration = "24 min",
+        imageUrl = "https://cdn.myanimelist.net/images/anime/1286/99889l.jpg",
+        score = 8.5
+    ),
+    AnimeUiModel(
+        id = 5,
+        title = "Jujutsu Kaisen",
+        description = "A student joins a secret organization of sorcerers.",
+        duration = "24 min",
+        imageUrl = "https://cdn.myanimelist.net/images/anime/1171/109222l.jpg",
+        score = 8.6
+    ),
+    AnimeUiModel(
+        id = 6,
+        title = "Spy x Family",
+        description = "A spy builds a pretend family for a mission.",
+        duration = "24 min",
+        imageUrl = "https://cdn.myanimelist.net/images/anime/1441/122795l.jpg",
+        score = 8.5
+    )
+)
