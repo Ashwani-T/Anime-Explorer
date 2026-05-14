@@ -85,6 +85,7 @@ import com.example.animeexplorer.core.domain.enums.RatingType
 import com.example.animeexplorer.core.domain.enums.SortOrder
 import com.example.animeexplorer.core.domain.enums.SortType
 import com.example.animeexplorer.core.domain.enums.StatusType
+import com.example.animeexplorer.features.search.domain.model.GenreModel
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged

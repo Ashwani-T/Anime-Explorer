@@ -47,6 +47,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.example.animeexplorer.core.components.ArcLoader
 import com.example.animeexplorer.core.domain.AnimeCollectionUiModel
@@ -62,10 +63,9 @@ fun AnimeLibrary(
     onClick: (Int) -> Unit,
     viewModel: AnimeLibraryViewModel = hiltViewModel()
 ) {
-    val uiState by viewModel.uiState.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val listState = rememberLazyGridState()
-    
-    var visibleLibraryFilterRow by remember{ mutableStateOf(true) }
+
 
     Box(modifier = Modifier.padding(6.dp)) {
         when {
@@ -181,38 +181,6 @@ fun AnimeLibrary(
         }
     }
 }
-//
-//@Composable
-//fun SearchBar(
-//    query: String,
-//    onQueryChange: (String) -> Unit,
-//    selectedPreset: String,
-//    onClear: () -> Unit,
-//    modifier: Modifier = Modifier
-//) {
-//    OutlinedTextField(
-//        value = query,
-//        onValueChange = onQueryChange,
-//        modifier = modifier
-//            .fillMaxWidth()
-//            .padding(4.dp),
-//        placeholder = { Text("Search in ${selectedPreset}...") },
-//        leadingIcon = {
-//            Icon(imageVector = Icons.Default.Search, contentDescription = null)
-//        },
-//        trailingIcon = {
-//            IconButton(onClick = onClear) {
-//                Icon(imageVector = Icons.Default.Clear, contentDescription = "Clear search")
-//            }
-//        },
-//        singleLine = true,
-//        shape = RoundedCornerShape(12.dp),
-//        colors = OutlinedTextFieldDefaults.colors(
-//            focusedBorderColor = Color.Transparent,
-//            unfocusedBorderColor = Color.Transparent,
-//        )
-//    )
-//}
 
 @Composable
 fun LibraryFilterRow(

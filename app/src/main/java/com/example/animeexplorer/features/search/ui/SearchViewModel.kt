@@ -4,22 +4,36 @@ import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.animeexplorer.features.search.domain.SearchRepository
 import com.example.animeexplorer.core.domain.enums.FormatType
 import com.example.animeexplorer.core.domain.enums.RatingType
 import com.example.animeexplorer.core.domain.enums.SortOrder
 import com.example.animeexplorer.core.domain.enums.SortType
 import com.example.animeexplorer.core.domain.enums.StatusType
+import com.example.animeexplorer.features.search.domain.SearchRepository
+import com.example.animeexplorer.features.search.domain.mapper.toQueryMap
+import com.example.animeexplorer.features.search.domain.mapper.toRequestParams
+import com.example.animeexplorer.features.search.domain.model.GenreModel
+import com.example.animeexplorer.features.search.domain.model.SearchRequestParamModel
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlin.collections.any
+import kotlin.collections.distinctBy
+import kotlin.collections.emptyList
+import kotlin.collections.emptySet
+import kotlin.collections.filterNot
+import kotlin.collections.plus
+import kotlin.collections.toSet
+import kotlin.sequences.toSet
+import kotlin.text.toSet
 
 private const val SEARCH_QUERY_KEY = "search_query"
 
@@ -32,8 +46,6 @@ class SearchViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(SearchUiState())
     val uiState: StateFlow<SearchUiState> = _uiState.asStateFlow()
 
-    private val _searchQueryState = MutableStateFlow("")
-
     private var searchJob: Job? = null
 
     init {
@@ -42,15 +54,11 @@ class SearchViewModel @Inject constructor(
         Log.d("SearchViewModel", "Restored search query: '$savedQuery'")
 
         _uiState.update { it.copy(searchQuery = savedQuery) }
-        _searchQueryState.value = savedQuery
 
-        observeSearchQuery()
-    }
-
-    @OptIn(FlowPreview::class)
-    fun observeSearchQuery() {
         viewModelScope.launch {
-            _searchQueryState
+            _uiState
+                .map {it.searchQuery}
+                .distinctUntilChanged()
                 .debounce(300)
                 .collect {
                     onApplyFilter()
@@ -60,29 +68,28 @@ class SearchViewModel @Inject constructor(
 
     fun onSearchQueryChange(query: String) {
         _uiState.update { it.copy(searchQuery = query) }
-        _searchQueryState.value = query
         savedStateHandle[SEARCH_QUERY_KEY] = query
         Log.d("SearchViewModel", "Saved search query: '$query'")
     }
 
     fun onSortTypeChange(sortType: SortType?) {
         _uiState.update { it.copy(selectedSort = sortType) }
-        onApplyFilter()
+        //onApplyFilter()
     }
 
     fun onFormatChange(format: FormatType?) {
         _uiState.update { it.copy(selectedFormat = format) }
-        onApplyFilter()
+        //onApplyFilter()
     }
 
     fun onStatusChange(status: StatusType?) {
         _uiState.update { it.copy(selectedStatus = status) }
-        onApplyFilter()
+        //onApplyFilter()
     }
 
     fun onRatingChange(rating: RatingType?) {
         _uiState.update { it.copy(selectedRating = rating) }
-        onApplyFilter()
+        //onApplyFilter()
     }
 
     fun removeGenre(genre: GenreModel) {
@@ -90,7 +97,7 @@ class SearchViewModel @Inject constructor(
             val newGenres = state.selectedGenres.filterNot { it.malId == genre.malId }.toSet()
             state.copy(selectedGenres = newGenres)
         }
-        onApplyFilter()
+        //onApplyFilter()
     }
 
     fun toggleGenre(genre: GenreModel) {
@@ -128,24 +135,21 @@ class SearchViewModel @Inject constructor(
     }
 
     fun loadAnime() {
-        searchJob?.cancel().also {
-            _uiState.update { state ->
-                state.copy(isLoading = true)
-            }
+        searchJob?.cancel()
+
+        _uiState.update { state ->
+            state.copy(isLoading = true)
         }
+
         searchJob = viewModelScope.launch {
             val currentState = uiState.value
             val requestedPage = currentState.pageNumber
+
+            val queryMap = getRequestParams(currentState, requestedPage).toQueryMap()
+
             
             val result = searchRepository.getFilteredAnime(
-                query = currentState.searchQuery,
-                page = requestedPage,
-                orderBy = currentState.selectedSort,
-                sortOrder = currentState.sortOrder,
-                format = currentState.selectedFormat,
-                status = currentState.selectedStatus,
-                rating = currentState.selectedRating,
-                genres = currentState.selectedGenres
+                queryMap
             )
 
             result.onSuccess { response ->
@@ -173,6 +177,9 @@ class SearchViewModel @Inject constructor(
             }
 
         }
+    }
+    private fun getRequestParams(currentState: SearchUiState, requestedPage: Int): SearchRequestParamModel{
+        return currentState.toRequestParams().copy(page = requestedPage)
     }
 
     fun onApplyFilter() {

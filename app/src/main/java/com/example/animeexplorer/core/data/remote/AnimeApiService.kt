@@ -13,9 +13,7 @@ interface AnimeApiService {
 
     @GET("anime")
     suspend fun getAnimeList(
-        @Query("q") query: String?,
-        @QueryMap filters: Map<String, String>? = emptyMap(),
-        @Query("page") page: Int? = 1,
+        @QueryMap queryParamsMap: Map<String, String>? = emptyMap(),
         @Query("limit") limit: Int = 25
     ): AnimeResponseDto
 
