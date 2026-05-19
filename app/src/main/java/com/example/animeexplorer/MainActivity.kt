@@ -73,7 +73,7 @@ import com.example.animeexplorer.features.detail.ui.AnimeDetailScreen
 import com.example.animeexplorer.features.episodes.ui.AnimeEpisodeListScreen
 import com.example.animeexplorer.features.explorer.ui.ExplorerScreen
 import com.example.animeexplorer.features.home.ui.HomeScreen
-import com.example.animeexplorer.features.search.ui.SearchAnime
+import com.example.animeexplorer.features.search.ui.SearchAnimeRoute
 import com.example.animeexplorer.ui.theme.AppTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -355,7 +355,7 @@ private fun AppScaffold(
                         }
                     }
                     composable<AppDestination.Search> {
-                        SearchAnime(
+                        SearchAnimeRoute(
                             onAnimeClick = { malId ->
                                 navController.navigate(HomeDestination.AnimeDetail(malId))
                             },

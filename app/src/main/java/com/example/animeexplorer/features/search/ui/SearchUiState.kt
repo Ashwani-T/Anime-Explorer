@@ -23,3 +23,23 @@ data class SearchUiState(
     val availableGenres: List<GenreModel> = genreList,
     val isLoading: Boolean = false
 )
+
+
+data class SearchUiActions(
+    val onSearchQueryChange: (String) -> Unit,
+    val onToggleSortOrder: () -> Unit,
+    val onOpenAnime: (Int) -> Unit,
+    val onRemoveSort: () -> Unit,
+    val onRemoveFormat: () -> Unit,
+    val onRemoveStatus: () -> Unit,
+    val onRemoveRating: () -> Unit,
+    val onRemoveGenre: (GenreModel) -> Unit,
+    val onToggleGenre: (GenreModel) -> Unit,
+    val onSortTypeChange: (SortType?) -> Unit,
+    val onFormatChange: (FormatType?) -> Unit,
+    val onStatusChange: (StatusType?) -> Unit,
+    val onRatingChange: (RatingType?) -> Unit,
+    val onResetFilters: () -> Unit,
+    val onApplyFilter: () -> Unit,
+    val onLoadMore: () -> Unit
+)
