@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1076967567293",
+    "project_id": "anime-explorer-4dceb",
+    "storage_bucket": "anime-explorer-4dceb.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1076967567293:android:92fb2e38125a4a2038ecd4",
+        "android_client_info": {
+          "package_name": "com.example.animeexplorer"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAX0p65IDlPwnq0SkzWuM_7-IaM4Q0ksAw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

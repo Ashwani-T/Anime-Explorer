@@ -6,14 +6,20 @@ import android.content.Context
 import android.os.Build
 
 object NotificationChannelInitializer {
-    fun createNotificationChannel(context: Context){
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
+    fun createNotificationChannel(
+        id: String,
+        name: String,
+        importance: Int,
+        channelDescription: String,
+        context: Context
+    ) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
-                "anime_explorer_channel",
-                 "Anime Explorer Notifications",
-                 NotificationManager.IMPORTANCE_DEFAULT
+                id,
+                name,
+                importance
             ).apply {
-                description = "Channel for Anime Explorer notifications"
+                description = channelDescription
             }
 
             val notificationManager: NotificationManager =

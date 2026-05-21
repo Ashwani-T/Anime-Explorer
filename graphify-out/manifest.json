@@ -1,0 +1,426 @@
+{
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\build.gradle.kts": {
+    "mtime": 1773392377.0,
+    "hash": "29a14b798a00e719f6ee8513cfd29cbe"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\gradlew": {
+    "mtime": 1772600881.0,
+    "hash": "4f7a8a3a765f6f751d47568dc3bb913f"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\settings.gradle.kts": {
+    "mtime": 1772600881.0,
+    "hash": "298998dce454e1001de7efae2d2b2e52"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\build.gradle.kts": {
+    "mtime": 1779331831.634552,
+    "hash": "a1f2abfa1dd51c5ae1d3f870101d0549"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\androidTest\\java\\com\\example\\animeexplorer\\features\\search\\ui\\SearchAnimeUiTest.kt": {
+    "mtime": 1779331831.6355526,
+    "hash": "5d4b3a80389876afe7028cc24127e74d"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\MainActivity.kt": {
+    "mtime": 1779331956.2608278,
+    "hash": "4525a35c3fd5ae85451ecc95db0d8640"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\core\\AppContainer.kt": {
+    "mtime": 1777832418.3924127,
+    "hash": "17a7215e1cf9f026e3a083d6cbca854a"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\core\\components\\AnimeList.kt": {
+    "mtime": 1778785069.7277071,
+    "hash": "860da6fecaf97081e6771c696e5d8fe5"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\core\\components\\AppScaffold.kt": {
+    "mtime": 1778874935.4930358,
+    "hash": "fa5de6bc6dece208b23bab52e7f4fbf4"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\core\\components\\HorizontalPager.kt": {
+    "mtime": 1778785069.728709,
+    "hash": "44eff8916261dc299ead1635c78e8337"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\core\\components\\Loader.kt": {
+    "mtime": 1774291755.0,
+    "hash": "275779841b5033ca63baa24a772ef96d"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\core\\components\\PreviewTransitionScopes.kt": {
+    "mtime": 1778785147.7951405,
+    "hash": "ae257014b67a7a0582177fe1f79e7db8"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\core\\data\\connectivity\\ConnectivityObserver.kt": {
+    "mtime": 1774949956.0,
+    "hash": "ba91c09f803d2fe242d63b680d928884"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\core\\data\\remote\\AnimeApiService.kt": {
+    "mtime": 1778785147.7961402,
+    "hash": "fb5d14197862814e596de8e3176260a7"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\core\\data\\remote\\Filters.kt": {
+    "mtime": 1777832058.5867598,
+    "hash": "8787ae74c02bca31b1d2702a00c09f37"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\core\\data\\remote\\dto\\AnimeDetailDto.kt": {
+    "mtime": 1775113003.0,
+    "hash": "c270f75739ca68bc108c19f012fbad37"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\core\\data\\remote\\dto\\AnimeDto.kt": {
+    "mtime": 1774949920.0,
+    "hash": "63b00147e380faea112ddf85250dfc77"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\core\\data\\remote\\dto\\AnimeEpisodeDto.kt": {
+    "mtime": 1775156557.0,
+    "hash": "ca647cf5b1ed2409196fded25388dab4"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\core\\database\\AppDatabase.kt": {
+    "mtime": 1775549618.0,
+    "hash": "41e107a5ba368044c962026260ac865d"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\core\\domain\\AnimeScreenModel.kt": {
+    "mtime": 1775113177.0,
+    "hash": "ad3cec4f32eb9593b539227e4607d0fd"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\core\\domain\\enums\\AnimeFilter.kt": {
+    "mtime": 1774951919.0,
+    "hash": "3190cbdbe849bd832bd72c4dbbbdaa3a"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\core\\domain\\enums\\AnimeType.kt": {
+    "mtime": 1774951919.0,
+    "hash": "f2fe7641352acd5d492ef22fa113dfd7"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\core\\domain\\enums\\FilterEnums.kt": {
+    "mtime": 1774951919.0,
+    "hash": "78ef5d0db0027259a0d6d183103e46da"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\core\\domain\\mapper\\CommonMapper.kt": {
+    "mtime": 1775552239.0,
+    "hash": "a3ee430ac100b0aff2df5181f5a22065"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\core\\utils\\UtilsFunctions.kt": {
+    "mtime": 1778785069.569719,
+    "hash": "850f71ed190a808a0033660a7c052607"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\di\\DatabaseModule.kt": {
+    "mtime": 1775549618.0,
+    "hash": "18e26a262b9cb7fc5518bf4193a87811"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\di\\NetworkModule.kt": {
+    "mtime": 1774950690.0,
+    "hash": "a2280481e6b2ee9a5f6069368095f38a"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\di\\RepositoryModule.kt": {
+    "mtime": 1775156557.0,
+    "hash": "6d0772f290a19c545da086d92b1287ba"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\di\\RetrofitModule.kt": {
+    "mtime": 1774950697.0,
+    "hash": "801d6ca9a504f686d59c7bfb2edb0f26"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\features\\collection\\data\\AnimeCollectionRepositoryImpl.kt": {
+    "mtime": 1775549618.0,
+    "hash": "9865bcda312ed72ccd6e389120566797"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\features\\collection\\data\\local\\dao\\AnimeCollectionDao.kt": {
+    "mtime": 1774950004.0,
+    "hash": "2e2b7c9325fca026f8489e5939a2d0a9"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\features\\collection\\data\\local\\entity\\AnimeCollectionsEntity.kt": {
+    "mtime": 1774949996.0,
+    "hash": "f97db4dbeee17abe60e040bdccb2c4f2"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\features\\collection\\domain\\AnimeCollectionRepository.kt": {
+    "mtime": 1774949990.0,
+    "hash": "12ba4505f67de2a1bb7bf2553e4ec86b"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\features\\collection\\domain\\mapper\\AnimeCollectionMapper.kt": {
+    "mtime": 1775549618.0,
+    "hash": "56059dba3e5ae1d72f678d09c8c31e81"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\features\\collection\\ui\\AnimeLibrary.kt": {
+    "mtime": 1779331831.6390731,
+    "hash": "2346ac7f305aeca0b1f7a4cb86f42fc7"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\features\\collection\\ui\\AnimeLibraryUiState.kt": {
+    "mtime": 1775560580.0,
+    "hash": "fcb29a69c465f5060ba04b9f7d3ba555"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\features\\collection\\ui\\AnimeLibraryViewModel.kt": {
+    "mtime": 1775560580.0,
+    "hash": "2a8b549b3717c4215df0c25e8c6e7438"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\features\\collection\\work\\NotificationScheduleWorker.kt": {
+    "mtime": 1778785069.875626,
+    "hash": "20a69ff6e98cf4e01f0ba38ae201ce97"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\features\\detail\\data\\DetailRepositoryImpl.kt": {
+    "mtime": 1775552239.0,
+    "hash": "a5f489f99e78c79a664f5eeb264010d2"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\features\\detail\\data\\local\\dao\\AnimeDetailsDao.kt": {
+    "mtime": 1775546850.0,
+    "hash": "1a97b59d7c90c7435b5ff886b2027103"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\features\\detail\\data\\local\\entity\\AnimeDetailsEntity.kt": {
+    "mtime": 1775113003.0,
+    "hash": "113452d920c642d15a38eca33e877954"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\features\\detail\\domain\\AnimeDetail.kt": {
+    "mtime": 1777914030.5718448,
+    "hash": "66bce5bbc61dfb0f8a73fbcb907bf199"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\features\\detail\\domain\\DetailRepository.kt": {
+    "mtime": 1775547519.0,
+    "hash": "fc1115259b8f43d362265f99b2d8469a"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\features\\detail\\domain\\mapper\\DetailMapper.kt": {
+    "mtime": 1775552239.0,
+    "hash": "1d4f8a6e753d8aff8f8986ddf02e9bf2"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\features\\detail\\ui\\AnimeDetailScreen.kt": {
+    "mtime": 1777914497.124961,
+    "hash": "2cdc8871f77d4c3d2e3dda2e89f4ae61"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\features\\detail\\ui\\AnimeDetailUiState.kt": {
+    "mtime": 1777914030.572844,
+    "hash": "6daaac67df4f7d3e4cee71f8a9ea44bf"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\features\\detail\\ui\\AnimeDetailViewModel.kt": {
+    "mtime": 1778874935.4940355,
+    "hash": "dbadde3a3a03a6f92cd578bfdd27e9e4"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\features\\detail\\ui\\ShareAnimeUtil.kt": {
+    "mtime": 1777832058.5877593,
+    "hash": "86b68c89fec5e1ee8624aff3f7cd409e"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\features\\episodes\\data\\EpisodeRepositoryImpl.kt": {
+    "mtime": 1775198600.0,
+    "hash": "b62dd7181ea3917102bb36b4426c6314"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\features\\episodes\\domain\\AnimeEpisodeUiModel.kt": {
+    "mtime": 1775156557.0,
+    "hash": "7d84133cbbfcf851608fdd6a57acafd0"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\features\\episodes\\domain\\EpisodeMapper.kt": {
+    "mtime": 1775156558.0,
+    "hash": "1c3f5066e5a99b3243514b8b95b6f9a5"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\features\\episodes\\domain\\EpisodeRepository.kt": {
+    "mtime": 1775196442.0,
+    "hash": "df7e08c966d4ec98a70b7e33398773a5"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\features\\episodes\\ui\\AnimeEpisodeListScreen.kt": {
+    "mtime": 1778785070.0322275,
+    "hash": "a0b2ba41def9f84b018d78d0cc4211d2"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\features\\episodes\\ui\\AnimeEpisodeListUiState.kt": {
+    "mtime": 1775156557.0,
+    "hash": "0a2aa655c78f4255ce6279e8ae53afe6"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\features\\episodes\\ui\\AnimeEpisodeListViewModel.kt": {
+    "mtime": 1778874935.495036,
+    "hash": "4c02c8f50be5baa75932e1ecfd9cb7da"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\features\\explorer\\data\\ExplorerRepositoryImpl.kt": {
+    "mtime": 1775546849.0,
+    "hash": "46c99f0abda109a1cee50ed090a143a7"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\features\\explorer\\domain\\ExplorerCategory.kt": {
+    "mtime": 1775545828.0,
+    "hash": "2b4025e6f7f9a3f6bad4b9cf8cd4deae"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\features\\explorer\\domain\\ExplorerRepository.kt": {
+    "mtime": 1775545828.0,
+    "hash": "a1e94a8c78d1ae6696c9ef3332e4b812"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\features\\explorer\\ui\\ExplorerScreen.kt": {
+    "mtime": 1778785147.7991397,
+    "hash": "c49f95c2a019e934b742d11b17c8ce7e"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\features\\explorer\\ui\\ExplorerUiState.kt": {
+    "mtime": 1778785070.1465235,
+    "hash": "a1b2b5e6e4541c2b8eadd31bfcd4a446"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\features\\explorer\\ui\\ExplorerViewModel.kt": {
+    "mtime": 1778785070.1465235,
+    "hash": "38fb9829375ee0cfbc608d3efd765471"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\features\\home\\data\\HomeRepositoryImpl.kt": {
+    "mtime": 1778785069.569719,
+    "hash": "628fbed6c87cb8e4a0b0fe3dd1e7c402"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\features\\home\\data\\local\\dao\\HomeCachedDao.kt": {
+    "mtime": 1775549618.0,
+    "hash": "70c2954bdc48663282f75f7712f0e737"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\features\\home\\data\\local\\entity\\HomeCacheEntity.kt": {
+    "mtime": 1775546849.0,
+    "hash": "6b3341fdaf8f96d93af1c34c4b60e366"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\features\\home\\domain\\HomeRepository.kt": {
+    "mtime": 1774950739.0,
+    "hash": "50eef6e466ee1f55cb86c455debe9e0a"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\features\\home\\domain\\mapper\\HomeMapper.kt": {
+    "mtime": 1775546850.0,
+    "hash": "3c737c607455efafad160568a6178b3b"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\features\\home\\ui\\HomeScreen.kt": {
+    "mtime": 1778785147.8001392,
+    "hash": "d048566b1f9a679d0e017b32bfc971a7"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\features\\home\\ui\\HomeScreenUiState.kt": {
+    "mtime": 1775199426.0,
+    "hash": "c3f694affee714b56708446f20143d39"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\features\\home\\ui\\HomeScreenViewModel.kt": {
+    "mtime": 1777832058.591761,
+    "hash": "b12b8b3785041f9d789659e31d7a715c"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\features\\search\\data\\SearchRepositoryImpl.kt": {
+    "mtime": 1778785147.8001392,
+    "hash": "adff36320b6066ad5105c49b7160523e"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\features\\search\\domain\\SearchRepository.kt": {
+    "mtime": 1778785147.8011389,
+    "hash": "666f242341b7648149ffd553aea668d5"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\features\\search\\domain\\mapper\\SearchRequestParamMapper.kt": {
+    "mtime": 1778785147.8011389,
+    "hash": "c274465fd7de412068a613837da1117b"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\features\\search\\domain\\model\\GenreModel.kt": {
+    "mtime": 1778785147.80214,
+    "hash": "3cf59169cdef7a22750017d2351171b2"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\features\\search\\domain\\model\\SearchRequestParamModel.kt": {
+    "mtime": 1778785147.80214,
+    "hash": "9089ee42c1be10f864d726505db13331"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\features\\search\\ui\\SearchAnime.kt": {
+    "mtime": 1779331831.6400733,
+    "hash": "1f900415a08a84e5b21d7d08074348bc"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\features\\search\\ui\\SearchTestTags.kt": {
+    "mtime": 1779331831.6400733,
+    "hash": "759308a782dd16a4d58129cd936581ba"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\features\\search\\ui\\SearchUiState.kt": {
+    "mtime": 1779331831.6410716,
+    "hash": "2d7a86aca43d33f899fac1fb197304bb"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\features\\search\\ui\\SearchViewModel.kt": {
+    "mtime": 1778785147.8061402,
+    "hash": "bc52ceea0923b1a69f6a44f8dd65b437"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\features\\search\\ui\\composables\\EmptySheet.kt": {
+    "mtime": 1779331831.6410716,
+    "hash": "0f9ac392187f48dc9ee7436fbc02348b"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\features\\search\\ui\\composables\\FilterChip.kt": {
+    "mtime": 1779331831.642071,
+    "hash": "b29ce3a720a15048f8da80710126aa9f"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\features\\search\\ui\\composables\\FilterSheet.kt": {
+    "mtime": 1779331831.642071,
+    "hash": "1bdf2cecefc60ac56ddf289d2bc6a658"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\features\\search\\ui\\composables\\GenreChip.kt": {
+    "mtime": 1779331831.6430712,
+    "hash": "eeade364d92e3dba2f1530a9d2acc021"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\features\\search\\ui\\composables\\SearchBar.kt": {
+    "mtime": 1779331831.644072,
+    "hash": "962b796a4a240f3673bb35d393f42a36"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\features\\search\\ui\\composables\\SubSheet.kt": {
+    "mtime": 1779331831.644072,
+    "hash": "8dc35ca9c347aeed3e380e79712c1915"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\navigation\\AppDestinations.kt": {
+    "mtime": 1778874935.4970374,
+    "hash": "2c61a7129597adbdb87c9120e9508f31"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\navigation\\AppNavGraph.kt": {
+    "mtime": 1778875351.1346695,
+    "hash": "e3b4f8784832b92e3d1c868dd327a121"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\navigation\\LaunchDeepLinkHandler.kt": {
+    "mtime": 1778874935.4990356,
+    "hash": "b4ea39b75fac65b9718ed23cab92d7d8"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\navigation\\RouteUiState.kt": {
+    "mtime": 1778874935.5000348,
+    "hash": "3a4e948dadc0cec0ff9cab80325c41dd"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\notifications\\AnimeNotificationReceiver.kt": {
+    "mtime": 1777818626.6486437,
+    "hash": "f92d8888592719d9d5f8cf1f642be551"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\notifications\\NotificationChannelInitializer.kt": {
+    "mtime": 1777588355.408927,
+    "hash": "7f7ac5def6a1697ab1e79d83fe7e69c6"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\notifications\\NotificationHelper.kt": {
+    "mtime": 1777821672.2798412,
+    "hash": "598466a74137e3504158637758e98b9b"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\ui\\theme\\Color.kt": {
+    "mtime": 1775464949.0,
+    "hash": "1ffcb3be4877108a916f3382d745aa9d"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\ui\\theme\\Theme.kt": {
+    "mtime": 1773476427.0,
+    "hash": "76964044c0799eb1e8dc35e8f34aac8c"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\java\\com\\example\\animeexplorer\\ui\\theme\\Type.kt": {
+    "mtime": 1773476536.0,
+    "hash": "425cbb43c2cea8b350cdb200e5b7ccea"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\test\\java\\com\\example\\animeexplorer\\MainDispatcherRule.kt": {
+    "mtime": 1779331831.6460764,
+    "hash": "05cbb081bdd93ea284fc3bc1a5e6b32f"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\test\\java\\com\\example\\animeexplorer\\features\\search\\ui\\SearchViewModelTest.kt": {
+    "mtime": 1779331831.648073,
+    "hash": "3d8eaf689979475d8f8e97ac013afe3f"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\res\\mipmap-hdpi\\ic_launcher.webp": {
+    "mtime": 1772600881.0,
+    "hash": "39d9bb21eb48f128a71c3f01ad3cd427"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\res\\mipmap-hdpi\\ic_launcher_round.webp": {
+    "mtime": 1772600881.0,
+    "hash": "70d6f58af3c76ee221c829b1ce9daa04"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\res\\mipmap-mdpi\\ic_launcher.webp": {
+    "mtime": 1772600881.0,
+    "hash": "d2acce71c7b46e5e9540d23a9f7b2166"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\res\\mipmap-mdpi\\ic_launcher_round.webp": {
+    "mtime": 1772600881.0,
+    "hash": "6376acb48f96a855ee95c113cd7fd616"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\res\\mipmap-xhdpi\\ic_launcher.webp": {
+    "mtime": 1772600881.0,
+    "hash": "bd087d80b70bec05a43c745f29dc3ffc"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\res\\mipmap-xhdpi\\ic_launcher_round.webp": {
+    "mtime": 1772600881.0,
+    "hash": "7479edd56ab712609f030054bffd7263"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\res\\mipmap-xxhdpi\\ic_launcher.webp": {
+    "mtime": 1772600881.0,
+    "hash": "ea180e8d1a2e8300cc998b987266b736"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\res\\mipmap-xxhdpi\\ic_launcher_round.webp": {
+    "mtime": 1772600881.0,
+    "hash": "947842742b29eeda80ee0805e1600366"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\res\\mipmap-xxxhdpi\\ic_launcher.webp": {
+    "mtime": 1772600881.0,
+    "hash": "54ab624970c86c2146e76b93f27586f7"
+  },
+  "C:\\Users\\ashwa\\AndroidStudioProjects\\Anime-Explorer\\Anime-Explorer\\app\\src\\main\\res\\mipmap-xxxhdpi\\ic_launcher_round.webp": {
+    "mtime": 1772600881.0,
+    "hash": "9ee591be72fb336861a8044086054daa"
+  }
+}

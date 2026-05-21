@@ -6,6 +6,9 @@ plugins {
     id("org.jetbrains.kotlin.plugin.serialization")
     id("androidx.room")
 
+    //Google services plugin for Firebase
+    id("com.google.gms.google-services")
+
 
 }
 
@@ -60,6 +63,7 @@ dependencies {
     implementation(libs.androidx.compose.material.icons.extended)
     implementation(libs.androidx.compose.ui.text.google.fonts)
     implementation(libs.androidx.material3)
+    implementation(libs.firebase.messaging.ktx)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -88,6 +92,11 @@ dependencies {
     implementation(libs.androidx.core.splashscreen)
     implementation(libs.compose.shimmer)
     implementation(libs.androidx.work.runtime.ktx)
+
+    // Firebase dependencies
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.analytics)
+    implementation(libs.firebase.messaging)
 
     androidTestImplementation( libs.androidx.ui.test.junit4)
 
